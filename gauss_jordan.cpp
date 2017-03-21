@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include <vector>
 #include <sstream>
 
@@ -24,13 +25,13 @@ struct enteroModular{
         a = mod(x, y), n = y;
     }
     enteroModular(ull x){
-        a = mod(x, 2), n = 2;
+        a = x, n = 0;
     }
     enteroModular(){
-        a = 0, n = 2;
+        a = 0, n = 0;
     }
     enteroModular operator+(const enteroModular & e) const{
-        return enteroModular(a + e.a, n);
+        return enteroModular(a + e.a, max(n, e.n));
     }
     enteroModular operator-() const{
         return enteroModular(-a, n);
@@ -39,7 +40,7 @@ struct enteroModular{
         return *this + (-e);
     }
     enteroModular operator*(const enteroModular & e) const{
-        return enteroModular(a * e.a, n);
+        return enteroModular(a * e.a, max(n, e.n));
     }
     enteroModular inverso() const{
         ull q, r0 = a, r1 = n, ri, s0 = 1, s1 = 0, si;
@@ -52,7 +53,7 @@ struct enteroModular{
         return enteroModular(s0, n);
     }
     enteroModular operator/(const enteroModular & e) const{
-        return enteroModular(a * e.inverso().a, n);
+        return enteroModular(a * e.inverso().a, max(n, e.n));
     }
     enteroModular operator+=(const enteroModular & e){
         *this = *this + e;
@@ -79,10 +80,10 @@ struct enteroModular{
         return * this;
     }
     bool operator==(const enteroModular & e) const{
-        return mod(a, n) == mod(e.a, n);
+        return mod(a, max(n, e.n)) == mod(e.a, max(n, e.n));
     }
     bool operator!=(const enteroModular & e) const{
-        return mod(a, n) != mod(e.a, n);
+        return mod(a, max(n, e.n)) != mod(e.a, max(n, e.n));
     }
 };
 
@@ -208,131 +209,399 @@ istream &operator>>(istream &is, fraccion & f){
 }
 
 template <typename entrada>
-using fila = vector<entrada>;
+struct matrix{
+    vector< vector<entrada> > A;
+    int m, n;
 
-template <typename entrada>
-using matrix = vector< fila<entrada> >;
-
-template <typename entrada>
-struct sistema{
-	matrix<entrada> A;
-	fila<entrada> b;
-	int m, n;
-
-	sistema(int _m, int _n){
-		m = _m, n = _n;
-		A.resize(m, fila<entrada>(n));
-		b.resize(m);
-	}
-
-	void multiplicarFilaPorEscalar(int k, entrada c){
-		for(int j = 0; j < n; j++){
-			A[k][j] *= c;
-		}
-		b[k] *= c;
-	}
-
-	void intercambiarFilas(int k, int l){
-		swap(A[k], A[l]);
-		swap(b[k], b[l]);
-	}
-
-	void sumaMultiploFilaAOtra(int k, int l, entrada c){
-		for(int j = 0; j < n; j++){
-			A[k][j] += c * A[l][j];
-		}
-		b[k] += c * b[l];
-	}
-
-    void imprime_matriz(){
-        for(int i = 0; i < m; i++){
-            for(int j = 0; j < n; j++){
-                cout << A[i][j] << " ";
-            }
-            cout << b[i] << "\n";
-        }
-        cout << "\n";
+    matrix(int _m, int _n){
+        m = _m, n = _n;
+        A.resize(m, vector<entrada>(n, 0));
     }
 
-	void gauss_jordan(){
-        cout << "Matriz original:\n";
-        imprime_matriz();
-		int i = 0, j = 0;
-		while(i < m && j < n){
-			if(A[i][j] == 0){
-				for(int f = i + 1; f < m; f++){
-					if(A[f][j] != 0){
-						intercambiarFilas(f, i);
-                        cout << "F_" << (f + 1) << " <-> F_" << (i + 1) << ":\n";
-                        imprime_matriz();
-						break;
-					}
-				}
-			}
-			if(A[i][j] != 0){
-                entrada inv_mult = A[i][j].inverso();
-				multiplicarFilaPorEscalar(i, inv_mult);
-                cout << "(" << inv_mult << ")F_" << (i + 1) << " -> F_" << (i + 1) << ":\n";
-                imprime_matriz();
-				for(int f = 0; f < m; f++){
-                    if(f != i){
-                        entrada inv_adit = -A[f][j];
-                        sumaMultiploFilaAOtra(f, i, inv_adit);
-                        cout << "F_" << (f + 1) << " + (" << inv_adit << ")F_" << (i + 1) << " -> F_" << (f + 1) << ":\n";
-                        imprime_matriz();
+    vector<entrada> & operator[] (int i){
+        return A[i];
+    }
+
+    void multiplicarFilaPorEscalar(int k, entrada c){
+        for(int j = 0; j < n; j++) A[k][j] *= c;
+    }
+
+    void intercambiarFilas(int k, int l){
+        swap(A[k], A[l]);
+    }
+
+    void sumaMultiploFilaAOtra(int k, int l, entrada c){
+        for(int j = 0; j < n; j++) A[k][j] += c * A[l][j];
+    }
+
+    void gauss_jordan(matrix & dest){
+        cout << "Matriz original:\n" << str() << dest;
+        int i = 0, j = 0;
+        while(i < m && j < n){
+            if(A[i][j] == 0){
+                for(int f = i + 1; f < m; f++){
+                    if(A[f][j] != 0){
+                        intercambiarFilas(f, i);
+                        dest.intercambiarFilas(f, i);
+                        cout << "F_" << (f + 1) << " <-> F_" << (i + 1) << ":\n" << str() << dest;
+                        break;
                     }
                 }
-				i++;
-			}
-			j++;
-		}
-	}
+            }
+            if(A[i][j] != 0){
+                if(A[i][j] != 1){
+                    entrada inv_mult = A[i][j].inverso();
+                    multiplicarFilaPorEscalar(i, inv_mult);
+                    dest.multiplicarFilaPorEscalar(i, inv_mult);
+                    cout << "(" << inv_mult << ")F_" << (i + 1) << " -> F_" << (i + 1) << ":\n" << str() << dest;
+                }
+                for(int f = 0; f < m; f++){
+                    if(f != i && A[f][j] != 0){
+                        entrada inv_adit = -A[f][j];
+                        sumaMultiploFilaAOtra(f, i, inv_adit);
+                        dest.sumaMultiploFilaAOtra(f, i, inv_adit);
+                        cout << "F_" << (f + 1) << " + (" << inv_adit << ")F_" << (i + 1) << " -> F_" << (f + 1) << ":\n" << str() << dest;
+                    }
+                }
+                i++;
+            }
+            j++;
+        }
+    }
+
+    void gauss_jordan(){
+        matrix xd(m, n);
+        gauss_jordan(xd);
+    }
+
+    entrada eliminacion_gaussiana(matrix & dest){
+        //cout << "Matriz original:\n" << str() << dest;
+        int i = 0, j = 0;
+        entrada determinante = 1;
+        while(i < m && j < n){
+            if(A[i][j] == 0){
+                for(int f = i + 1; f < m; f++){
+                    if(A[f][j] != 0){
+                        intercambiarFilas(f, i);
+                        dest.intercambiarFilas(f, i);
+                        determinante *= -1;
+                        //cout << "F_" << (f + 1) << " <-> F_" << (i + 1) << ":\n" << str() << dest;
+                        break;
+                    }
+                }
+            }
+            determinante *= A[i][j];
+            if(A[i][j] != 0){
+                if(A[i][j] != 1){
+                    entrada inv_mult = A[i][j].inverso();
+                    multiplicarFilaPorEscalar(i, inv_mult);
+                    dest.multiplicarFilaPorEscalar(i, inv_mult);
+                    //cout << "(" << inv_mult << ")F_" << (i + 1) << " -> F_" << (i + 1) << ":\n" << str() << dest;
+                }
+                for(int f = i + 1; f < m; f++){
+                    if(A[f][j] != 0){
+                        entrada inv_adit = -A[f][j];
+                        sumaMultiploFilaAOtra(f, i, inv_adit);
+                        dest.sumaMultiploFilaAOtra(f, i, inv_adit);
+                        //cout << "F_" << (f + 1) << " + (" << inv_adit << ")F_" << (i + 1) << " -> F_" << (f + 1) << ":\n" << str() << dest;
+                    }
+                }
+                i++;
+            }
+            j++;
+        }
+        return determinante;
+    }
+
+    entrada eliminacion_gaussiana(){
+        matrix xd(m, n);
+        return eliminacion_gaussiana(xd);
+    }
+
+    static entrada delta(int i, int j){
+        if(i == j) return 1;
+        else return 0;
+    }
+
+    static matrix identidad(int n){
+        matrix<entrada> id(n, n);
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                id[i][j] = delta(i, j);
+            }
+        }
+        return id;
+    }
+
+    static matrix elemental_1(int n, int k, entrada c){
+        matrix<entrada> E(n, n);
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(i == k) E[i][j] = c * delta(k, j);
+                else E[i][j] = delta(i, j);
+            }
+        }
+        return E;
+    }
+
+    static matrix elemental_2(int n, int k, int l){
+        matrix<entrada> E(n, n);
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(i == k) E[i][j] = delta(l, j);
+                else if(i == l) E[i][j] = delta(k, j);
+                else E[i][j] = delta(i, j);
+            }
+        }
+        return E;
+    }
+
+    static matrix elemental_3(int n, int k, int l, entrada c){
+        matrix<entrada> E(n, n);
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                if(i == k) E[i][j] = delta(k, j) + c * delta(l, j);
+                else E[i][j] = delta(i, j);
+            }
+        }
+        return E;
+    }
+
+    matrix operator+(const matrix & B) const{
+        if(m == B.m && n == B.n){
+            matrix<entrada> C(m, n);
+            for(int i = 0; i < m; i++){
+                for(int j = 0; j < n; j++){
+                    C[i][j] = A[i][j] + B.A[i][j];
+                }
+            }
+            return C;
+        }else{
+            return *this;
+        }
+    }
+
+    matrix operator+=(const matrix & M){
+        *this = *this + M;
+        return *this;
+    }
+
+    matrix operator-() const{
+        matrix<entrada> C(m, n);
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                C[i][j] = -A[i][j];
+            }
+        }
+        return C;
+    }
+
+    matrix operator-(const matrix & B) const{
+        return *this + (-B);
+    }
+
+    matrix operator-=(const matrix & M){
+        *this = *this + (-M);
+        return *this;
+    }
+
+    matrix operator*(const matrix & B) const{
+        if(n == B.m){
+            matrix<entrada> C(m, B.n);
+            for(int i = 0; i < m; i++){
+                for(int j = 0; j < B.n; j++){
+                    for(int k = 0; k < n; k++){
+                        C[i][j] += A[i][k] * B.A[k][j];
+                    }
+                }
+            }
+            return C;
+        }else{
+            return *this;
+        }
+    }
+
+    matrix operator*(const entrada & c) const{
+        matrix<entrada> C(m, n);
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                C[i][j] = A[i][j] * c;
+            }
+        }
+        return C;
+    }
+
+    matrix operator*=(const matrix & M){
+        *this = *this * M;
+        return *this;
+    }
+
+    matrix operator*=(const entrada & c){
+        *this = *this * c;
+        return *this;
+    }
+
+    bool operator==(const matrix & B) const{
+        if(m == B.m && n == B.n){
+            for(int i = 0; i < m; i++){
+                for(int j = 0; j < n; j++){
+                    if(A[i][j] != B.A[i][j]) return false;
+                }
+            }
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    bool operator!=(const matrix & B) const{
+        return !(*this == B);
+    }
+
+    matrix<entrada> escalonada_reducida_por_filas(){
+        matrix<entrada> asoc = *this;
+        asoc.gauss_jordan();
+        return asoc;
+    }
+
+    matrix<entrada> escalonada_por_filas(){
+        matrix<entrada> asoc = *this;
+        asoc.eliminacion_gaussiana();
+        return asoc;
+    }
+
+    bool invertible(){
+        if(m == n){
+            return escalonada_reducida_por_filas() == matrix<entrada>::identidad(n);
+        }else{
+            return false;
+        }
+    }
+
+    matrix<entrada> transpuesta(){
+        matrix<entrada> T(n, m);
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++){
+                T[j][i] = A[i][j];
+            }
+        }
+        return T;
+    }
+
+    matrix<entrada> inversa(){
+        if(m == n){
+            matrix<entrada> tmp = *this;
+            matrix<entrada> inv = matrix<entrada>::identidad(n);
+            tmp.gauss_jordan(inv);
+            if(tmp == matrix<entrada>::identidad(n)){
+                return inv;
+            }else{
+                return *this;
+            }
+        }else{
+            return *this;
+        }
+    }
+
+    entrada determinante(){
+        if(m == n){
+            matrix<entrada> tmp = *this;
+            return tmp.eliminacion_gaussiana();
+        }else{
+            return 0;
+        }
+    }
+
+    matrix<entrada> menor(int x, int y){
+        matrix<entrada> M(0, 0);
+        for(int i = 0; i < m; i++){
+            if(i != x){
+                M.A.push_back(vector<entrada>());
+                for(int j = 0; j < n; j++){
+                    if(j != y){
+                        M.A[M.A.size() - 1].push_back(A[i][j]);
+                    }
+                }
+            }
+        }
+        M.m = m - 1;
+        M.n = n - 1;
+        return M;
+    }
+
+    entrada cofactor(int x, int y){
+        entrada ans = menor(x, y).determinante();
+        if((x + y) % 2 == 1) ans *= -1;
+        return ans;
+    }
+
+    matrix<entrada> adjunta(){
+        return inversa() * determinante();
+    }
+
+    matrix<entrada> cofactores(){
+        return adjunta().transpuesta();
+    }
+
+    string str() const{
+        stringstream ss;
+        for(int i = 0; i < m; i++){
+            for(int j = 0; j < n; j++) ss << A[i][j] << " ";
+            ss << "\n";
+        }
+        ss << "\n";
+        return ss.str();
+    }
+
 };
 
-void pedirValores(sistema<fraccion> & S){
+template <typename entrada>
+ostream &operator<<(ostream &os, const matrix<entrada> & M) { 
+    return os << M.str();
+}
+
+void pedirValores(matrix<fraccion> & S){
     for(int i = 0; i < S.m; i++){
-        cout << "Introduce los coeficientes y t\202rmino independiente de la ecuaci\242n " << (i + 1) << ": ";
+        cout << "Introduce la fila " << (i + 1) << ": ";
         for(int j = 0; j < S.n; j++){
             cin >> S.A[i][j];
         }
-        cin >> S.b[i];
     }
-    S.gauss_jordan();
 }
 
-void pedirValores(sistema<enteroModular> & S, ull p){
+void pedirValores(matrix<enteroModular> & S, ull p){
     ull valor;
     for(int i = 0; i < S.m; i++){
-        cout << "Introduce los coeficientes y t\202rmino independiente de la ecuaci\242n " << (i + 1) << ": ";
+        cout << "Introduce la fila " << (i + 1) << ": ";
         for(int j = 0; j < S.n; j++){
             cin >> valor;
             S.A[i][j] = enteroModular(valor, p);
         }
         cin >> valor;
-        S.b[i] = enteroModular(valor, p);
     }
-    cout << "\n";
-    S.gauss_jordan();
 }
 
 int main()
 {
+    /*cout << (matrix<fraccion>::elemental_3(4, 0, 1, -1) * matrix<fraccion>::elemental_3(4, 0, 2, fraccion(1,2)) * matrix<fraccion>::elemental_2(4, 2, 3) * matrix<fraccion>::elemental_1(4, 3, fraccion(1,3)) * matrix<fraccion>::elemental_2(4, 0, 3)).inversa();
     int m, n;
     ull p;
     string campo;
-    cout << "Introduce el n\243mero de ecuaciones: ";
+    cout << "Introduce el n\243mero de filas: ";
     cin >> m;
-    cout << "Introduce el n\243mero de inc\242gnitas: ";
+    cout << "Introduce el n\243mero de columnas: ";
     cin >> n;
     cout << "Introduce Q para trabajar en los racionales, o un numero primo p para trabajar en F_p: ";
     cin >> campo;
     if(campo == "Q"){
-        sistema<fraccion> S(m, n);
-        pedirValores(S);
+        matrix<fraccion> M(m, n);
+        pedirValores(M);
+        matrix<fraccion> I_n = matrix<fraccion>::identidad(n);
+        M.gauss_jordan(I_n);
     }else{
         istringstream(campo) >> p;
-        sistema<enteroModular> S(m, n);
-        pedirValores(S, p);
-    }
+        matrix<enteroModular> M(m, n);
+        pedirValores(M, p);
+    }*/
     return 0;
 }

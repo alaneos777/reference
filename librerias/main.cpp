@@ -110,6 +110,27 @@ ull phi_single(ull n){
 	return resultado;
 }
 
+ull carmichael_lambda(ull n){
+    if(n == 1) return 1;
+    ull ans, a, p;
+    list<ull> f;
+    for(ull i = 2; i <= sqrt(n); i++){
+        if(n%i == 0){
+            a = 0;
+            while(n%i == 0){
+                n /= i;
+                a++;
+            }
+            p = fast_pow(i, a);
+            p -= p/i;
+            if(a <= 2 || i >= 3) f.push_back(p);
+            else f.push_back(p/2);
+        }
+    }
+    if(n > 1) f.push_back(n - 1);
+    return lcm_multiple(f);
+}
+
 vector<ull> euclides(ull a, ull b){
     ull x0=1, y0=0, x1=0, y1=1, q, r, xn, yn;
     while(b!=0){
@@ -843,9 +864,8 @@ matrix eliminacion_gaussiana(matrix matriz){
 matrix gauss_jordan(matrix matriz){
     int m = matriz.size();
     int n = matriz[0].size();
-    int offset = 0;
-    for(int j=0;j-offset<m && j<n;j++){
-        int i = j - offset;
+    int i = 0, j = 0;
+    while(i < m && j < n){
         if(matriz[i][j] == 0){
             for(int f=i+1;f<m;f++){
                 if(matriz[f][j] != 0){
@@ -854,12 +874,12 @@ matrix gauss_jordan(matrix matriz){
                 }
             }
         }
-        if(matriz[i][j] == 0){
-            offset++;
-        }else{
+        if(matriz[i][j] != 0){
             for(int l=n-1;l>=j;l--) matriz[i][l] /= matriz[i][j];
             for(int f=0;f<m;f++) if(f != i && matriz[f][j] != 0) for(int l=n-1;l>=j;l--) matriz[f][l] -= matriz[f][j]*matriz[i][l];
+            i++;
         }
+        j++;
     }
     return matriz;
 }
@@ -1078,6 +1098,9 @@ int main()
     imprime_matriz(gauss_jordan({{1,5,1,1},{-2,4,7,9}}));
 
     imprime_matriz(gauss_jordan({{0,1,1},{1,2,4},{-7,3,-11},{2,2,6}}));*/
+
+    /*cout << "\n\n\n";
+    for(ull i = 1; i <= 100; i++) cout << carmichael_lambda(i) << ", "; */
 
     return 0;
 }
