@@ -8,9 +8,9 @@ using matriz = vector< vector<tipo> >;
 matriz<bool> composicion(matriz<bool> B, matriz<bool> A){
     size_t a = A.size(), b = B.size(), c = B[0].size();
     matriz<bool> C(a, vector<bool>(c, 0));
-    for(size_t i=0;i<a;i++){
-        for(size_t j=0;j<c;j++){
-            for(size_t k=0;k<b;k++){
+    for(size_t i = 0; i < a; i++){
+        for(size_t j = 0; j < c; j++){
+            for(size_t k = 0; k < b; k++){
                 C[i][j] = C[i][j] || (A[i][k] && B[k][j]);
             }
         }
@@ -21,8 +21,8 @@ matriz<bool> composicion(matriz<bool> B, matriz<bool> A){
 matriz<bool> inversa(matriz<bool> A){
     size_t a = A.size(), b = A[0].size();
     matriz<bool> B(b, vector<bool>(a));
-    for(size_t i=0;i<a;i++){
-        for(size_t j=0;j<b;j++){
+    for(size_t i = 0; i < a; i++){
+        for(size_t j = 0; j < b; j++){
             B[j][i] = A[i][j];
         }
     }
@@ -32,8 +32,8 @@ matriz<bool> inversa(matriz<bool> A){
 matriz<bool> unir(matriz<bool> A, matriz<bool> B){
     size_t a = A.size(), b = A[0].size();
     matriz<bool> C(a, vector<bool>(b, 0));
-    for(size_t i=0;i<a;i++){
-        for(size_t j=0;j<b;j++){
+    for(size_t i = 0; i < a; i++){
+        for(size_t j = 0; j < b; j++){
             C[i][j] = A[i][j] || B[i][j];
         }
     }
@@ -41,13 +41,13 @@ matriz<bool> unir(matriz<bool> A, matriz<bool> B){
 }
 
 matriz<bool> clr(matriz<bool> A){
-    for(size_t i=0;i<A.size();i++) A[i][i] = 1;
+    for(size_t i = 0; i < A.size(); i++) A[i][i] = 1;
     return A;
 }
 
 matriz<bool> cls(matriz<bool> A){
-    for(size_t i=0;i<A.size();i++){
-        for(size_t j=0;j<A.size();j++){
+    for(size_t i = 0; i < A.size(); i++){
+        for(size_t j = 0; j < A.size(); j++){
             if(A[i][j] == 1) A[j][i] = 1;
         }
     }
@@ -55,9 +55,9 @@ matriz<bool> cls(matriz<bool> A){
 }
 
 matriz<bool> clt(matriz<bool> A){
-    for(size_t i=0;i<A.size();i++){
-        for(size_t j=0;j<A.size();j++){
-            for(size_t k=0;k<A.size();k++){
+    for(size_t i = 0; i < A.size(); i++){
+        for(size_t j = 0; j < A.size(); j++){
+            for(size_t k = 0; k < A.size(); k++){
                 A[j][k] = A[j][k] || (A[j][i] && A[i][k]);
             }
         }
@@ -67,7 +67,7 @@ matriz<bool> clt(matriz<bool> A){
 
 vector<int> clase_equivalencia(matriz<bool> A, int a){
     vector<int> ans;
-    for(size_t i=0;i<A.size();i++){
+    for(size_t i = 0; i < A.size(); i++){
         if(A[a][i] == 1) ans.push_back(i);
     }
     return ans;
@@ -76,11 +76,11 @@ vector<int> clase_equivalencia(matriz<bool> A, int a){
 vector< vector<int> > conjunto_cociente(matriz<bool> A){
     vector< vector<int> > ans;
     vector<bool> pendientes(A.size(), true);
-    for(size_t i=0;i<A.size();i++){
+    for(size_t i = 0; i < A.size(); i++){
         if(pendientes[i]){
             vector<int> tmp = clase_equivalencia(A, i);
             ans.push_back(tmp);
-            for(int x:tmp) pendientes[x] = false;
+            for(int & x : tmp) pendientes[x] = false;
         }
     }
     return ans;
@@ -90,8 +90,8 @@ template<typename T>
 void imprime_matriz(matriz<T> M, vector<string> A, vector<string> B){
     cout << "\\{";
     bool primero = true;
-    for(size_t i=0;i<M.size();i++){
-        for(size_t j=0;j<M[i].size();j++){
+    for(size_t i = 0; i < M.size(); i++){
+        for(size_t j = 0; j < M[i].size(); j++){
             if(M[i][j] == 1){
                 if(primero){
                     primero = false;

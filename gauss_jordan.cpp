@@ -583,7 +583,6 @@ void pedirValores(matrix<enteroModular> & S, ull p){
 
 int main()
 {
-    /*cout << (matrix<fraccion>::elemental_3(4, 0, 1, -1) * matrix<fraccion>::elemental_3(4, 0, 2, fraccion(1,2)) * matrix<fraccion>::elemental_2(4, 2, 3) * matrix<fraccion>::elemental_1(4, 3, fraccion(1,3)) * matrix<fraccion>::elemental_2(4, 0, 3)).inversa();
     int m, n;
     ull p;
     string campo;
@@ -597,11 +596,11 @@ int main()
         matrix<fraccion> M(m, n);
         pedirValores(M);
         matrix<fraccion> I_n = matrix<fraccion>::identidad(n);
-        M.gauss_jordan(I_n);
+        cout << "Determinante: " << M.determinante();
     }else{
         istringstream(campo) >> p;
         matrix<enteroModular> M(m, n);
         pedirValores(M, p);
-    }*/
+    }
     return 0;
 }

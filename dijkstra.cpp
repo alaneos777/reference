@@ -29,7 +29,7 @@ struct grafo{
         vertices.resize(V, vector<arista>());
         matriz.resize(V, vector<int>(V, 0));
         matriz_pesos.resize(V, vector<int>(V, inf));
-        for(int i=0;i<V;i++) matriz_pesos[i][i] = 0;
+        for(int i = 0; i < V; i++) matriz_pesos[i][i] = 0;
     }
 
     void anadir_vertice(int u, int v, int w){
@@ -52,7 +52,7 @@ struct grafo{
             pair<int, int> i = *info.begin();
             info.erase(info.begin());
             int actual = i.second;
-            for(size_t j=0;j<vertices[actual].size();j++){
+            for(size_t j = 0; j < vertices[actual].size(); j++){
                 int dest = vertices[actual][j].destino;
                 int nuevo = caminos[actual].costo + vertices[actual][j].costo; //i.first + vertices[actual][j].costo
                 if(nuevo < caminos[dest].costo){
@@ -63,7 +63,7 @@ struct grafo{
                 }
             }
         }
-        for(int i=0;i<V;i++){
+        for(int i = 0; i < V; i++){
             int actual = i;
             while(true){
                 caminos[i].vertices.push_front(actual);
@@ -76,29 +76,29 @@ struct grafo{
 
     vector< vector<int> > floyd(){
         vector< vector<int> > tmp = matriz_pesos;
-        for(int k=0;k<V;k++){
-            for(int i=0;i<V;i++){
-                for(int j=0;j<V;j++){
-                    tmp[i][j] = min(tmp[i][j], tmp[i][k]+tmp[k][j]);
+        for(int k = 0; k < V; k++){
+            for(int i = 0; i < V; i++){
+                for(int j = 0; j < V; j++){
+                    tmp[i][j] = min(tmp[i][j], tmp[i][k] + tmp[k][j]);
                 }
             }
         }
         return tmp;
     }
 
-    void recorrer(int inicio, vector<bool> * pendientes){
-        (*pendientes)[inicio] = false;
-        for(size_t j=0;j<vertices[inicio].size();j++){
-            if((*pendientes)[vertices[inicio][j].destino]) recorrer(vertices[inicio][j].destino, pendientes);
+    void recorrer(int inicio, vector<bool> & pendientes){
+        pendientes[inicio] = false;
+        for(size_t j = 0; j < vertices[inicio].size(); j++){
+            if(pendientes[vertices[inicio][j].destino]) recorrer(vertices[inicio][j].destino, pendientes);
         }
     }
 
     int componentes(){
         int ans = 0;
         vector<bool> pendientes(V, true);
-        for(int i=0;i<V;i++){
+        for(int i = 0; i < V; i++){
             if(pendientes[i]){
-                recorrer(i, &pendientes);
+                recorrer(i, pendientes);
                 ans++;
             }
         }
@@ -108,9 +108,9 @@ struct grafo{
     grafo inducido(vector<int> nuevos){
         int tam = nuevos.size();
         grafo ans(tam, true);
-        for(int i=0;i<tam;i++){
+        for(int i = 0; i < tam; i++){
             int v1 = nuevos[i];
-            for(int j=0;j<tam;j++){
+            for(int j = 0; j < tam; j++){
                 int v2 = nuevos[j];
                 if(matriz[v1][v2] == 1) ans.anadir_vertice(i, j, matriz_pesos[v1][v2]);
             }
