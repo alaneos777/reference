@@ -74,7 +74,7 @@ ull lcm(ull a, ull b){
     else return a * (b / d);
 }
 
-ull gcd_multiple(list<ull> nums){
+ull gcd_multiple(list<ull> & nums){
     ull a, b;
     while(nums.size() > 1){
         a = nums.back();
@@ -86,7 +86,7 @@ ull gcd_multiple(list<ull> nums){
     return nums.back();
 }
 
-ull lcm_multiple(list<ull> nums){
+ull lcm_multiple(list<ull> & nums){
     ull a, b;
     while(nums.size() > 1){
         a = nums.back();
@@ -99,37 +99,35 @@ ull lcm_multiple(list<ull> nums){
 }
 
 ull phi_single(ull n){
-	ull resultado = n;
-    ull bound = sqrt(n);
-	for(ull i = 2; i <= bound; i++){
-		if(n % i == 0){
-			while(n % i == 0) n /= i;
-			resultado -= resultado/i;
-		}
-	}
+    ull resultado = n;
+    for(ull i = 2; i <= sqrt(n); i++){
+        if(n % i == 0){
+	    while(n % i == 0) n /= i;
+	    resultado -= resultado/i;
+        }
+    }
     if(n > 1) resultado -= resultado/n;
-	return resultado;
+    return resultado;
 }
 
 ull carmichael_lambda(ull n){
-    if(n == 1) return 1;
-    ull ans, a, p;
+    ull ans = 1, a, p;
     list<ull> f;
     for(ull i = 2; i <= sqrt(n); i++){
-        if(n%i == 0){
+        if(n % i == 0){
             a = 0;
-            while(n%i == 0){
+            while(n % i == 0){
                 n /= i;
                 a++;
             }
             p = fast_pow(i, a);
-            p -= p/i;
-            if(a <= 2 || i >= 3) f.push_back(p);
-            else f.push_back(p / 2);
+            p -= p / i;
+            if(a <= 2 || i >= 3) ans = lcm(ans, p);
+            else ans = lcm(ans, p / 2);
         }
     }
-    if(n > 1) f.push_back(n - 1);
-    return lcm_multiple(f);
+    if(n > 1) ans = lcm(ans, n - 1);
+    return ans;
 }
 
 vector<ull> euclides(ull a, ull b){
@@ -154,9 +152,9 @@ ull inverso2(ull a, ull m){
     return fast_pow_mod(a, phi_single(m) - 1, m);
 }
 
-vector<ull> chinese(vector<ull> a, vector<ull> n){
+vector<ull> chinese(vector<ull> & a, vector<ull> & n){
      ull prod = 1, p, ans = 0;
-     for(ull ni : n) prod *= ni;
+     for(ull & ni : n) prod *= ni;
      for(size_t i = 0; i < a.size(); i++){
         p = prod / n[i];
         ans = (ans + (a[i] % n[i]) * inverso(p, n[i]) * p) % prod;
@@ -167,27 +165,26 @@ vector<ull> chinese(vector<ull> a, vector<ull> n){
 void criba_primos(ull n){
     es_primo.resize(n + 1, true);
     es_primo[0] = es_primo[1] = false;
+    primos.push_back(2);
     for(ull i = 4; i <= n; i += 2){
         es_primo[i] = false;
     }
-    ull bound = sqrt(n);
-    for(ull i = 3; i <= bound; i += 2){
+    for(ull i = 3; i <= n; i += 2){
         if(es_primo[i]){
-            for(ull j = i*i; j <= n; j += 2*i){
+            primos.push_back(i);
+            for(ull j = i * i; j <= n; j += 2 * i){
                 es_primo[j] = false;
             }
         }
     }
-    for(ull i = 0; i <= n; i++) if(es_primo[i]) primos.push_back(i);
 }
 
 void criba_phi(ull n){
     for(ull i = 0; i <= n; i++) phi.push_back(i);
-    for(ull i = 1; i <= n; i++){
-        if(es_primo[i]){
-            for(ull j = i; j <= n; j += i){
-                phi[j] -= phi[j] / i;
-            }
+    for(size_t i = 0; i < primos.size(); i++){
+        ull p = primos[i];
+        for(ull j = p; j <= n; j += p){
+            phi[j] -= phi[j] / p;
         }
     }
 }
@@ -205,42 +202,42 @@ void criba_divisores(ull n){
 
 void criba_factores_primos(ull n){
     factores_primos.resize(n + 1, vector<ull>());
-    for(ull i = 1; i <= n; i++){
-        if(es_primo[i]){
-            for(ull j = i; j <= n; j += i){
-                factores_primos[j].push_back(i);
-            }
+    for(size_t i = 0; i < primos.size(); i++){
+        ull p = primos[i];
+        for(ull j = p; j <= n; j += p){
+            factores_primos[j].push_back(p);
         }
     }
 }
 
 void factorizar_map(ull n, ull m, map<ull, ull> & f){
-    if(n == 1) return;
-    ull d = 2;
-    while(d <= sqrt(n)){
-        if(n % d == 0){
-            f[d] += m;
-            n /= d;
-        }else{
-            d++;
+    for(ull i = 2; i <= sqrt(n); i++){
+        if(n % i == 0){
+            ull pot = 0;
+            while(n % i == 0){
+                pot++;
+                n /= i;
+            }
+            f[i] += pot * m;
         }
     }
-    f[n] += m;
+    if(n > 1) f[n] += m;
 }
 
-size_t factorizar_criba(ull n, ull m, vector<ull> & f){
-    size_t i = 0;
-    for(i = 0; i < primos.size(); i++){
+void factorizar_criba(ull n, ull m, map<ull, ull> & f){
+    for(size_t i = 0; i < primos.size(); i++){
         ull d = primos[i];
-        if(d > n) break;
-        ull pot = 0;
-        while(n % d == 0){
-            pot++;
-            n /= d;
+        if(d * d > n) break;
+        if(n % d == 0){
+            ull pot = 0;
+            while(n % d == 0){
+                pot++;
+                n /= d;
+            }
+            f[d] += pot * m;
         }
-        f[i] += pot * m;
     }
-    return i - 1;
+    if(n > 1) f[n] += m;
 }
 
 ull mu_map(ull n){
@@ -258,13 +255,11 @@ ull mu_map(ull n){
 ull mu_criba(ull n){
     if(n == 0) return 0;
     ull ans = 1;
-    vector<ull> f(primos.size() + 1, 0);
-    ull max_p = factorizar_criba(n, 1, f);
-    for(ull i = 0; i <= max_p; i++){
-        if(f[i] > 0){
-            if(f[i] > 1) return 0;
-            ans *= -1;
-        }
+    map<ull, ull> f;
+    factorizar_criba(n, 1, f);
+    for(pair<const ull, ull> & p : f){
+        if(p.second > 1) return 0;
+        ans *= -1;
     }
     return ans;
 }
@@ -274,12 +269,10 @@ size_t factorizar_factorial_criba(ull n, ull m, vector<ull> & f){
     for(i = 0; i < primos.size(); i++){
         ull d = primos[i];
         if(d > n) break;
-        ull pot = 0, contador = 1, tmp = 0;
-        while(true){
-            tmp = n / fast_pow(d, contador);
-            if(tmp == 0) break;
-            pot += tmp;
-            contador++;
+        ull pot = 0, div = d;
+        while(div <= n){
+            pot += n / div;
+            div *= d;
         }
         f[i] += pot*m;
     }
@@ -304,17 +297,15 @@ vector<ull> coprimos_map(ull n){
 }
 
 vector<ull> coprimos_criba(ull n){
-    vector<ull> f(primos.size() + 1, 0);
+    map<ull, ull> f;
     vector<ull> ans;
-    ull max_p = factorizar_criba(n, 1, f);
+    factorizar_criba(n, 1, f);
     for(ull i = 1 ; i <= n; i++){
         bool test = true;
-        for(ull j = 0; j <= max_p; j++){
-            if(f[j] > 0){
-                if(i % primos[j] == 0){
-                    test = false;
-                    break;
-                }
+        for(pair<const ull, ull> & p : f){
+            if(i % p.first == 0){
+                test = false;
+                break;
             }
         }
         if(test) ans.push_back(i);
@@ -982,22 +973,27 @@ int main()
     criba_factores_primos(101);
     criba_pascal(50);
     criba_gauss(20);
+    //for(ull p : primos) cout << p << " ";
+    //for(ull i = 0; i < phi.size(); i++) cout << "phi(" << i << ") = " << phi[i] << " ";
+    
     /*map<ull, ull> f;
-    factorizar_map(63, 1, &f);
-    for(pair<ull, ull> p:f) cout << p.first << " " << p.second << endl;
-    vector<ull> f2(primos.size()+1, 0);
-    cout << endl;
-    ull max_p = factorizar_criba(63, 1, &f2);
-    for(ull i=0;i<=max_p;i++) if(f2[i]>0) cout << primos[i] << " " << f2[i] << endl;*/
+    factorizar_map(1500, 1, f);
+    for(pair<const ull, ull> & p:f) cout << p.first << " " << p.second << endl;
+    cout << endl;*/
+
+    /*map<ull, ull> f2;
+    factorizar_criba(1500, 1, f2);
+    for(pair<const ull, ull> & p:f2) cout << p.first << " " << p.second << endl;
+    cout << endl;*/
 
     //for(ull i=0;i<=101;i++) cout << "mu(" << i << ") = " << mu_map(i) << " = " << mu_criba(i) << endl;
 
     /*vector<ull> f3(primos.size()+1, 0);
-    ull max_p = factorizar_factorial_criba(59, 1, &f3);
+    ull max_p = factorizar_factorial_criba(59, 1, f3);
     for(ull i=0;i<=max_p;i++) if(f3[i]>0) cout << primos[i] << " " << f3[i] << endl;*/
 
     /*vector<ull> c = coprimos_criba(60);
-    for(ull ci:c) cout << ci << endl;*/
+    for(ull ci:c) cout << ci << endl;/
 
     /*for(ull i=1;i<=100;i++){
         vector<ull> pol = cyclotomic(i);
@@ -1007,18 +1003,6 @@ int main()
     /*for(ull i=1;i<factores_primos.size();i++){
         cout << i << ": ";
         for(ull fi:factores_primos[i]) cout << fi << " ";
-        cout << endl;
-    }*/
-
-    /*for(ull i=1;i<divisores.size();i++){        int g = max(grado(), p.grado());
-        vector<fraccion> nuevo(g+1, fraccion());
-        for(int i=0;i<=g;i++){
-            if(i<=polinomio.coeficientes.size()-1) nuevo[i] += polinomio.coeficientes[i];
-            if(i<=p.coeficientes.size()-1) nuevo[i] += p.coeficientes[i];
-        }
-        return polinomio(nuevo);
-        cout << i << ": ";
-        for(ull fi:divisores[i]) cout << fi << " ";
         cout << endl;
     }*/
 
@@ -1071,7 +1055,7 @@ int main()
     /*vector< vector<fraccion> > C = mult_matrices({{5,8,4,9},{6,1,7,2}}, {{3,4},{6,8},{1,5},{9,2}});
     imprime_matriz(C);*/
 
-    vector< vector<fraccion> > o {{2,-3,-1,4,-27},{-3,5,6,2,44},{1,3,-8,9,-13},{7,-4,5,3,-34}};
+    /*vector< vector<fraccion> > o {{2,-3,-1,4,-27},{-3,5,6,2,44},{1,3,-8,9,-13},{7,-4,5,3,-34}};
     o = eliminacion_gaussiana(o);
     imprime_matriz(o);
 
@@ -1095,16 +1079,16 @@ int main()
     imprime_matriz(t);
 
     vector< vector<fraccion> > u {{2,-3,-1,4},{-3,5,6,2},{1,3,-8,9},{7,-4,5,3}};
-    for(int i=0;i<=3;i++) for(int j=0;j<=3;j++) cout << "C(" << i << "," << j << ")=" << cofactor(i, j, u).str() << "\n";
+    for(int i=0;i<=3;i++) for(int j=0;j<=3;j++) cout << "C(" << i << "," << j << ")=" << cofactor(i, j, u).str() << "\n";*/
 
     /*imprime_matriz(eliminacion_gaussiana({{2,-5,3,4},{1,-2,1,3},{5,1,7,11}}));
 
-    imprime_matriz(gauss_jordan({{1,5,1,1},{-2,4,7,9}}));
+    /*imprime_matriz(gauss_jordan({{1,5,1,1},{-2,4,7,9}}));*/
 
-    imprime_matriz(gauss_jordan({{0,1,1},{1,2,4},{-7,3,-11},{2,2,6}}));*/
+    /*imprime_matriz(gauss_jordan({{0,1,1},{1,2,4},{-7,3,-11},{2,2,6}}));*/
 
     /*cout << "\n\n\n";
-    for(ull i = 1; i <= 100; i++) cout << carmichael_lambda(i) << ", "; */
+    for(ull i = 1; i <= 100; i++) cout << "lambda(" << i << ") = " << carmichael_lambda(i) << ", "; */
 
     return 0;
 }
