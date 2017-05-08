@@ -211,30 +211,29 @@ void criba_factores_primos(ull n){
 }
 
 void factorizar_map(ull n, ull m, map<ull, ull> & f){
-    for(ull i = 2; i <= sqrt(n); i++){
-        if(n % i == 0){
+    for(ull p = 2; p <= sqrt(n); p++){
+        if(n % p == 0){
             ull pot = 0;
-            while(n % i == 0){
+            while(n % p == 0){
                 pot++;
-                n /= i;
+                n /= p;
             }
-            f[i] += pot * m;
+            f[p] += pot * m;
         }
     }
     if(n > 1) f[n] += m;
 }
 
 void factorizar_criba(ull n, ull m, map<ull, ull> & f){
-    for(size_t i = 0; i < primos.size(); i++){
-        ull d = primos[i];
-        if(d * d > n) break;
-        if(n % d == 0){
+    for(ull & p : primos){
+        if(p * p > n) break;
+        if(n % p == 0){
             ull pot = 0;
-            while(n % d == 0){
+            while(n % p == 0){
                 pot++;
-                n /= d;
+                n /= p;
             }
-            f[d] += pot * m;
+            f[p] += pot * m;
         }
     }
     if(n > 1) f[n] += m;
@@ -264,19 +263,16 @@ ull mu_criba(ull n){
     return ans;
 }
 
-size_t factorizar_factorial_criba(ull n, ull m, vector<ull> & f){
-    size_t i = 0;
-    for(i = 0; i < primos.size(); i++){
-        ull d = primos[i];
-        if(d > n) break;
-        ull pot = 0, div = d;
+void factorizar_factorial_criba(ull n, ull m, map<ull, ull> & f){
+    for(ull & p : primos){
+        if(p > n) break;
+        ull pot = 0, div = p;
         while(div <= n){
             pot += n / div;
-            div *= d;
+            div *= p;
         }
-        f[i] += pot*m;
+        f[p] += pot * m;
     }
-    return i - 1;
 }
 
 vector<ull> coprimos_map(ull n){
@@ -988,9 +984,9 @@ int main()
 
     //for(ull i=0;i<=101;i++) cout << "mu(" << i << ") = " << mu_map(i) << " = " << mu_criba(i) << endl;
 
-    /*vector<ull> f3(primos.size()+1, 0);
-    ull max_p = factorizar_factorial_criba(59, 1, f3);
-    for(ull i=0;i<=max_p;i++) if(f3[i]>0) cout << primos[i] << " " << f3[i] << endl;*/
+    /*map<ull, ull> f3;
+    factorizar_factorial_criba(97, 1, f3);
+    for(pair<const ull, ull> & p:f3) cout << p.first << " " << p.second << endl;*/
 
     /*vector<ull> c = coprimos_criba(60);
     for(ull ci:c) cout << ci << endl;/
