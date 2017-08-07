@@ -2,18 +2,17 @@
 
 using namespace std;
 
-int inf = 1e9;
-
 struct arista{
-    int destino, costo;
-    arista(int v, int w){
-        destino = v, costo = w;
+    int v, w;
+    arista(int _v, int _w){
+        v = _v, w = _w;
     }
 };
 
 struct camino{
-    int costo = inf;
+    int costo = -1;
     list<int> vertices;
+    int tamano = 1;
     int anterior;
 };
 
@@ -28,8 +27,9 @@ struct grafo{
         dir = dirigido;
         vertices.resize(V, vector<arista>());
         matriz.resize(V, vector<int>(V, 0));
-        matriz_pesos.resize(V, vector<int>(V, inf));
-        for(int i = 0; i < V; i++) matriz_pesos[i][i] = 0;
+        matriz_pesos.resize(V, vector<int>(V, -1));
+        for(int i = 0; i < V; i++)
+            matriz_pesos[i][i] = 0;
     }
 
     void anadir_vertice(int u, int v, int w){
@@ -43,23 +43,40 @@ struct grafo{
         }
     }
 
+    struct comparador{
+        bool operator() (const arista & a, const arista & b) const{
+            if(a.w == b.w){
+                return a.v > b.v;
+            }else{
+                return a.w > b.w;
+            }
+        }
+    };
+
     vector<camino> dijkstra(int origen){
-        set< pair<int, int> > info;
-        info.insert(make_pair(0, origen));
+        priority_queue<arista, vector<arista>, comparador> cola;
         vector<camino> caminos(V, camino());
+        vector<bool> visitados(V, false);
+        cola.push(arista(origen, 0));
         caminos[origen].costo = 0;
-        while(!info.empty()){
-            pair<int, int> i = *info.begin();
-            info.erase(info.begin());
-            int actual = i.second;
-            for(size_t j = 0; j < vertices[actual].size(); j++){
-                int dest = vertices[actual][j].destino;
-                int nuevo = caminos[actual].costo + vertices[actual][j].costo; //i.first + vertices[actual][j].costo
-                if(nuevo < caminos[dest].costo){
-                    info.erase(make_pair(caminos[dest].costo, dest));
-                    info.insert(make_pair(nuevo, dest));
-                    caminos[dest].costo = nuevo;
-                    caminos[dest].anterior = actual;
+        while(!cola.empty()){
+            arista actual = cola.top();
+            cola.pop();
+            if(visitados[actual.v]) continue;
+            visitados[actual.v] = true;
+            for(arista & dest : vertices[actual.v]){
+                if(visitados[dest.v]) continue;
+                int nuevo = caminos[actual.v].costo + dest.w; //actual.w + dest.w;
+                if(nuevo == caminos[dest.v].costo){
+                    if(caminos[actual.v].tamano + 1 < caminos[dest.v].tamano){
+                        caminos[dest.v].anterior = actual.v;
+                        caminos[dest.v].tamano = caminos[actual.v].tamano + 1;
+                    }
+                }else if(caminos[dest.v].costo == -1 || nuevo < caminos[dest.v].costo){
+                    caminos[dest.v].anterior = actual.v;
+                    caminos[dest.v].tamano = caminos[actual.v].tamano + 1;
+                    cola.push(arista(dest.v, nuevo));
+                    caminos[dest.v].costo = nuevo;
                 }
             }
         }
@@ -79,7 +96,15 @@ struct grafo{
         for(int k = 0; k < V; k++){
             for(int i = 0; i < V; i++){
                 for(int j = 0; j < V; j++){
-                    tmp[i][j] = min(tmp[i][j], tmp[i][k] + tmp[k][j]);
+                    int nuevo = -1;
+                    if(tmp[i][k] != -1 && tmp[k][j] != -1){
+                        nuevo = tmp[i][k] + tmp[k][j];
+                    }
+                    if(tmp[i][j] == -1){
+                        tmp[i][j] = nuevo;
+                    }else if(nuevo != -1){
+                        tmp[i][j] = min(tmp[i][j], tmp[i][k] + tmp[k][j]);
+                    }
                 }
             }
         }
@@ -88,8 +113,9 @@ struct grafo{
 
     void recorrer(int inicio, vector<bool> & pendientes){
         pendientes[inicio] = false;
-        for(size_t j = 0; j < vertices[inicio].size(); j++){
-            if(pendientes[vertices[inicio][j].destino]) recorrer(vertices[inicio][j].destino, pendientes);
+        for(arista & dest : vertices[inicio]){
+            if(pendientes[dest.v])
+                recorrer(dest.v, pendientes);
         }
     }
 
@@ -180,7 +206,7 @@ int main()
     g.anadir_vertice(8, 6, 6);
     g.anadir_vertice(3, 5, 14);*/
 
-    /*grafo g(9, false);
+    grafo g(9, false);
     g.anadir_vertice(0, 1, 3);
     g.anadir_vertice(1, 2, 7);
     g.anadir_vertice(2, 3, 1);
@@ -197,7 +223,7 @@ int main()
     g.anadir_vertice(6, 4, 3);
     g.anadir_vertice(4, 7, 3);
     g.anadir_vertice(7, 5, 3);
-    g.anadir_vertice(5, 8, 2);*/
+    g.anadir_vertice(5, 8, 2);
 
     /*grafo g(12, false);
     g.anadir_vertice(0, 1, 1);
@@ -211,33 +237,42 @@ int main()
     g.anadir_vertice(10, 11, 1);
     g.anadir_vertice(0, 4, 9);
     g.anadir_vertice(4, 8, 7);
-    g.anadir_vertice(1, 5, 15);
+    g.anadir_vertice(1, 5, 11);
     g.anadir_vertice(5, 9, 4);
     g.anadir_vertice(2, 6, 13);
     g.anadir_vertice(6, 10, 9);
     g.anadir_vertice(3, 7, 2);
     g.anadir_vertice(7, 11, 1);
     g.anadir_vertice(2, 7, 6);
-    g.anadir_vertice(5, 8,1);
+    g.anadir_vertice(5, 8, 1);
     g.anadir_vertice(6, 11, 8);*/
 
-    /*vector<camino> rutas = g.dijkstra(0);
-    for(camino p : rutas){
-        for(int i:p.vertices){
-            cout << (char)(i+97) << " ";
+    /*grafo g(6, false);
+    g.anadir_vertice(0, 1, 1);
+    g.anadir_vertice(1, 2, 1);
+    g.anadir_vertice(2, 3, 1);
+    g.anadir_vertice(3, 5, 2);
+    g.anadir_vertice(0, 4, 3);
+    g.anadir_vertice(4, 5, 2);*/
+
+    vector<camino> rutas = g.dijkstra(0);
+    for(camino & p : rutas){
+        cout << p.tamano << ": ";
+        for(int & i : p.vertices){
+            cout << i << " ";
         }
         cout << ": " << p.costo << endl;
     }
     cout << endl;
     vector< vector<int> > m = g.floyd();
-    for(vector<int> fila:m){
-        for(int valor:fila){
+    for(vector<int> & fila : m){
+        for(int & valor : fila){
             cout << valor << " ";
         }
         cout << "\n";
-    }*/
+    }
 
-    grafo G(11, false);
+    /*grafo G(11, false);
     G.anadir_vertice(0, 4, 1);
     G.anadir_vertice(0, 5, 1);
     G.anadir_vertice(0, 6, 1);
@@ -261,41 +296,7 @@ int main()
     G.anadir_vertice(8, 10, 1);
     G.anadir_vertice(9, 10, 1);
 
-    //cout << "k(G)=" << G.componentes() << endl;
-
-    grafo ind = G.inducido({1, 3, 4, 8});
-
-    set< vector<int> > ans;
-    for(int a=0;a<11;a++){
-        for(int b=0;b<11;b++){
-            for(int c=0;c<11;c++){
-                for(int d=0;d<11;d++){
-                    if(a!=b && a!=c && a!=d && b!=c && b!=d && c!=d){
-                        vector<int> v_tmp = {a, b, c, d};
-                        grafo temp = G.inducido(v_tmp);
-                        bool test = true;
-                        for(int i=0;i<4;i++){
-                            for(int j=0;j<4;j++){
-                                test = test && (ind.matriz[i][j] == temp.matriz[i][j]);
-                            }
-                        }
-                        if(test){
-                            sort(v_tmp.begin(), v_tmp.begin()+4);
-                            ans.insert(v_tmp);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    int contador = 0;
-    for(vector<int> y:ans){
-        contador++;
-        cout << contador << ": ";
-        for(int x:y) cout << (char)(x+97) << " ";
-        cout << endl;
-    }
+    cout << "k(G)=" << G.componentes() << endl;*/
 
     return 0;
 }

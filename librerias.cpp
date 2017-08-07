@@ -278,16 +278,16 @@ void factorizar_factorial_criba(ull n, ull m, map<ull, ull> & f){
 vector<ull> coprimos_map(ull n){
     map<ull, ull> f;
     vector<ull> ans;
+    vector<bool> coprimos(n + 1, true);
     factorizar_map(n, 1, f);
-    for(ull i = 1 ; i <= n; i++){
-        bool test = true;
-        for(pair<const ull, ull> & p : f){
-            if(i % p.first == 0){
-                test = false;
-                break;
-            }
+    for(pair<const ull, ull> & p : f){
+        for(ull i = p.first; i <= n; i += p.first){
+            coprimos[i] = false;
         }
-        if(test) ans.push_back(i);
+    }
+    for(ull i = 1; i <= n; i++){
+        if(coprimos[i])
+            ans.push_back(i);
     }
     return ans;
 }
@@ -295,16 +295,16 @@ vector<ull> coprimos_map(ull n){
 vector<ull> coprimos_criba(ull n){
     map<ull, ull> f;
     vector<ull> ans;
+    vector<bool> coprimos(n + 1, true);
     factorizar_criba(n, 1, f);
-    for(ull i = 1 ; i <= n; i++){
-        bool test = true;
-        for(pair<const ull, ull> & p : f){
-            if(i % p.first == 0){
-                test = false;
-                break;
-            }
+    for(pair<const ull, ull> & p : f){
+        for(ull i = p.first; i <= n; i += p.first){
+            coprimos[i] = false;
         }
-        if(test) ans.push_back(i);
+    }
+    for(ull i = 1; i <= n; i++){
+        if(coprimos[i])
+            ans.push_back(i);
     }
     return ans;
 }
@@ -332,7 +332,7 @@ string decimal_a_base(ull n, ull b){
     return ans;
 }
 
-ull base_a_decimal(string n, ull b){
+ull base_a_decimal(string & n, ull b){
     ull ans = 0;
     for(char & digito : n){
         if(48 <= digito && digito <= 57){
@@ -512,7 +512,7 @@ string numero_a_romano(ull n){
     return ans;
 }
 
-ull romano_a_numero(string n){
+ull romano_a_numero(string & n){
     ull ans = 0;
     char actual, anterior;
     bool f = false;
@@ -590,6 +590,12 @@ struct polinomio{
         }
         return polinomio(nuevos);
     }
+    polinomio operator*(const fraccion& f) const{
+        size_t g = grado();
+        vector<fraccion> nuevos(g + 1);
+        for(size_t i = 0; i <= g; i++) nuevos[i] = f * coeficientes[i];
+        return polinomio(nuevos);
+    }
     pair<polinomio, polinomio> operator/(const polinomio& B) const{
         polinomio Q, R;
         Q = 0;
@@ -615,6 +621,10 @@ struct polinomio{
     }
     polinomio operator*=(const polinomio& p){
         *this = *this * p;
+        return *this;
+    }
+    polinomio operator*=(const fraccion& f){
+        *this = *this * f;
         return *this;
     }
     fraccion evaluar(fraccion x0){
@@ -667,7 +677,7 @@ struct polinomio{
     }
 };
 
-vector<polinomio> bezout_polinomio(polinomio A, polinomio B){
+vector<polinomio> bezout_polinomio(polinomio & A, polinomio & B){
     polinomio Q, R, S0 = 1, T0 = 0, S1 = 0, T1 = 1, Si, Ti;
     while(!(B.grado() == 0 && B.coeficientes[0] == 0)){
         pair<polinomio, polinomio> div = A / B;
@@ -680,10 +690,43 @@ vector<polinomio> bezout_polinomio(polinomio A, polinomio B){
     return {A, S0, T0};
 }
 
-polinomio generar_ecuacion(vector<ull> raices){
+polinomio generar_ecuacion(vector<fraccion> raices){
     polinomio ans = 1;
-    for(ull & raiz : raices) ans *= polinomio(vector<fraccion>{-raiz, 1});
+    for(fraccion & raiz : raices) ans *= polinomio(vector<fraccion>{-raiz, 1});
     return ans;
+}
+
+polinomio interpolar(vector< pair<fraccion, fraccion> > puntos){
+    polinomio ans = 0;
+    for(size_t i = 0; i < puntos.size(); i++){
+        fraccion k = puntos[i].second;
+        polinomio p = 1;
+        for(size_t j = 0; j < puntos.size(); j++){
+            if(i != j){
+                p *= polinomio(vector<fraccion>{-puntos[j].first, 1});
+                k /= puntos[i].first - puntos[j].first;
+            }
+        }
+        ans += p * k;
+    }
+    return ans;
+}
+
+polinomio cyclotomic(ull n){
+    polinomio num = 1;
+    polinomio den = 1;
+    for(ull & d : divisores[n]){
+        ull pot = mu_criba(n / d);
+        vector<fraccion> coef(d + 1);
+        coef[d] = 1;
+        coef[0] = -1;
+        if(pot == 1){
+            num *= polinomio(coef);
+        }else if(pot == -1){
+            den *= polinomio(coef);
+        }
+    }
+    return (num / den).first;
 }
 
 vector<comp> ec_1(comp a, comp b){ //ax+b=0
@@ -766,7 +809,7 @@ typedef fraccion entrada;
 typedef vector<entrada> fila;
 typedef vector<fila> matrix;
 
-void imprime_matriz(matrix matriz){
+void imprime_matriz(matrix & matriz){
     for(fila & renglon : matriz){
         for(entrada & valor : renglon){
             cout << valor.str() << " ";
@@ -787,7 +830,7 @@ matrix transpuesta(matrix matriz){
     return ans;
 }
 
-matrix suma_matrices(matrix A, matrix B){
+matrix suma_matrices(matrix & A, matrix & B){
     int m = A.size(), n = A[0].size();
     matrix ans(m, fila(n));
     for(int i = 0; i < m; i++){
@@ -798,7 +841,7 @@ matrix suma_matrices(matrix A, matrix B){
     return ans;
 }
 
-matrix mult_matrices(matrix A, matrix B){
+matrix mult_matrices(matrix & A, matrix & B){
     int m = A.size(), n = B.size(), p = B[0].size();
     matrix C(m, fila(p, 0));
     for(int i = 0; i < m; i++){
@@ -916,7 +959,7 @@ matrix matriz_cofactores(matrix matriz){
     return transpuesta(matriz_adjunta(matriz));
 }
 
-matrix menor(int i, int j, matrix matriz){
+matrix menor(int i, int j, matrix & matriz){
     matrix ans;
     int s = matriz.size();
     for(int m = 0; m<s; m++){
@@ -939,34 +982,12 @@ entrada cofactor(int i, int j, matrix matriz){
     return ans;
 }
 
-polinomio cyclotomic(ull n){
-    vector<comp> raices;
-    for(int i = 1; i <= n;i++){
-        if(gcd(i, n) == 1){
-            raices.push_back(polar(1.0, 2.0 * M_PI * i / n));
-        }
-    }
-    int deg = raices.size();
-    vector<comp> ans(deg + 1, 0);
-    ans[0] = 1;
-    for(int i = 0; i < deg; i++){
-        vector<comp> tmp(i + 1);
-        for(int j = 0; j < i + 1; j++) tmp[j] = -raices[i] * ans[j];
-        for(size_t j = 0; j < tmp.size(); j++) ans[j + 1] += tmp[j];
-    }
-    vector<fraccion> coef(deg + 1);
-    for(int i = 0; i <= deg; i++){
-        coef[deg - i] = round(real(ans[i]));
-    }
-    return polinomio(coef);
-}
-
 int main()
 {
-    criba_divisores(101);
-    criba_primos(101);
-    criba_phi(101);
-    criba_factores_primos(101);
+    criba_divisores(200);
+    criba_primos(200);
+    criba_phi(200);
+    criba_factores_primos(200);
     criba_pascal(50);
     criba_gauss(20);
     //for(ull p : primos) cout << p << " ";
@@ -988,13 +1009,13 @@ int main()
     factorizar_factorial_criba(97, 1, f3);
     for(pair<const ull, ull> & p:f3) cout << p.first << " " << p.second << endl;*/
 
-    /*vector<ull> c = coprimos_criba(60);
-    for(ull ci:c) cout << ci << endl;/
+    /*vector<ull> c = coprimos_map(60);
+    for(ull ci:c) cout << ci << endl;*/
 
-    /*for(ull i=1;i<=100;i++){
-        vector<ull> pol = cyclotomic(i);
-        cout << "Phi_(" << i << ")(x) = " << str_polinomio(pol) << endl;
-    }*/
+    for(ull i=1;i<=105;i++){
+        polinomio pol = cyclotomic(i);
+        cout << "Phi_(" << i << ")(x) = " << pol.str() << endl;
+    }
 
     /*for(ull i=1;i<factores_primos.size();i++){
         cout << i << ": ";
@@ -1038,10 +1059,12 @@ int main()
     /*polinomio A({5, 9, 7, -4, 1});
     polinomio B({-2, 1, 7, 3});
     pair<polinomio, polinomio> info = A/B;
-    cout << A.str() << " = (" << B.str() << ")(" << info.first.str() << ") + (" << info.second.str() << ")" << endl;
-    polinomio ec = generar_ecuacion({1, 2, 3, -6});
-    cout << "P(x)=" << ec.str() << endl;
-    cout << cyclotomic(7).str() << endl;*/
+    cout << A.str() << " = (" << B.str() << ")(" << info.first.str() << ") + (" << info.second.str() << ")" << endl;*/
+    
+    /*polinomio ec = generar_ecuacion({1, 2, 3, -6});
+    cout << "P(x)=" << ec.str() << endl;*/
+
+    /*cout << "P(x)=" << interpolar({{1, 1}, {2, 1}, {3, 2}, {4, 3}, {5, 5}}).str() << "\n";*/
 
     /*polinomio A(vector<fraccion>{-6, 11, -6, 1});
     polinomio B(vector<fraccion>{-24, 26, -9, 1});

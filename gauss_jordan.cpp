@@ -583,7 +583,7 @@ void pedirValores(matrix<enteroModular> & S, ull p){
 
 int main()
 {
-    int m, n;
+    /*int m, n;
     ull p;
     string campo;
     cout << "Introduce el n\243mero de filas: ";
@@ -601,6 +601,14 @@ int main()
         istringstream(campo) >> p;
         matrix<enteroModular> M(m, n);
         pedirValores(M, p);
+    }*/
+    int n = 202;
+    matrix<fraccion> A(n, n);
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++){
+            A.A[i][j] = (i == j ? 0 : 1);
+        }
     }
+    cout << A.determinante();
     return 0;
 }
