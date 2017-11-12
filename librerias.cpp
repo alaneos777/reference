@@ -112,15 +112,14 @@ ull phi_single(ull n){
 
 ull carmichael_lambda(ull n){
     ull ans = 1, a, p;
-    list<ull> f;
     for(ull i = 2; i <= sqrt(n); i++){
         if(n % i == 0){
-            a = 0;
+            a = 0, p = 1;
             while(n % i == 0){
                 n /= i;
+                p *= i;
                 a++;
             }
-            p = fast_pow(i, a);
             p -= p / i;
             if(a <= 2 || i >= 3) ans = lcm(ans, p);
             else ans = lcm(ans, p / 2);
@@ -128,6 +127,34 @@ ull carmichael_lambda(ull n){
     }
     if(n > 1) ans = lcm(ans, n - 1);
     return ans;
+}
+
+ull multiplicativeOrder(ull a, ull n){
+    ull phi_n = phi_single(n);
+    ull a1;
+    ull order = phi_n;
+    for(ull p : primos){
+        if(p * p > phi_n) break;
+        if(phi_n % p == 0){
+            while(phi_n % p == 0){
+                phi_n /= p, order /= p;
+            }
+            a1 = fast_pow_mod(a, order, n);
+            while(a1 != 1){
+                a1 = fast_pow_mod(a1, p, n);
+                order *= p;
+            }
+        }
+    }
+    if(phi_n > 1){
+        order /= phi_n;
+        a1 = fast_pow_mod(a, order, n);
+        while(a1 != 1){
+            a1 = fast_pow_mod(a1, phi_n, n);
+            order *= phi_n;
+        }
+    }
+    return order;
 }
 
 vector<ull> euclides(ull a, ull b){

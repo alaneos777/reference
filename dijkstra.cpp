@@ -2,6 +2,8 @@
 
 using namespace std;
 
+int inf = numeric_limits<int>::max();
+
 struct arista{
     int v, w;
     arista(int _v, int _w){
@@ -10,7 +12,7 @@ struct arista{
 };
 
 struct camino{
-    int costo = -1;
+    int costo = inf;
     list<int> vertices;
     int tamano = 1;
     int anterior;
@@ -27,7 +29,7 @@ struct grafo{
         dir = dirigido;
         vertices.resize(V, vector<arista>());
         matriz.resize(V, vector<int>(V, 0));
-        matriz_pesos.resize(V, vector<int>(V, -1));
+        matriz_pesos.resize(V, vector<int>(V, inf));
         for(int i = 0; i < V; i++)
             matriz_pesos[i][i] = 0;
     }
@@ -53,6 +55,17 @@ struct grafo{
         }
     };
 
+    void reconstruirCaminos(int origen, vector<camino> & caminos){
+        for(int i = 0; i < V; i++){
+            int actual = i;
+            while(true){
+                caminos[i].vertices.push_front(actual);
+                if(actual == origen) break;
+                actual = caminos[actual].anterior;
+            }
+        }
+    }
+
     vector<camino> dijkstra(int origen){
         priority_queue<arista, vector<arista>, comparador> cola;
         vector<camino> caminos(V, camino());
@@ -67,12 +80,10 @@ struct grafo{
             for(arista & dest : vertices[actual.v]){
                 if(visitados[dest.v]) continue;
                 int nuevo = caminos[actual.v].costo + dest.w; //actual.w + dest.w;
-                if(nuevo == caminos[dest.v].costo){
-                    if(caminos[actual.v].tamano + 1 < caminos[dest.v].tamano){
-                        caminos[dest.v].anterior = actual.v;
-                        caminos[dest.v].tamano = caminos[actual.v].tamano + 1;
-                    }
-                }else if(caminos[dest.v].costo == -1 || nuevo < caminos[dest.v].costo){
+                if(nuevo == caminos[dest.v].costo && caminos[actual.v].tamano + 1 < caminos[dest.v].tamano){
+                    caminos[dest.v].anterior = actual.v;
+                    caminos[dest.v].tamano = caminos[actual.v].tamano + 1;
+                }else if(nuevo < caminos[dest.v].costo){
                     caminos[dest.v].anterior = actual.v;
                     caminos[dest.v].tamano = caminos[actual.v].tamano + 1;
                     cola.push(arista(dest.v, nuevo));
@@ -80,14 +91,39 @@ struct grafo{
                 }
             }
         }
-        for(int i = 0; i < V; i++){
-            int actual = i;
-            while(true){
-                caminos[i].vertices.push_front(actual);
-                if(actual == origen) break;
-                actual = caminos[actual].anterior;
+        reconstruirCaminos(origen, caminos);
+        return caminos;
+    }
+
+    vector<camino> bellmanFord(int origen){
+        vector<camino> caminos(V, camino());
+        caminos[origen].costo = 0;
+        bool cambio = true;
+        int j = 1;
+        while(cambio){
+            cambio = false;
+            for(int i = 0; i < V; i++){
+                for(arista & dest : vertices[i]){
+                    if(caminos[i].costo == inf) continue;
+                    int nuevo = caminos[i].costo + dest.w;
+                    if(nuevo == caminos[dest.v].costo && caminos[i].tamano + 1 < caminos[dest.v].tamano){
+                        caminos[dest.v].anterior = i;
+                        caminos[dest.v].tamano = caminos[i].tamano + 1;
+                    }else if(nuevo < caminos[dest.v].costo){
+                        if(j == V){
+                            cout << "Ciclo negativo\n";
+                            return {};
+                        }
+                        caminos[dest.v].anterior = i;
+                        caminos[dest.v].tamano = caminos[i].tamano + 1;
+                        caminos[dest.v].costo = nuevo;
+                        cambio = true;
+                    }
+                }
             }
+            j++;
         }
+        reconstruirCaminos(origen, caminos);
         return caminos;
     }
 
@@ -96,15 +132,8 @@ struct grafo{
         for(int k = 0; k < V; k++){
             for(int i = 0; i < V; i++){
                 for(int j = 0; j < V; j++){
-                    int nuevo = -1;
-                    if(tmp[i][k] != -1 && tmp[k][j] != -1){
-                        nuevo = tmp[i][k] + tmp[k][j];
-                    }
-                    if(tmp[i][j] == -1){
-                        tmp[i][j] = nuevo;
-                    }else if(nuevo != -1){
+                    if(tmp[i][k] != inf && tmp[k][j] != inf)
                         tmp[i][j] = min(tmp[i][j], tmp[i][k] + tmp[k][j]);
-                    }
                 }
             }
         }
@@ -255,7 +284,17 @@ int main()
     g.anadir_vertice(0, 4, 3);
     g.anadir_vertice(4, 5, 2);*/
 
-    vector<camino> rutas = g.dijkstra(0);
+    vector<camino> rutas = g.dijkstra(8);
+    for(camino & p : rutas){
+        cout << p.tamano << ": ";
+        for(int & i : p.vertices){
+            cout << i << " ";
+        }
+        cout << ": " << p.costo << endl;
+    }
+    cout << "\n";
+
+    rutas = g.bellmanFord(8);
     for(camino & p : rutas){
         cout << p.tamano << ": ";
         for(int & i : p.vertices){
@@ -264,6 +303,7 @@ int main()
         cout << ": " << p.costo << endl;
     }
     cout << endl;
+
     vector< vector<int> > m = g.floyd();
     for(vector<int> & fila : m){
         for(int & valor : fila){
@@ -297,6 +337,43 @@ int main()
     G.anadir_vertice(9, 10, 1);
 
     cout << "k(G)=" << G.componentes() << endl;*/
+
+    grafo G2(5, true);
+    G2.anadir_vertice(0, 1, 4);
+    G2.anadir_vertice(0, 2, 2);
+    G2.anadir_vertice(1, 2, 3);
+    G2.anadir_vertice(2, 1, 1);
+    G2.anadir_vertice(1, 3, 2);
+    G2.anadir_vertice(2, 4, 5);
+    G2.anadir_vertice(1, 4, 3);
+    G2.anadir_vertice(2, 3, 4);
+    G2.anadir_vertice(4, 3, -5);
+
+    /*grafo G2(5, true);
+    G2.anadir_vertice(0, 1, 2);
+    G2.anadir_vertice(1, 2, 2);
+    G2.anadir_vertice(2, 3, -4);
+    G2.anadir_vertice(3, 4, 3);
+    G2.anadir_vertice(1, 3, 1);
+    G2.anadir_vertice(3, 1, 1);*/
+
+    /*vector<camino> rutas = G2.bellmanFord(0);
+    for(camino & p : rutas){
+        cout << p.tamano << ": ";
+        for(int & i : p.vertices){
+            cout << i << " ";
+        }
+        cout << ": " << p.costo << endl;
+    }
+    cout << endl;
+
+    vector< vector<int> > m = G2.floyd();
+    for(vector<int> & fila : m){
+        for(int & valor : fila){
+            cout << valor << " ";
+        }
+        cout << "\n";
+    }*/
 
     return 0;
 }
