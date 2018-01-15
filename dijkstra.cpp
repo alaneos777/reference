@@ -103,8 +103,8 @@ struct grafo{
         while(cambio){
             cambio = false;
             for(int i = 0; i < V; i++){
+                if(caminos[i].costo == inf) continue;
                 for(arista & dest : vertices[i]){
-                    if(caminos[i].costo == inf) continue;
                     int nuevo = caminos[i].costo + dest.w;
                     if(nuevo == caminos[dest.v].costo && caminos[i].tamano + 1 < caminos[dest.v].tamano){
                         caminos[dest.v].anterior = i;
