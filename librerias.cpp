@@ -62,6 +62,21 @@ ull fast_pow_mod(ull b, ull e, ull m){
     return ans;
 }
 
+ull mult_bin_mod(ull a, ull b, ull n){
+    ull ans = 0;
+    a %= n, b %= n;
+    if(abs(b) > abs(a)) swap(a, b);
+    if(b < 0){
+        a *= -1, b *= -1;
+    }
+    while(b){
+        if(b & 1) ans = (ans + a) % n;
+        b >>= 1;
+        a = (a + a) % n;
+    }
+    return ans;
+}
+
 ull gcd(ull a, ull b){
     ull r;
     while(b != 0) r = a % b, a = b, b = r;

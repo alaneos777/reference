@@ -190,6 +190,9 @@ struct fraccion{
         nueva.den = den;
         return nueva;
     }
+    double value() const{
+    	return (double)num / (double)den;
+    }
     string str() const{
         stringstream ss;
         ss << num;
@@ -249,7 +252,6 @@ struct matrix{
     }
 
     int gauss_jordan(bool full = true, bool makeOnes = true, function<void(int, int, int, entrada)>callback = NULL){
-        //cout << "Matriz original:\n" << str() << dest;
         int i = 0, j = 0;
         while(i < m && j < n){
             if(A[i][j] == 0){
@@ -257,8 +259,6 @@ struct matrix{
                     if(A[f][j] != 0){
                         intercambiarFilas(i, f);
                         if(callback) callback(2, i, f, 0);
-                        //dest.intercambiarFilas(f, i);
-                        //cout << "F_" << (f + 1) << " <-> F_" << (i + 1) << ":\n" << str() << dest;
                         break;
                     }
                 }
@@ -268,8 +268,6 @@ struct matrix{
                 if(makeOnes && A[i][j] != 1){
                     multiplicarFilaPorEscalar(i, inv_mult);
                     if(callback) callback(1, i, 0, inv_mult);
-                    //dest.multiplicarFilaPorEscalar(i, inv_mult);
-                    //cout << "(" << inv_mult << ")F_" << (i + 1) << " -> F_" << (i + 1) << ":\n" << str() << dest;
                 }
                 for(int f = (full ? 0 : (i + 1)); f < m; f++){
                     if(f != i && A[f][j] != 0){
@@ -277,8 +275,6 @@ struct matrix{
                         if(!makeOnes) inv_adit *= inv_mult;
                         sumaMultiploFilaAOtra(f, i, inv_adit);
                         if(callback) callback(3, f, i, inv_adit);
-                        //dest.sumaMultiploFilaAOtra(f, i, inv_adit);
-                        //cout << "F_" << (f + 1) << " + (" << inv_adit << ")F_" << (i + 1) << " -> F_" << (f + 1) << ":\n" << str() << dest;
                     }
                 }
                 i++;
@@ -413,6 +409,22 @@ struct matrix{
         return *this;
     }
 
+    matrix operator^(ull b) const{
+    	matrix<entrada> ans = matrix<entrada>::identidad(n);
+    	matrix<entrada> A = *this;
+    	while(b){
+    		if(b & 1) ans *= A;
+    		b >>= 1;
+    		if(b) A *= A;
+    	}
+    	return ans;
+    }
+
+    matrix operator^=(ull n){
+    	*this = *this ^ n;
+    	return *this;
+    }
+
     bool operator==(const matrix & B) const{
         if(m == B.m && n == B.n){
             for(int i = 0; i < m; i++){
@@ -510,6 +522,38 @@ struct matrix{
         }
     }
 
+    bool nextP(vector<int> & sigma, int & sign){
+        int i = sigma.size() - 1;
+        while(i > 0 & sigma[i - 1] >= sigma[i]) i--;
+        if(i == 0) return false;
+        int j = sigma.size() - 1;
+        while(sigma[i - 1] >= sigma[j]) j--;
+        swap(sigma[i - 1], sigma[j]);
+        sign *= -1;
+        j = sigma.size() - 1;
+        if(((j - i + 1) >> 1) & 1) sign *= -1;
+        while(i < j) swap(sigma[i++], sigma[j--]);
+        return true;
+    }
+
+    entrada slowDeterminante(){
+        if(m == n){
+            entrada det = 0;
+            vector<int> sigma(n);
+            for(int i = 0; i < n; i++) sigma[i] = i;
+            int sign = 1;
+            do{
+                entrada prod = 1;
+                for(int i = 0; i < n; i++) prod *= A[i][sigma[i]];
+                if(sign == 1) det += prod;
+                else det -= prod;
+            }while(nextP(sigma, sign));
+            return det;
+        }else{
+            return 0;
+        }
+    }
+
     matrix<entrada> menor(int x, int y){
         matrix<entrada> M(0, 0);
         for(int i = 0; i < m; i++){
@@ -577,6 +621,22 @@ struct matrix{
     	return coef;
     }
 
+    matrix<entrada> gram_schmidt(){ //los vectores son las filas de la matriz
+    	matrix<entrada> B = (*this) * (*this).transpuesta();
+    	matrix<entrada> ans = *this;
+    	auto callback = [&](int op, int a, int b, entrada e){
+    		if(op == 1){
+    			ans.multiplicarFilaPorEscalar(a, e);
+    		}else if(op == 2){
+    			ans.intercambiarFilas(a, b);
+    		}else if(op == 3){
+    			ans.sumaMultiploFilaAOtra(a, b, e);
+    		}
+    	};
+    	B.gauss_jordan(false, false, callback);
+    	return ans;
+    }
+
     string str() const{
         stringstream ss;
         for(int i = 0; i < m; i++){
@@ -616,33 +676,7 @@ void pedirValores(matrix<enteroModular> & S, ull p){
 
 int main()
 {
-	/*vector<int> numeros = {0, 1, 2, 3, 4};
-	vector< vector<int> > prueba = {{6, 3, -1, 8, 9}, {6, 2, 8, -5, 1}, {7, 15, -2, 0, 1}, {11, 2, -3, 4, -8}, {0, 5, 2, 9, 8}};
-	//vector< vector<int> > prueba = {{6, -1, 8, 9}, {6, 2, 8, 1}, {7, 15, 0, 1}, {11, 2, -3, -8}};
-	int det = 0;
-	do{
-		vector<bool> visitados(numeros.size(), false);
-		int pasos = numeros.size();
-		for(int i = 0; i < numeros.size(); i++){
-			if(!visitados[i]){
-				int actual = i;
-				while(!visitados[actual]){
-					visitados[actual] = true;
-					actual = numeros[actual];
-				}
-				pasos--;
-			}
-		}
-		int prod = 1;
-		for(int i = 0; i < numeros.size(); i++){
-			prod *= prueba[i][numeros[i]];
-		}
-		if(pasos % 2 == 1) det -= prod;
-		else det += prod;
-	}while(next_permutation(numeros.begin(), numeros.end()));
-	cout << det << "\n";*/
-
-    int m, n;
+	int m, n;
     ull p;
     string campo;
     cout << "Introduce el n\243mero de filas: ";
@@ -663,6 +697,7 @@ int main()
         for(int i = 0; i < polinomio.size(); i++){
         	cout << polinomio[i] << "x^" << i << ", ";
         }
+        cout << "\nGram-Schmidt:\n" << M.gram_schmidt();
     }else{
         istringstream(campo) >> p;
         matrix<enteroModular> M(m, n);
