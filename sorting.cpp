@@ -16,25 +16,44 @@ void selectionSort(vector<int> & arr, int a, int b){
 void insertionSort(vector<int> & arr, int a, int b){
 	for(int i = a + 1; i <= b; i++){
 		int v = arr[i];
-		int j = i - 1;
-		while(j >= a && arr[j] > v) arr[j + 1] = arr[j--];
-		arr[j + 1] = v;
+		int j = i;
+		while(j > a && arr[j - 1] > v){
+			arr[j] = arr[j - 1];
+			j--;
+		}
+		arr[j] = v;
 	}
 }
 
 //Bubble Sort
-void bubbleSort(vector<int> & arr, int i, int j){
+void bubbleSort(vector<int> & arr, int a, int b){
 	bool change = true;
 	int s = 0;
 	while(change){
 		change = false;
-		for(int p = i; p < j - s; p++){
+		for(int p = a; p < b - s; p++){
 			if(arr[p] > arr[p + 1]){
 				swap(arr[p], arr[p + 1]);
 				change = true;
 			}
 		}
 		s++;
+	}
+}
+
+//Shell sort
+void shellSort(vector<int> & arr, int a, int b){
+	vector<int> gaps = {701, 301, 132, 57, 23, 10, 4, 1};
+	for(int gap: gaps){
+		for(int i = a + gap; i <= b; i++){
+			int v = arr[i];
+			int j = i;
+			while(j >= a + gap && arr[j - gap] > v){
+				arr[j] = arr[j - gap];
+				j -= gap;
+			}
+			arr[j] = v;
+		}
 	}
 }
 
@@ -47,8 +66,9 @@ void merge(vector<int> & arr, int a, int b, int c){
 		else tmp[p++] = arr[j++];
 	while(i <= b) tmp[p++] = arr[i++];
 	while(j <= c) tmp[p++] = arr[j++];
-	p = 0;
-	while(p <= c - a) arr[a + p] = tmp[p++];
+	for(p = a; p <= c; p++){
+		arr[p] = tmp[p - a];
+	}
 }
 
 void mergeSort(vector<int> & arr, int a, int b){
@@ -87,7 +107,7 @@ int left(int i, int a){
 	return ((i - a) << 1) + 1 + a;
 }
 int right(int i, int a){
-	return left(i, a) + 1;
+	return ((i - a) << 1) + 2 + a;
 }
 int parent(int i, int a){
 	return ((i - a - 1) >> 1) + a;
@@ -200,9 +220,8 @@ int random(int minimo, int maximo){
 	return rand() % (maximo - minimo + 1) + minimo;
 }
 
-int main(){
-	srand(time(0));
-	int N = 1e7;
+int main(){srand(time(0));
+	int N = 2e7;
 	clock_t begin, end;
 	vector<int> arr(N), test(N);
 	for(int i = 0; i < arr.size(); i++) arr[i] = random(0, (int)arr.size());

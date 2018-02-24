@@ -237,9 +237,9 @@ struct grafo{
     }
 
     void DFS(int start, int source, vector<vector<bool>> & tmp){
-        tmp[start][source] = true;
         for(edge & current : adjList[source]){
             if(!tmp[start][current.dest]){
+                tmp[start][current.dest] = true;
                 DFS(start, current.dest, tmp);
             }
         }
@@ -385,6 +385,13 @@ int main()
     g.anadir_vertice(7, 5, 3);
     g.anadir_vertice(5, 8, 2);
 
+    /*grafo g(6, true);
+    g.anadir_vertice(0, 1, 1);
+    g.anadir_vertice(1, 2, 1);
+    g.anadir_vertice(2, 3, 1);
+    g.anadir_vertice(3, 4, 1);
+    g.anadir_vertice(3, 1, 1);*/
+
     /*grafo g(12, false);
     g.anadir_vertice(0, 1, 1);
     g.anadir_vertice(1, 2, 2);
@@ -415,7 +422,7 @@ int main()
     g.anadir_vertice(0, 4, 3);
     g.anadir_vertice(4, 5, 2);*/
 
-    vector<path> rutas = g.dijkstra(8);
+    vector<path> rutas = g.dijkstra(0);
     for(path & p : rutas){
         cout << p.size << ": ";
         for(int & i : p.vertices){
@@ -425,7 +432,7 @@ int main()
     }
     cout << "\n";
 
-    rutas = g.bellmanFord(8);
+    rutas = g.bellmanFord(0);
     for(path & p : rutas){
         cout << p.size << ": ";
         for(int & i : p.vertices){
