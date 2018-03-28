@@ -3,11 +3,11 @@
 using namespace std;
 
 # define M_PI 3.14159265358979323846
-typedef long long int ull;
+typedef long long int lli;
 typedef complex<double> comp;
 
-vector<ull> suma_divisores, primos, phi;
-vector< vector<ull> > factores_primos, divisores, pascal;
+vector<lli> suma_divisores, primos, phi;
+vector< vector<lli> > factores_primos, divisores, pascal;
 vector<bool> es_primo;
 
 bool igual(double a, double b){
@@ -20,7 +20,7 @@ comp precision(comp n){
     return n;
 }
 
-ull piso(ull a, ull b){
+lli piso(lli a, lli b){
     if((a >= 0 && b > 0) || (a < 0 && b < 0)){
         return a / b;
     }else{
@@ -29,7 +29,7 @@ ull piso(ull a, ull b){
     }
 }
 
-ull techo(ull a, ull b){
+lli techo(lli a, lli b){
     if((a >= 0 && b > 0) || (a < 0 && b < 0)){
         if(a % b == 0) return a / b;
         else return a / b + 1;
@@ -38,8 +38,8 @@ ull techo(ull a, ull b){
     }
 }
 
-ull fast_pow(ull b, ull e){
-    ull ans = 1;
+lli fast_pow(lli b, lli e){
+    lli ans = 1;
     while(e){
         if(e & 1){
             ans *= b;
@@ -50,8 +50,8 @@ ull fast_pow(ull b, ull e){
     return ans;
 }
 
-ull fast_pow_mod(ull b, ull e, ull m){
-    ull ans = 1;
+lli fast_pow_mod(lli b, lli e, lli m){
+    lli ans = 1;
     while(e){
         if(e & 1){
             ans = (ans * b) % m;
@@ -62,8 +62,8 @@ ull fast_pow_mod(ull b, ull e, ull m){
     return ans;
 }
 
-ull mult_bin_mod(ull a, ull b, ull n){
-    ull ans = 0;
+lli mult_bin_mod(lli a, lli b, lli n){
+    lli ans = 0;
     a %= n, b %= n;
     if(abs(b) > abs(a)) swap(a, b);
     if(b < 0){
@@ -77,20 +77,20 @@ ull mult_bin_mod(ull a, ull b, ull n){
     return ans;
 }
 
-ull gcd(ull a, ull b){
-    ull r;
+lli gcd(lli a, lli b){
+    lli r;
     while(b != 0) r = a % b, a = b, b = r;
     return a;
 }
 
-ull lcm(ull a, ull b){
-    ull d = gcd(a, b);
+lli lcm(lli a, lli b){
+    lli d = gcd(a, b);
     if(a > b) return b * (a / d);
     else return a * (b / d);
 }
 
-ull gcd_multiple(list<ull> & nums){
-    ull a, b;
+lli gcd_multiple(list<lli> & nums){
+    lli a, b;
     while(nums.size() > 1){
         a = nums.back();
         nums.pop_back();
@@ -101,8 +101,8 @@ ull gcd_multiple(list<ull> & nums){
     return nums.back();
 }
 
-ull lcm_multiple(list<ull> & nums){
-    ull a, b;
+lli lcm_multiple(list<lli> & nums){
+    lli a, b;
     while(nums.size() > 1){
         a = nums.back();
         nums.pop_back();
@@ -113,21 +113,21 @@ ull lcm_multiple(list<ull> & nums){
     return nums.back();
 }
 
-ull phi_single(ull n){
-    ull resultado = n;
-    for(ull i = 2; i <= sqrt(n); i++){
+lli phi_single(lli n){
+    lli resultado = n;
+    for(lli i = 2; i <= sqrt(n); i++){
         if(n % i == 0){
-	    while(n % i == 0) n /= i;
-	    resultado -= resultado/i;
+    	    while(n % i == 0) n /= i;
+    	    resultado -= resultado/i;
         }
     }
     if(n > 1) resultado -= resultado/n;
     return resultado;
 }
 
-ull carmichael_lambda(ull n){
-    ull ans = 1, a, p;
-    for(ull i = 2; i <= sqrt(n); i++){
+lli carmichael_lambda(lli n){
+    lli ans = 1, a, p;
+    for(lli i = 2; i <= sqrt(n); i++){
         if(n % i == 0){
             a = 0, p = 1;
             while(n % i == 0){
@@ -144,11 +144,11 @@ ull carmichael_lambda(ull n){
     return ans;
 }
 
-ull multiplicativeOrder(ull a, ull n){
-    ull phi_n = phi_single(n);
-    ull a1;
-    ull order = phi_n;
-    for(ull p : primos){
+lli multiplicativeOrder(lli a, lli n){
+    lli phi_n = phi_single(n);
+    lli a1;
+    lli order = phi_n;
+    for(lli p : primos){
         if(p * p > phi_n) break;
         if(phi_n % p == 0){
             while(phi_n % p == 0){
@@ -172,8 +172,8 @@ ull multiplicativeOrder(ull a, ull n){
     return order;
 }
 
-vector<ull> euclides(ull a, ull b){
-    ull x0 = 1, y0 = 0, x1 = 0, y1 = 1, q, r, xn, yn;
+vector<lli> euclides(lli a, lli b){
+    lli x0 = 1, y0 = 0, x1 = 0, y1 = 1, q, r, xn, yn;
     while(b != 0){
         q = a / b, r = a % b;
         xn = x0 - x1 * q, yn = y0 - y1 * q;
@@ -184,19 +184,19 @@ vector<ull> euclides(ull a, ull b){
     return {a, x0, y0};
 }
 
-ull inverso(ull a, ull m){
-    ull inv = euclides(a, m)[1];
+lli inverso(lli a, lli m){
+    lli inv = euclides(a, m)[1];
     if(inv < 0) inv += abs(m);
     return inv;
 }
 
-ull inverso2(ull a, ull m){
+lli inverso2(lli a, lli m){
     return fast_pow_mod(a, phi_single(m) - 1, m);
 }
 
-vector<ull> chinese(vector<ull> & a, vector<ull> & n){
-     ull prod = 1, p, ans = 0;
-     for(ull & ni : n) prod *= ni;
+vector<lli> chinese(vector<lli> & a, vector<lli> & n){
+     lli prod = 1, p, ans = 0;
+     for(lli & ni : n) prod *= ni;
      for(size_t i = 0; i < a.size(); i++){
         p = prod / n[i];
         ans = (ans + (a[i] % n[i]) * inverso(p, n[i]) * p) % prod;
@@ -204,58 +204,58 @@ vector<ull> chinese(vector<ull> & a, vector<ull> & n){
      return {prod, ans};
 }
 
-void criba_primos(ull n){
+void criba_primos(lli n){
     es_primo.resize(n + 1, true);
     es_primo[0] = es_primo[1] = false;
     primos.push_back(2);
-    for(ull i = 4; i <= n; i += 2){
+    for(lli i = 4; i <= n; i += 2){
         es_primo[i] = false;
     }
-    for(ull i = 3; i <= n; i += 2){
+    for(lli i = 3; i <= n; i += 2){
         if(es_primo[i]){
             primos.push_back(i);
-            for(ull j = i * i; j <= n; j += 2 * i){
+            for(lli j = i * i; j <= n; j += 2 * i){
                 es_primo[j] = false;
             }
         }
     }
 }
 
-void criba_phi(ull n){
-    for(ull i = 0; i <= n; i++) phi.push_back(i);
+void criba_phi(lli n){
+    for(lli i = 0; i <= n; i++) phi.push_back(i);
     for(size_t i = 0; i < primos.size(); i++){
-        ull p = primos[i];
-        for(ull j = p; j <= n; j += p){
+        lli p = primos[i];
+        for(lli j = p; j <= n; j += p){
             phi[j] -= phi[j] / p;
         }
     }
 }
 
-void criba_divisores(ull n){
+void criba_divisores(lli n){
     suma_divisores.resize(n + 1, 0);
-    divisores.resize(n + 1, vector<ull>());
-    for(ull i = 1; i <= n; i++){
-        for(ull j = i; j <= n; j += i){
+    divisores.resize(n + 1, vector<lli>());
+    for(lli i = 1; i <= n; i++){
+        for(lli j = i; j <= n; j += i){
             suma_divisores[j] += i;
             divisores[j].push_back(i);
         }
     }
 }
 
-void criba_factores_primos(ull n){
-    factores_primos.resize(n + 1, vector<ull>());
+void criba_factores_primos(lli n){
+    factores_primos.resize(n + 1, vector<lli>());
     for(size_t i = 0; i < primos.size(); i++){
-        ull p = primos[i];
-        for(ull j = p; j <= n; j += p){
+        lli p = primos[i];
+        for(lli j = p; j <= n; j += p){
             factores_primos[j].push_back(p);
         }
     }
 }
 
-void factorizar_map(ull n, ull m, map<ull, ull> & f){
-    for(ull p = 2; p <= sqrt(n); p++){
+void factorizar_map(lli n, lli m, map<lli, lli> & f){
+    for(lli p = 2; p <= sqrt(n); p++){
         if(n % p == 0){
-            ull pot = 0;
+            lli pot = 0;
             while(n % p == 0){
                 pot++;
                 n /= p;
@@ -266,11 +266,11 @@ void factorizar_map(ull n, ull m, map<ull, ull> & f){
     if(n > 1) f[n] += m;
 }
 
-void factorizar_criba(ull n, ull m, map<ull, ull> & f){
-    for(ull & p : primos){
+void factorizar_criba(lli n, lli m, map<lli, lli> & f){
+    for(lli & p : primos){
         if(p * p > n) break;
         if(n % p == 0){
-            ull pot = 0;
+            lli pot = 0;
             while(n % p == 0){
                 pot++;
                 n /= p;
@@ -281,34 +281,34 @@ void factorizar_criba(ull n, ull m, map<ull, ull> & f){
     if(n > 1) f[n] += m;
 }
 
-ull mu_map(ull n){
+lli mu_map(lli n){
     if(n == 0) return 0;
-    ull ans = 1;
-    map<ull, ull> f;
+    lli ans = 1;
+    map<lli, lli> f;
     factorizar_map(n, 1, f);
-    for(pair<const ull, ull> & p : f){
+    for(pair<const lli, lli> & p : f){
         if(p.second > 1) return 0;
         ans *= -1;
     }
     return ans;
 }
 
-ull mu_criba(ull n){
+lli mu_criba(lli n){
     if(n == 0) return 0;
-    ull ans = 1;
-    map<ull, ull> f;
+    lli ans = 1;
+    map<lli, lli> f;
     factorizar_criba(n, 1, f);
-    for(pair<const ull, ull> & p : f){
+    for(pair<const lli, lli> & p : f){
         if(p.second > 1) return 0;
         ans *= -1;
     }
     return ans;
 }
 
-void factorizar_factorial_criba(ull n, ull m, map<ull, ull> & f){
-    for(ull & p : primos){
+void factorizar_factorial_criba(lli n, lli m, map<lli, lli> & f){
+    for(lli & p : primos){
         if(p > n) break;
-        ull pot = 0, div = p;
+        lli pot = 0, div = p;
         while(div <= n){
             pot += n / div;
             div *= p;
@@ -317,51 +317,51 @@ void factorizar_factorial_criba(ull n, ull m, map<ull, ull> & f){
     }
 }
 
-vector<ull> coprimos_map(ull n){
-    map<ull, ull> f;
-    vector<ull> ans;
+vector<lli> coprimos_map(lli n){
+    map<lli, lli> f;
+    vector<lli> ans;
     vector<bool> coprimos(n + 1, true);
     factorizar_map(n, 1, f);
-    for(pair<const ull, ull> & p : f){
-        for(ull i = p.first; i <= n; i += p.first){
+    for(pair<const lli, lli> & p : f){
+        for(lli i = p.first; i <= n; i += p.first){
             coprimos[i] = false;
         }
     }
-    for(ull i = 1; i <= n; i++){
+    for(lli i = 1; i <= n; i++){
         if(coprimos[i])
             ans.push_back(i);
     }
     return ans;
 }
 
-vector<ull> coprimos_criba(ull n){
-    map<ull, ull> f;
-    vector<ull> ans;
+vector<lli> coprimos_criba(lli n){
+    map<lli, lli> f;
+    vector<lli> ans;
     vector<bool> coprimos(n + 1, true);
     factorizar_criba(n, 1, f);
-    for(pair<const ull, ull> & p : f){
-        for(ull i = p.first; i <= n; i += p.first){
+    for(pair<const lli, lli> & p : f){
+        for(lli i = p.first; i <= n; i += p.first){
             coprimos[i] = false;
         }
     }
-    for(ull i = 1; i <= n; i++){
+    for(lli i = 1; i <= n; i++){
         if(coprimos[i])
             ans.push_back(i);
     }
     return ans;
 }
 
-vector<ull> coprimos_gcd(ull n){
-    vector<ull> ans;
-    for(ull i = 1; i <= n; i++){
+vector<lli> coprimos_gcd(lli n){
+    vector<lli> ans;
+    for(lli i = 1; i <= n; i++){
         if(gcd(n, i) == 1) ans.push_back(i);
     }
     return ans;
 }
 
-string decimal_a_base(ull n, ull b){
+string decimal_a_base(lli n, lli b){
     string ans = "";
-    ull digito;
+    lli digito;
     do{
         digito = n % b;
         if(0 <= digito && digito <= 9){
@@ -374,8 +374,8 @@ string decimal_a_base(ull n, ull b){
     return ans;
 }
 
-ull base_a_decimal(string & n, ull b){
-    ull ans = 0;
+lli base_a_decimal(string & n, lli b){
+    lli ans = 0;
     for(char & digito : n){
         if(48 <= digito && digito <= 57){
             ans = ans * b + (digito - 48);
@@ -388,25 +388,25 @@ ull base_a_decimal(string & n, ull b){
     return ans;
 }
 
-ull ncr(ull n, ull r){
-    ull a = max(r, n - r), b = min(r, n - r);
-    ull ans = 1;
-    for(ull i = n; i >= a + 1; i--){
+lli ncr(lli n, lli r){
+    lli a = max(r, n - r), b = min(r, n - r);
+    lli ans = 1;
+    for(lli i = n; i >= a + 1; i--){
         ans *= i;
     }
-    for(ull i = 1; i <= b; i++){
+    for(lli i = 1; i <= b; i++){
         ans /= i;
     }
     return ans;
 }
 
-void criba_pascal(ull n){
-    pascal.resize(n + 1, vector<ull>());
+void criba_pascal(lli n){
+    pascal.resize(n + 1, vector<lli>());
     pascal[0] = {1};
-    for(ull i = 1; i <= n; i++){
+    for(lli i = 1; i <= n; i++){
         pascal[i].resize(i + 1);
         pascal[i][0] = 1;
-        for(ull j = 1; j <= i / 2; j++){
+        for(lli j = 1; j <= i / 2; j++){
             pascal[i][i - j] = pascal[i][j] = pascal[i - 1][j - 1] + pascal[i - 1][j];
         }
         pascal[i][i] = 1;
@@ -414,23 +414,23 @@ void criba_pascal(ull n){
 }
 
 struct fraccion{
-    ull num, den;
+    lli num, den;
     fraccion(){
         num = 0, den = 1;
     }
-    fraccion(ull x, ull y){
+    fraccion(lli x, lli y){
         if(y < 0){
             x *= -1, y *=-1;
         }
-        ull d = gcd(abs(x), abs(y));
+        lli d = gcd(abs(x), abs(y));
         num = x / d, den = y / d;
     }
-    fraccion(ull v){
+    fraccion(lli v){
         num = v;
         den = 1;
     }
     fraccion operator+(const fraccion& f) const{
-        ull d = gcd(den, f.den);
+        lli d = gcd(den, f.den);
         return fraccion(num * (f.den / d) + f.num * (den / d), den * (f.den / d));
     }
     fraccion operator-() const{
@@ -470,27 +470,27 @@ struct fraccion{
         return *this;
     }
     bool operator==(const fraccion& f) const{
-        ull d = gcd(den, f.den);
+        lli d = gcd(den, f.den);
         return (num * (f.den / d) == (den / d) * f.num);
     }
     bool operator!=(const fraccion& f) const{
-        ull d = gcd(den, f.den);
+        lli d = gcd(den, f.den);
         return (num * (f.den / d) != (den / d) * f.num);
     }
     bool operator >(const fraccion& f) const{
-        ull d = gcd(den, f.den);
+        lli d = gcd(den, f.den);
         return (num * (f.den / d) > (den / d) * f.num);
     }
     bool operator <(const fraccion& f) const{
-        ull d = gcd(den, f.den);
+        lli d = gcd(den, f.den);
         return (num * (f.den / d) < (den / d) * f.num);
     }
     bool operator >=(const fraccion& f) const{
-        ull d = gcd(den, f.den);
+        lli d = gcd(den, f.den);
         return (num * (f.den / d) >= (den / d) * f.num);
     }
     bool operator <=(const fraccion& f) const{
-        ull d = gcd(den, f.den);
+        lli d = gcd(den, f.den);
         return (num * (f.den / d) <= (den / d) * f.num);
     }
     fraccion fabs() const{
@@ -509,16 +509,16 @@ struct fraccion{
 
 vector< vector<fraccion> > gauss;
 
-void criba_gauss(ull n){
+void criba_gauss(lli n){
     gauss.resize(n + 1, vector<fraccion>());
     gauss[0] = {fraccion(1, 1), fraccion()};
-    for(ull i = 1; i <=n; i++){
+    for(lli i = 1; i <=n; i++){
         gauss[i].resize(i + 2);
-        for(ull j = 0; j <= i + 1; j++){
+        for(lli j = 0; j <= i + 1; j++){
             gauss[i][j] = fraccion(pascal[i + 1][j], i + 1);
         }
         gauss[i][i + 1] = gauss[i][i + 1] - fraccion(1, i + 1);
-        for(ull j = 0; j <= i - 1; j++){
+        for(lli j = 0; j <= i - 1; j++){
             fraccion coef = fraccion(pascal[i + 1][j], i + 1);
             vector<fraccion> pj = gauss[j];
             for(size_t k = 0; k < pj.size(); k++){
@@ -528,8 +528,8 @@ void criba_gauss(ull n){
     }
 }
 
-string numero_a_romano(ull n){
-    ull digito, base = 0;
+string numero_a_romano(lli n){
+    lli digito, base = 0;
     string ans = "";
     vector< vector<char> > datos = {{'I', 'V'}, {'X', 'L'}, {'C', 'D'}, {'M', '\0'}};
     do{
@@ -554,8 +554,8 @@ string numero_a_romano(ull n){
     return ans;
 }
 
-ull romano_a_numero(string & n){
-    ull ans = 0;
+lli romano_a_numero(string & n){
+    lli ans = 0;
     char actual, anterior;
     bool f = false;
     map<char, int> datos = {{'I', 1}, {'V', 5}, {'X', 10}, {'L', 50}, {'C', 100}, {'M', 1000}};
@@ -585,7 +585,7 @@ struct polinomio{
         for(fraccion x : coef) coeficientes.push_back(x);
         quitar_ceros();
     }
-    polinomio(ull x0){
+    polinomio(lli x0){
         coeficientes.push_back(x0);
     }
     polinomio(fraccion x0){
@@ -754,11 +754,11 @@ polinomio interpolar(vector< pair<fraccion, fraccion> > puntos){
     return ans;
 }
 
-polinomio cyclotomic(ull n){
+polinomio cyclotomic(lli n){
     polinomio num = 1;
     polinomio den = 1;
-    for(ull & d : divisores[n]){
-        ull pot = mu_criba(n / d);
+    for(lli & d : divisores[n]){
+        lli pot = mu_criba(n / d);
         vector<fraccion> coef(d + 1);
         coef[d] = 1;
         coef[0] = -1;
@@ -1032,43 +1032,43 @@ int main()
     criba_factores_primos(200);
     criba_pascal(50);
     criba_gauss(20);
-    //for(ull p : primos) cout << p << " ";
-    //for(ull i = 0; i < phi.size(); i++) cout << "phi(" << i << ") = " << phi[i] << " ";
+    //for(lli p : primos) cout << p << " ";
+    //for(lli i = 0; i < phi.size(); i++) cout << "phi(" << i << ") = " << phi[i] << " ";
     
-    /*map<ull, ull> f;
+    /*map<lli, lli> f;
     factorizar_map(1500, 1, f);
-    for(pair<const ull, ull> & p:f) cout << p.first << " " << p.second << endl;
+    for(pair<const lli, lli> & p:f) cout << p.first << " " << p.second << endl;
     cout << endl;*/
 
-    /*map<ull, ull> f2;
+    /*map<lli, lli> f2;
     factorizar_criba(1500, 1, f2);
-    for(pair<const ull, ull> & p:f2) cout << p.first << " " << p.second << endl;
+    for(pair<const lli, lli> & p:f2) cout << p.first << " " << p.second << endl;
     cout << endl;*/
 
-    //for(ull i=0;i<=101;i++) cout << "mu(" << i << ") = " << mu_map(i) << " = " << mu_criba(i) << endl;
+    //for(lli i=0;i<=101;i++) cout << "mu(" << i << ") = " << mu_map(i) << " = " << mu_criba(i) << endl;
 
-    /*map<ull, ull> f3;
+    /*map<lli, lli> f3;
     factorizar_factorial_criba(97, 1, f3);
-    for(pair<const ull, ull> & p:f3) cout << p.first << " " << p.second << endl;*/
+    for(pair<const lli, lli> & p:f3) cout << p.first << " " << p.second << endl;*/
 
-    /*vector<ull> c = coprimos_map(60);
-    for(ull ci:c) cout << ci << endl;*/
+    /*vector<lli> c = coprimos_map(60);
+    for(lli ci:c) cout << ci << endl;*/
 
-    for(ull i=1;i<=105;i++){
+    for(lli i=1;i<=105;i++){
         polinomio pol = cyclotomic(i);
         cout << "Phi_(" << i << ")(x) = " << pol.str() << endl;
     }
 
-    /*for(ull i=1;i<factores_primos.size();i++){
+    /*for(lli i=1;i<factores_primos.size();i++){
         cout << i << ": ";
-        for(ull fi:factores_primos[i]) cout << fi << " ";
+        for(lli fi:factores_primos[i]) cout << fi << " ";
         cout << endl;
     }*/
 
     //cout << decimal_a_base(494159, 36) << endl << base_a_decimal("alan", 36);
 
-    /*for(vector<ull> fila:pascal){
-        for(ull valor:fila){
+    /*for(vector<lli> fila:pascal){
+        for(lli valor:fila){
             cout << valor << " ";
         }
         cout << endl;
@@ -1149,7 +1149,7 @@ int main()
     /*imprime_matriz(gauss_jordan({{0,1,1},{1,2,4},{-7,3,-11},{2,2,6}}));*/
 
     /*cout << "\n\n\n";
-    for(ull i = 1; i <= 100; i++) cout << "lambda(" << i << ") = " << carmichael_lambda(i) << ", "; */
+    for(lli i = 1; i <= 100; i++) cout << "lambda(" << i << ") = " << carmichael_lambda(i) << ", "; */
 
     return 0;
 }

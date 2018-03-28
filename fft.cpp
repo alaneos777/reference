@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 typedef complex<double> comp;
+typedef long long int lli;
 double PI = acos(-1.0);
 
 int nearestPowerOfTwo(int n){
@@ -13,69 +14,125 @@ bool isZero(comp z){
 	return abs(z.real()) < 1e-3;
 }
 
-void swapPositions(vector<comp> & X){
+const int p = 7340033;
+const int root = 5;
+const int root_1 = 4404020;
+const int root_pw = 1 << 20;
+
+int inverse(int a, int n){
+    int r0 = a, r1 = n, ri, s0 = 1, s1 = 0, si;
+    while(r1){
+        si = s0 - s1 * (r0 / r1), s0 = s1, s1 = si;
+        ri = r0 % r1, r0 = r1, r1 = ri;
+    }
+    if(s0 < 0) s0 += n;
+    return s0;
+}
+
+template<typename T>
+void swapPositions(vector<T> & X){
 	int n = X.size();
-	int j = n >> 1;
-	for(int i = 1; i < n - 1; i++){
-		if(i < j) swap(X[i], X[j]);
-		int k = n >> 1;
-		while(j >= k){
-			j -= k;
-			k >>= 1;
+	int bit;
+	for (int i = 1, j = 0; i < n; ++i) {
+		bit = n >> 1;
+		while(j >= bit){
+			j -= bit;
+			bit >>= 1;
 		}
-		if(j < k){
-			j += k;
+		j += bit;
+		if (i < j){
+			swap (X[i], X[j]);
 		}
 	}
 }
 
 void fft(vector<comp> & X, int inv){
 	int n = X.size();
-	swapPositions(X);
-	comp w1 = polar(1.0, 2.0 * PI * inv / n);
-	vector<comp> w(n);
-	w[0] = 1;
-	for(int i = 1; i < n; i++){
-		w[i] = w[i - 1] * w1;
-	}
-	int pot = n >> 1;
-	for(int i = 1; i < n; i <<= 1){
-		for(int j = 0; j < i; j++){
-			for(int k = 0; k < pot; k++){
-				int first = j + 2 * i * k, second = first + i;
-				comp r = w[pot * j] * X[second];
-				X[second] = X[first] - r;
-				X[first] += r;
-			}
-		}
-		pot >>= 1;
-	}
-	if(inv == -1){
-		for(int i = 0; i < n; i++){
-			X[i] /= n;
-		}
-	}
+    swapPositions<comp>(X);
+    int len, len2, i, j;
+    double ang;
+    comp t, u, v;
+    vector<comp> wlen_pw(n >> 1);
+    wlen_pw[0] = 1;
+    for(len = 2; len <= n; len <<= 1) {
+        ang = inv == -1 ? -2 * PI / len : 2 * PI / len;
+        len2 = len >> 1;
+        comp wlen(cos(ang), sin(ang));
+        for(i = 1; i < len2; ++i){
+            wlen_pw[i] = wlen_pw[i - 1] * wlen;
+        }
+        for(i = 0; i < n; i += len) {
+            for(j = 0; j < len2; ++j) {
+                t = X[i + j + len2] * wlen_pw[j];
+                X[i + j + len2] = X[i + j] - t;
+                X[i + j] += t;
+            }
+        }
+    }
+    if(inv == -1){
+        for(i = 0; i < n; ++i){
+            X[i] /= n;
+        }
+    }
 }
 
-void quitar(vector<comp> & X){
-	while(isZero(X.back())) X.pop_back();
-	if(X.size() == 0) X.push_back(0);
+void ntt(vector<int> & X, int inv) {
+	int n = X.size();
+	swapPositions<int>(X);
+	int len, len2, wlen, i, j, u, v, w;
+	for (len = 2; len <= n; len <<= 1) {
+		len2 = len >> 1;
+		wlen = (inv == -1) ? root_1 : root;
+		for (i = len; i < root_pw; i <<= 1){
+			wlen = wlen * 1ll * wlen % p;
+		}
+		for (i = 0; i < n; i += len) {
+			w = 1;
+			for (j = 0; j < len2; ++j) {
+				u = X[i + j], v = X[i + j + len2] * 1ll * w % p;
+				X[i + j] = u + v < p ? u + v : u + v - p;
+				X[i + j + len2] = u - v < 0 ? u - v + p : u - v;
+				w = w * 1ll * wlen % p;
+			}
+		}
+	}
+	if (inv == -1) {
+		int nrev = inverse(n, p);
+		for (i = 0; i < n; ++i){
+			X[i] = X[i] * 1ll * nrev % p;
+		}
+	}
 }
 
 void multiplyPolynomials(vector<comp> & A, vector<comp> & B){
-	int degree = nearestPowerOfTwo(A.size() + B.size() - 1);
-	A.resize(degree);
-	B.resize(degree);
+	int degree = A.size() + B.size() - 2;
+	int size = nearestPowerOfTwo(degree + 1);
+	A.resize(size);
+	B.resize(size);
 	fft(A, 1);
 	fft(B, 1);
-	for(int i = 0; i < degree; i++){
+	for(int i = 0; i < size; i++){
 		A[i] *= B[i];
 	}
 	fft(A, -1);
-	quitar(A);
+	A.resize(degree + 1);
 }
 
-int main(){
+void multiplyPolynomials(vector<int> & A, vector<int> & B){
+	int degree = A.size() + B.size() - 2;
+	int size = nearestPowerOfTwo(degree + 1);
+	A.resize(size);
+	B.resize(size);
+	ntt(A, 1);
+	ntt(B, 1);
+	for(int i = 0; i < size; i++){
+		A[i] = A[i] * 1ll * B[i] % p;
+	}
+	ntt(A, -1);
+	A.resize(degree + 1);
+}
+
+void test_fft(){
 	int degX, degY;
 	cin >> degX >> degY;
 	vector<comp> X(degX + 1), Y(degY + 1);
@@ -93,6 +150,61 @@ int main(){
 
 	for(int i = 0; i < X.size(); i++) cout << (int)round(X[i].real()) << " ";
 
-	cout << "\n" << duration;
+	cout << duration << "\n";
+}
+
+void test_ntt(){
+	int degX, degY;
+	cin >> degX >> degY;
+	vector<int> X(degX + 1), Y(degY + 1);
+
+	for(int i = 0; i <= degX; i++) cin >> X[i];
+	for(int i = 0; i <= degY; i++) cin >> Y[i];
+
+	std::clock_t start;
+    double duration;
+    start = std::clock();
+
+	multiplyPolynomials(X, Y);
+
+	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+
+	for(int i = 0; i < X.size(); i++) cout << X[i] << " ";
+
+	cout << duration << "\n";
+}
+
+void test_random_fft(){
+	int deg = 1e6;
+	vector<comp> A(deg + 1), B(deg + 1);
+	for(int i = 0; i <= deg; i++){
+		A[i] = rand() % 2;
+		B[i] = rand() % 2;
+	}
+	clock_t start = clock();
+	multiplyPolynomials(A, B);
+	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
+	cout << duration << "\n";
+}
+
+void test_random_ntt(){
+	int deg = 1e6;
+	vector<int> A(deg + 1), B(deg + 1);
+	for(int i = 0; i <= deg; i++){
+		A[i] = rand() % 2;
+		B[i] = rand() % 2;
+	}
+	clock_t start = clock();
+	multiplyPolynomials(A, B);
+	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
+	cout << duration << "\n";
+}
+
+int main(){
+	srand(time(NULL));
+	test_random_fft();
+	test_random_ntt();
+	test_fft();
+	test_ntt();
 	return 0;
 }
