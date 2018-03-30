@@ -30,16 +30,6 @@ lli pow(lli b, lli e){
 	return ans;
 }
 
-lli powMod(lli b, lli e, lli m){
-	lli ans = 1;
-	while(e){
-		if(e & 1) ans = (ans * b) % m;
-		e >>= 1;
-		b = (b * b) % m;
-	}
-	return ans;
-}
-
 lli multMod(lli a, lli b, lli n){
 	lli ans = 0;
 	a %= n, b %= n;
@@ -97,6 +87,21 @@ lli modularInverse(lli a, lli m){
 	} 
 	if(s0 < 0) s0 += m;
 	return s0;
+}
+
+lli powMod(lli b, lli e, lli m){
+	lli ans = 1;
+	b %= m;
+	if(e < 0){
+		b = modularInverse(b, m);
+		e *= -1;
+	}
+	while(e){
+		if(e & 1) ans = (ans * b) % m;
+		e >>= 1;
+		b = (b * b) % m;
+	}
+	return ans;
 }
 
 pair<lli, lli> chinese(vector<lli> & a, vector<lli> & n){
@@ -242,17 +247,7 @@ int mu(lli n){
 	return ans;
 }
 
-bool testPrimitiveRoot(lli x, lli m){
-	if(gcd(x, m) != 1) return false;
-	lli order = phi(m);
-	vector<pair<lli, int>> f = factorize(order);
-	for(auto & factor : f){
-		lli p = factor.first;
-		if(powMod(x, order / p, m) == 1) return false;
-	}
-	return true;
-}
-
+// the smallest positive integer k such that x^k = 1 mod m
 lli multiplicativeOrder(lli x, lli m){
 	if(gcd(x, m) != 1) return -1;
 	lli order = phi(m);
@@ -270,8 +265,32 @@ lli multiplicativeOrder(lli x, lli m){
 	return order;
 }
 
+//test if order(x, m) = phi(m), i.e., x is a generator for Z/mZ
+bool testPrimitiveRoot(lli x, lli m){
+	if(gcd(x, m) != 1) return false;
+	lli order = phi(m);
+	vector<pair<lli, int>> f = factorize(order);
+	for(auto & factor : f){
+		lli p = factor.first;
+		if(powMod(x, order / p, m) == 1) return false;
+	}
+	return true;
+}
+
+//test if x^k = 1 mod m and k is the smallest for such x, i.e., x^(k/p) != 1 for every prime divisor of k
+bool testPrimitiveKthRootUnity(lli x, lli k, lli m){
+	if(powMod(x, k, m) != 1) return false;
+	vector<pair<lli, int>> f = factorize(k);
+	for(auto & factor : f){
+		lli p = factor.first;
+		if(powMod(x, k / p, m) == 1) return false;
+	}
+	return true;
+}
+
 lli findFirstGenerator(lli m){
 	lli order = phi(m);
+	if(order != carmichaelLambda(m)) return -1; //just an optimization, not required
 	vector<pair<lli, int>> f = factorize(order);
 	for(lli x = 1; x < m; x++){
 		if(gcd(x, m) != 1) continue;
@@ -288,8 +307,22 @@ lli findFirstGenerator(lli m){
 	return -1;
 }
 
-vector<lli> getAllGenerators(lli m){
-	vector<lli> ans;
+lli findFirstPrimitiveKthRootUnity(lli k, lli m){
+	if(carmichaelLambda(m) % k != 0) return -1; //just an optimization, not required
+	vector<pair<lli, int>> f = factorize(k);
+	for(lli x = 1; x < m; x++){
+		if(powMod(x, k, m) != 1) continue;
+		bool test = true;
+		for(auto & factor : f){
+			lli p = factor.first;
+			if(powMod(x, k / p, m) == 1){
+				test = false;
+				break;
+			}
+		}
+		if(test) return x;
+	}
+	return -1;
 }
 
 // a^x = b mod m, a and m coprime
@@ -541,17 +574,26 @@ int main(){
 		cout << i << " " << multiplicativeOrder(i, N) << " " << testPrimitiveRoot(i, N) << "\n";
 	}*/
 
+	/*int N = 7340033, k = 1 << 20;
+	for(int i = 1; i < 100; i++){
+		cout << i << " " << testPrimitiveKthRootUnity(i, k, N) << "\n";
+	}*/
+
+	long long int k, m;
+	cin >> k >> m;
+	cout << (long long int)findFirstPrimitiveKthRootUnity(k, m);
+
 	/*lli a, b, m;
 	cin >> a >> b >> m;
 	pair<lli, lli> ans = discreteLogarithm(a, b, m);
 	cout << ans.first << " + " << ans.second << "t";*/
 
-	lli k, b, m;
+	/*lli k, b, m;
 	cin >> k >> b >> m;
 	vector<lli> roots = discreteRoot(k, b, m);
 	for(lli & root : roots){
 		cout << root << " ";
-	}
+	}*/
 
 	/*calculateFunctionP(1e5);
 	for(int i = 99900; i <= 100000; i++){

@@ -35,11 +35,11 @@ void swapPositions(vector<T> & X){
 	int bit;
 	for (int i = 1, j = 0; i < n; ++i) {
 		bit = n >> 1;
-		while(j >= bit){
-			j -= bit;
+		while(j & bit){
+			j ^= bit;
 			bit >>= 1;
 		}
-		j += bit;
+		j ^= bit;
 		if (i < j){
 			swap (X[i], X[j]);
 		}
@@ -132,6 +132,44 @@ void multiplyPolynomials(vector<int> & A, vector<int> & B){
 	A.resize(degree + 1);
 }
 
+string multiplyNumbers(const string & a, const string & b){
+	int sgn = 1;
+	int pos1 = 0, pos2 = 0;
+	while(pos1 < a.size() && (a[pos1] < '1' || a[pos1] > '9')){
+		if(a[pos1] == '-') sgn *= -1;
+		++pos1;
+	}
+	while(pos2 < b.size() && (b[pos2] < '1' || b[pos2] > '9')){
+		if(b[pos2] == '-') sgn *= -1;
+		++pos2;
+	}
+	vector<int> X(a.size() - pos1), Y(b.size() - pos2);
+	if(X.empty() || Y.empty()) return "0";
+	for(int i = pos1, j = X.size() - 1; i < a.size(); ++i){
+		X[j--] = a[i] - '0';
+	}
+	for(int i = pos2, j = Y.size() - 1; i < b.size(); ++i){
+		Y[j--] = b[i] - '0';
+	}
+	multiplyPolynomials(X, Y);
+	stringstream ss;
+	if(sgn == -1) ss << "-";
+	int carry = 0;
+	for(int i = 0; i < X.size(); ++i){
+		X[i] += carry;
+		carry = X[i] / 10;
+		X[i] %= 10;
+	}
+	while(carry){
+		X.push_back(carry % 10);
+		carry /= 10;
+	}
+	for(int i = X.size() - 1; i >= 0; --i){
+		ss << X[i];
+	}
+	return ss.str();
+}
+
 void test_fft(){
 	int degX, degY;
 	cin >> degX >> degY;
@@ -150,7 +188,7 @@ void test_fft(){
 
 	for(int i = 0; i < X.size(); i++) cout << (int)round(X[i].real()) << " ";
 
-	cout << duration << "\n";
+	cout << "\n" << duration << "\n";
 }
 
 void test_ntt(){
@@ -171,15 +209,15 @@ void test_ntt(){
 
 	for(int i = 0; i < X.size(); i++) cout << X[i] << " ";
 
-	cout << duration << "\n";
+	cout << "\n" << duration << "\n";
 }
 
 void test_random_fft(){
 	int deg = 1e6;
 	vector<comp> A(deg + 1), B(deg + 1);
 	for(int i = 0; i <= deg; i++){
-		A[i] = rand() % 2;
-		B[i] = rand() % 2;
+		A[i] = rand() % 10;
+		B[i] = rand() % 10;
 	}
 	clock_t start = clock();
 	multiplyPolynomials(A, B);
@@ -191,8 +229,8 @@ void test_random_ntt(){
 	int deg = 1e6;
 	vector<int> A(deg + 1), B(deg + 1);
 	for(int i = 0; i <= deg; i++){
-		A[i] = rand() % 2;
-		B[i] = rand() % 2;
+		A[i] = rand() % 10;
+		B[i] = rand() % 10;
 	}
 	clock_t start = clock();
 	multiplyPolynomials(A, B);
@@ -200,8 +238,25 @@ void test_random_ntt(){
 	cout << duration << "\n";
 }
 
+void test_random_mult(){
+	int digits = 1e6;
+	stringstream ss1, ss2;
+	for(int i = 1; i <= digits; i++){
+		ss1 << rand() % 10;
+		ss2 << rand() % 10;
+	}
+	clock_t start = clock();
+	string res = multiplyNumbers(ss1.str(), ss2.str());
+	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
+	cout << duration << "\n";
+}
+
 int main(){
 	srand(time(NULL));
+	string a, b;
+	cin >> a >> b;
+	cout << multiplyNumbers(a, b) << "\n";
+	test_random_mult();
 	test_random_fft();
 	test_random_ntt();
 	test_fft();

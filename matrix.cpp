@@ -1,229 +1,10 @@
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <algorithm>
-#include <sstream>
-#include <functional>
+#include <bits/stdc++.h>
+#include "enteroModular.cpp"
+#include "fraccion.cpp"
 
 using namespace std;
 
-typedef long long int ull;
-
-ull gcd(ull a, ull b){
-    ull r;
-    while(b!=0) r = a%b, a = b, b = r;
-    return a;
-}
-
-ull mod(ull a, ull b){
-    ull ans = a % b;
-    if(ans < 0) ans += b;
-    return ans;
-}
-
-struct enteroModular{
-    ull a, n;
-    enteroModular(ull x, ull y){
-    	if(y == 0) a = x;
-        else a = mod(x, y);
-        n = y;
-    }
-    enteroModular(ull x){
-        a = x, n = 0;
-    }
-    enteroModular(){
-        a = 0, n = 0;
-    }
-    enteroModular operator+(const enteroModular & e) const{
-        return enteroModular(a + e.a, max(n, e.n));
-    }
-    enteroModular operator-() const{
-        return enteroModular(-a, n);
-    }
-    enteroModular operator-(const enteroModular & e) const{
-        return *this + (-e);
-    }
-    enteroModular operator*(const enteroModular & e) const{
-        return enteroModular(a * e.a, max(n, e.n));
-    }
-    enteroModular inverso() const{
-        ull r0 = a, r1 = n, ri, s0 = 1, s1 = 0, si;
-        while(r1 != 0){
-            ri = r0 % r1;
-            si = s0 - s1 * (r0 / r1);
-            r0 = r1, r1 = ri;
-            s0 = s1, s1 = si;
-        }
-        return enteroModular(s0, n);
-    }
-    enteroModular operator/(const enteroModular & e) const{
-    	enteroModular tmp(e.a, max(n, e.n));
-        return enteroModular(a * tmp.inverso().a, max(n, e.n));
-    }
-    enteroModular operator+=(const enteroModular & e){
-        *this = *this + e;
-        return *this;
-    }
-    enteroModular operator-=(const enteroModular & e){
-        *this = *this - e;
-        return *this;
-    }
-    enteroModular operator*=(const enteroModular & e){
-        *this = *this * e;
-        return *this;
-    }
-    enteroModular operator/=(const enteroModular & e){
-        *this = *this / e;
-        return *this;
-    }
-    enteroModular operator++(int xd){
-        *this = *this + enteroModular(1, n);
-        return * this;
-    }
-    enteroModular operator--(int xd){
-        *this = *this - enteroModular(1, n);
-        return * this;
-    }
-    bool operator==(const enteroModular & e) const{
-    	if(max(n, e.n) == 0)
-    		return a == e.a;
-        return mod(a, max(n, e.n)) == mod(e.a, max(n, e.n));
-    }
-    bool operator!=(const enteroModular & e) const{
-    	if(max(n, e.n) == 0)
-    		return a != e.a;
-        return mod(a, max(n, e.n)) != mod(e.a, max(n, e.n));
-    }
-    string str() const{
-    	stringstream ss;
-    	ss << a << "," << n;
-    	return ss.str();
-    }
-};
-
-struct fraccion{
-    ull num, den;
-    fraccion(){
-        num = 0, den = 1;
-    }
-    fraccion(ull x, ull y){
-        if(y < 0){
-            x *= -1, y *=-1;
-        }
-        ull d = gcd(abs(x), abs(y));
-        num = x/d, den = y/d;
-    }
-    fraccion(ull v){
-        num = v;
-        den = 1;
-    }
-    fraccion operator+(const fraccion& f) const{
-        ull d = gcd(den, f.den);
-        return fraccion(num*(f.den/d) + f.num*(den/d), den*(f.den/d));
-    }
-    fraccion operator-() const{
-        return fraccion(-num, den);
-    }
-    fraccion operator-(const fraccion& f) const{
-        return *this + (-f);
-    }
-    fraccion operator*(const fraccion& f) const{
-        return fraccion(num*f.num, den*f.den);
-    }
-    fraccion operator/(const fraccion& f) const{
-        return fraccion(num*f.den, den*f.num);
-    }
-    fraccion operator+=(const fraccion& f){
-        *this = *this + f;
-        return *this;
-    }
-    fraccion operator-=(const fraccion& f){
-        *this = *this - f;
-        return *this;
-    }
-    fraccion operator++(int xd){
-        *this = *this + 1;
-        return *this;
-    }
-    fraccion operator--(int xd){
-        *this = *this - 1;
-        return *this;
-    }
-    fraccion operator*=(const fraccion& f){
-        *this = *this * f;
-        return *this;
-    }
-    fraccion operator/=(const fraccion& f){
-        *this = *this / f;
-        return *this;
-    }
-    bool operator==(const fraccion& f) const{
-        ull d = gcd(den, f.den);
-        return (num*(f.den/d) == (den/d)*f.num);
-    }
-    bool operator!=(const fraccion& f) const{
-        ull d = gcd(den, f.den);
-        return (num*(f.den/d) != (den/d)*f.num);
-    }
-    bool operator >(const fraccion& f) const{
-        ull d = gcd(den, f.den);
-        return (num*(f.den/d) > (den/d)*f.num);
-    }
-    bool operator <(const fraccion& f) const{
-        ull d = gcd(den, f.den);
-        return (num*(f.den/d) < (den/d)*f.num);
-    }
-    bool operator >=(const fraccion& f) const{
-        ull d = gcd(den, f.den);
-        return (num*(f.den/d) >= (den/d)*f.num);
-    }
-    bool operator <=(const fraccion& f) const{
-        ull d = gcd(den, f.den);
-        return (num*(f.den/d) <= (den/d)*f.num);
-    }
-    fraccion inverso() const{
-        return fraccion(den, num);
-    }
-    fraccion fabs() const{
-        fraccion nueva;
-        nueva.num = abs(num);
-        nueva.den = den;
-        return nueva;
-    }
-    double value() const{
-    	return (double)num / (double)den;
-    }
-    string str() const{
-        stringstream ss;
-        ss << num;
-        if(den != 1) ss << "/" << den;
-        return ss.str();
-    }
-};
-
-ostream &operator<<(ostream &os, const enteroModular & e) { 
-    return os << e.a;
-}
-
-ostream &operator<<(ostream &os, const fraccion & f) { 
-    return os << f.str();
-}
-
-istream &operator>>(istream &is, fraccion & f){
-    ull num = 0, den = 1;
-    string str;
-    is >> str;
-    size_t pos = str.find("/");
-    if(pos == string::npos){
-        istringstream(str) >> num;
-    }else{
-        istringstream(str.substr(0, pos)) >> num;
-        istringstream(str.substr(pos + 1)) >> den;
-    }
-    fraccion nueva(num, den);
-    f = nueva;
-    return is;
-}
+typedef long long int lli;
 
 template <typename entrada>
 struct matrix{
@@ -251,7 +32,7 @@ struct matrix{
         for(int j = 0; j < n; j++) A[k][j] += c * A[l][j];
     }
 
-    int gauss_jordan(bool full = true, bool makeOnes = true, function<void(int, int, int, entrada)>callback = NULL){
+    int gauss_jordan(bool flli = true, bool makeOnes = true, function<void(int, int, int, entrada)>callback = NULL){
         int i = 0, j = 0;
         while(i < m && j < n){
             if(A[i][j] == 0){
@@ -269,7 +50,7 @@ struct matrix{
                     multiplicarFilaPorEscalar(i, inv_mult);
                     if(callback) callback(1, i, 0, inv_mult);
                 }
-                for(int f = (full ? 0 : (i + 1)); f < m; f++){
+                for(int f = (flli ? 0 : (i + 1)); f < m; f++){
                     if(f != i && A[f][j] != 0){
                         entrada inv_adit = -A[f][j];
                         if(!makeOnes) inv_adit *= inv_mult;
@@ -409,7 +190,7 @@ struct matrix{
         return *this;
     }
 
-    matrix operator^(ull b) const{
+    matrix operator^(lli b) const{
     	matrix<entrada> ans = matrix<entrada>::identidad(n);
     	matrix<entrada> A = *this;
     	while(b){
@@ -420,7 +201,7 @@ struct matrix{
     	return ans;
     }
 
-    matrix operator^=(ull n){
+    matrix operator^=(lli n){
     	*this = *this ^ n;
     	return *this;
     }
@@ -663,8 +444,8 @@ void pedirValores(matrix<fraccion> & S){
     }
 }
 
-void pedirValores(matrix<enteroModular> & S, ull p){
-    ull valor;
+void pedirValores(matrix<enteroModular> & S, lli p){
+    lli valor;
     for(int i = 0; i < S.m; i++){
         cout << "Introduce la fila " << (i + 1) << ": ";
         for(int j = 0; j < S.n; j++){
@@ -677,7 +458,7 @@ void pedirValores(matrix<enteroModular> & S, ull p){
 int main()
 {
 	int m, n;
-    ull p;
+    lli p;
     string campo;
     cout << "Introduce el n\243mero de filas: ";
     cin >> m;
