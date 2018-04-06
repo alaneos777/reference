@@ -236,11 +236,11 @@ struct grafo{
         return tmp;
     }
 
-    void DFS(int start, int source, vector<vector<bool>> & tmp){
+    void DFSClosure(int start, int source, vector<vector<bool>> & tmp){
         for(edge & current : adjList[source]){
             if(!tmp[start][current.dest]){
                 tmp[start][current.dest] = true;
-                DFS(start, current.dest, tmp);
+                DFSClosure(start, current.dest, tmp);
             }
         }
     }
@@ -248,18 +248,9 @@ struct grafo{
     vector<vector<bool>> transitiveClosureDFS(){
         vector<vector<bool>> tmp(V, vector<bool>(V, false));
         for(int i = 0; i < V; i++){
-            DFS(i, i, tmp);
+            DFSClosure(i, i, tmp);
         }
         return tmp;
-    }
-
-    void DFS(int source, vector<bool> & visited){
-        visited[source] = true;
-        for(edge & current : adjList[source]){
-            if(!visited[current.dest]){
-                DFS(current.dest, visited);
-            }
-        }
     }
 
     bool isBipartite(){
@@ -287,12 +278,88 @@ struct grafo{
         return is_bipartite;
     }
 
+    vector<int> topologicalSort(){
+        vector<int> order;
+        int visited = 0;
+        vector<int> indegree(V);
+        for(auto & node : adjList){
+            for(edge & current : node){
+                ++indegree[current.dest];
+            }
+        }
+        queue<int> Q;
+        for(int i = 0; i < V; ++i){
+            if(indegree[i] == 0) Q.push(i);
+        }
+        while(!Q.empty()){
+            int source = Q.front();
+            Q.pop();
+            order.push_back(source);
+            ++visited;
+            for(edge & current : adjList[source]){
+                --indegree[current.dest];
+                if(indegree[current.dest] == 0) Q.push(current.dest);
+            }
+        }
+        if(visited == V) return order;
+        else return {};
+    }
+
+    void DFSCycle(int u, vector<int> & color, bool & cycle){
+        if(color[u] == 0){
+            color[u] = 1;
+            for(edge & current : adjList[u]) DFSCycle(current.dest, color, cycle);
+            color[u] = 2;
+        }else if(color[u] == 1){
+            cycle = true;
+        }
+    }
+
+    bool DFSCycle(int u, vector<bool> & visited, int source){
+        visited[u] = true;
+        for(edge & current : adjList[u]){
+            if(!visited[current.dest]){
+                if(DFSCycle(current.dest, visited, u)) return true;
+            }else if(current.dest != source){
+                return true;
+            }
+            return false;
+        }
+    }
+
+    bool hasCycle(){
+        if(dir){
+            vector<int> color(V);
+            bool cycle = false;
+            for(int i = 0; i < V; ++i){
+                DFSCycle(i, color, cycle);
+                if(cycle) return true;
+            }
+            return false;
+        }else{
+            vector<bool> visited(V, false);
+            for(int i = 0; i < V; ++i){
+                if(!visited[i] && DFSCycle(i, visited, -1)) return true;
+            }
+            return false;
+        }
+    }
+
+    void DFSComponents(int source, vector<bool> & visited){
+        visited[source] = true;
+        for(edge & current : adjList[source]){
+            if(!visited[current.dest]){
+                DFSComponents(current.dest, visited);
+            }
+        }
+    }
+
     int components(){
         int ans = 0;
         vector<bool> visited(V, false);
         for(int i = 0; i < V; i++){
             if(!visited[i]){
-                DFS(i, visited);
+                DFSComponents(i, visited);
                 ans++;
             }
         }

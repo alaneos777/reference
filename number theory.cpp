@@ -214,6 +214,51 @@ vector<pair<lli, int>> factorize(lli n){
 	return f;
 }
 
+//divisor power sum of n
+//if pot=0 we get the number of divisors
+//if pot=1 we get the sum of divisors
+lli sigma(lli n, lli pot){
+	lli ans = 1;
+	vector<pair<lli, int>> f = factorize(n);
+	for(auto & factor : f){
+		lli p = factor.first;
+		int a = factor.second;
+		if(pot){
+			lli p_pot = pow(p, pot);
+			ans *= (pow(p_pot, a + 1) - 1) / (p_pot - 1);
+		}else{
+			ans *= a + 1;
+		}
+	}
+	return ans;
+}
+
+//number of total primes with multiplicity dividing n
+int Omega(lli n){
+	int ans = 0;
+	vector<pair<lli, int>> f = factorize(n);
+	for(auto & factor : f){
+		ans += factor.second;
+	}
+	return ans;
+}
+
+//number of distinct primes dividing n
+int omega(lli n){
+	int ans = 0;
+	vector<pair<lli, int>> f = factorize(n);
+	for(auto & factor : f){
+		++ans;
+	}
+	return ans;
+}
+
+int liouvilleLambda(lli n){
+	int exponent = Omega(n);
+	return (exponent & 1) ? -1 : 1;
+}
+
+//number of coprimes with n less than n
 lli phi(lli n){
 	lli ans = n;
 	vector<pair<lli, int>> f = factorize(n);
@@ -223,6 +268,8 @@ lli phi(lli n){
 	return ans;
 }
 
+//the smallest positive integer k such that for
+//every coprime x with n, x^k=1 mod n
 lli carmichaelLambda(lli n){
 	lli ans = 1;
 	vector<pair<lli, int>> f = factorize(n);
@@ -237,6 +284,9 @@ lli carmichaelLambda(lli n){
 	return ans;
 }
 
+//1 if n is square-free with an even number of prime factors
+//-1 if n is square-free with an odd number of prime factors
+//0 is n has a square prime factor
 int mu(lli n){
 	int ans = 1;
 	vector<pair<lli, int>> f = factorize(n);
@@ -263,6 +313,14 @@ lli multiplicativeOrder(lli x, lli m){
 		}
 	}
 	return order;
+}
+
+//number of generators modulo m
+lli numberOfGenerators(lli m){
+	lli phi_m = phi(m);
+	lli lambda_m = carmichaelLambda(m);
+	if(phi_m == lambda_m) return phi(phi_m);
+	else return 0;
 }
 
 //test if order(x, m) = phi(m), i.e., x is a generator for Z/mZ
@@ -339,7 +397,7 @@ pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
 		firstHalf[current] = p;
 		current = (current * a_n) % m;
 	}
-	current = b;
+	current = b % m;
 	for(lli q = 0; q <= n; q++){
 		if(firstHalf.count(current)){
 			lli p = firstHalf[current];
@@ -351,9 +409,9 @@ pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
 	return make_pair(-1, 0);
 }
 
-// x^k = b mod m, m prime
+// x^k = b mod m, m has at least one generator
 vector<lli> discreteRoot(lli k, lli b, lli m){
-	if(b == 0) return {0};
+	if(b % m == 0) return {0};
 	lli g = findFirstGenerator(m);
 	lli power = powMod(g, k, m);
 	pair<lli, lli> y0 = discreteLogarithm(power, b, m);
@@ -486,6 +544,8 @@ int romanToDecimal(string n){
 int mod = 1e9 + 7;
 
 vector<int> P;
+
+//number of ways to write n as a sum of positive integers
 int partitionsP(int n){
 	if(n < 0) return 0;
 	if(P[n]) return P[n];
@@ -536,6 +596,8 @@ int s(int n){
 	}
 }
 
+//number of ways to write n as a sum of distinct positive integers
+//number of ways to write n as a sum of odd positive integers
 int partitionsQ(int n){
 	if(n < 0) return 0;
 	if(Q[n]) return Q[n];
@@ -567,8 +629,72 @@ void calculateFunctionQ(int n){
 	}
 }
 
+//continued fraction of (p+sqrt(n))/q, where p,n,q are positive integers
+//returns a vector of terms and the length of the period,
+//the periodic part is taken from the right of the array
+pair<vector<lli>, int> ContinuedFraction(lli p, lli n, lli q){
+	vector<lli> coef;
+	lli r = sqrt(n);
+	if(r * r == n){
+		lli num = p + r;
+		lli den = q;
+		lli residue;
+		while(den){
+			residue = num % den;
+			coef.push_back(num / den);
+			num = den;
+			den = residue;
+		}
+		return make_pair(coef, 0);
+	}
+	if((n - p * p) % q != 0){
+		n *= q * q;
+		p *= q;
+		q *= q;
+		r = sqrt(n);
+	}
+	lli a = (r + p) / q;
+	coef.push_back(a);
+	int period = 0;
+	map<pair<lli, lli>, int> pairs;
+	while(true){
+		p = a * q - p;
+		q = (n - p * p) / q;
+		a = (r + p) / q;
+		if(pairs.count(make_pair(p, q))){ //if p=0 and q=1, we can just ask if q==1 after inserting a
+			period -= pairs[make_pair(p, q)];
+			break;
+		}
+		coef.push_back(a);
+		pairs[make_pair(p, q)] = period++;
+	}
+	return make_pair(coef, period);
+}
+
+//first solution (x, y) to the equation x^2-ny^2=1
+pair<lli, lli> PellEquation(lli n){
+	vector<lli> cf = ContinuedFraction(0, n, 1).first;
+	lli num = 0, den = 1;
+	int k = cf.size() - 1;
+	for(int i = ((k & 1) ? (2 * k - 1) : (k - 1)); i >= 0; i--){
+		lli tmp = den;
+		int pos = i % k;
+		if(pos == 0 && i != 0) pos = k;
+		den = num + cf[pos] * den;
+		num = tmp;
+	}
+	return make_pair(den, num);
+}
+
 int main(){
-	primesSieve(140);
+	primesSieve(1e5);
+	/*lli p, n, q;
+	cin >> p >> n >> q;
+	auto cf = ContinuedFraction(p, n, q);
+	auto eq = PellEquation(n);
+	cout << "Period: " << cf.second << "\n";
+	for(lli & coef : cf.first) cout << coef << " ";
+	cout << "\n" << eq.first << ", " << eq.second;*/
 	/*int N = 54;
 	for(int i = 1; i < N; i++){
 		cout << i << " " << multiplicativeOrder(i, N) << " " << testPrimitiveRoot(i, N) << "\n";
@@ -579,9 +705,9 @@ int main(){
 		cout << i << " " << testPrimitiveKthRootUnity(i, k, N) << "\n";
 	}*/
 
-	long long int k, m;
+	/*long long int k, m;
 	cin >> k >> m;
-	cout << (long long int)findFirstPrimitiveKthRootUnity(k, m);
+	cout << (long long int)findFirstPrimitiveKthRootUnity(k, m);*/
 
 	/*lli a, b, m;
 	cin >> a >> b >> m;
