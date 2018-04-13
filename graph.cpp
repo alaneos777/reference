@@ -4,51 +4,37 @@ using namespace std;
 
 int inf = numeric_limits<int>::max();
 
-struct node{
-    int value;
-    node * parent;
-    int rank;
-
-    node(int value){
-        this->value = value;
-        this->parent = this;
-        this->rank = 0;
-    }
-};
-
 struct disjointSet{
     int N;
-    vector<node*> nodes;
+    vector<short int> rank;
+    vector<int> parent;
 
     disjointSet(int N){
         this->N = N;
-        nodes.resize(N);
+        parent.resize(N);
+        rank.resize(N);
     }
 
     void makeSet(int v){
-        nodes[v] = new node(v);
+        parent[v] = v;
     }
 
-    node * findSet(int v){
-        node * current = nodes[v];
-        if(current -> value != current -> parent -> value){
-            current -> parent = findSet(current -> parent -> value);
-        }
-        return current -> parent;
+    int findSet(int v){
+        if(v == parent[v]) return v;
+        return parent[v] = findSet(parent[v]);
     }
 
-    node * unionSet(int a, int b){
-        node * p1 = findSet(a);
-        node * p2 = findSet(b);
-        if(p1 -> rank >= p2 -> rank){
-            p2 -> parent = p1;
-            if(p1 -> rank == p2 -> rank){
-                p1 -> rank++;
-            }
-            return p1;
+    void unionSet(int a, int b){
+        a = findSet(a);
+        b = findSet(b);
+        if(a == b) return;
+        if(rank[a] < rank[b]){
+            parent[a] = b;
         }else{
-            p1 -> parent = p2;
-            return p2;
+            parent[b] = a;
+            if(rank[a] == rank[b]){
+                ++rank[a];
+            }
         }
     }
 };
@@ -121,12 +107,12 @@ struct grafo{
     }
 
     void anadir_vertice(int source, int dest, int cost){
-        adjList[source].push_back(edge(dest, cost));
+        adjList[source].push_back(edge(source, dest, cost));
         edges.push_back(edge(source, dest, cost));
         adjMatrix[source][dest] = true;
         costMatrix[source][dest] = cost;
         if(!dir){
-            adjList[dest].push_back(edge(source, cost));
+            adjList[dest].push_back(edge(dest, source, cost));
             adjMatrix[dest][source] = true;
             costMatrix[dest][source] = cost;
         }
@@ -155,22 +141,22 @@ struct grafo{
         cola.push(edge(start, 0));
         paths[start].cost = 0;
         while(!cola.empty()){
-            int source = cola.top().dest;
+            int u = cola.top().dest;
             cola.pop();
-            if(visited[source]) continue;
-            visited[source] = true;
-            for(edge & current : adjList[source]){
-                int dest = current.dest;
-                if(visited[dest]) continue;
-                int nuevo = paths[source].cost + current.cost;
-                if(nuevo == paths[dest].cost && paths[source].size + 1 < paths[dest].size){
-                    paths[dest].previous = source;
-                    paths[dest].size = paths[source].size + 1;
-                }else if(nuevo < paths[dest].cost){
-                    paths[dest].previous = source;
-                    paths[dest].size = paths[source].size + 1;
-                    cola.push(edge(dest, nuevo));
-                    paths[dest].cost = nuevo;
+            if(visited[u]) continue;
+            visited[u] = true;
+            for(edge & current : adjList[u]){
+                int v = current.dest;
+                if(visited[v]) continue;
+                int nuevo = paths[u].cost + current.cost;
+                if(nuevo == paths[v].cost && paths[u].size + 1 < paths[v].size){
+                    paths[v].previous = u;
+                    paths[v].size = paths[u].size + 1;
+                }else if(nuevo < paths[v].cost){
+                    paths[v].previous = u;
+                    paths[v].size = paths[u].size + 1;
+                    cola.push(edge(v, nuevo));
+                    paths[v].cost = nuevo;
                 }
             }
         }
@@ -185,22 +171,22 @@ struct grafo{
         int j = 1;
         while(cambio){
             cambio = false;
-            for(int source = 0; source < V; source++){
-                if(paths[source].cost == inf) continue;
-                for(edge & current : adjList[source]){
-                    int dest = current.dest;
-                    int nuevo = paths[source].cost + current.cost;
-                    if(nuevo == paths[dest].cost && paths[source].size + 1 < paths[dest].size){
-                        paths[dest].previous = source;
-                        paths[dest].size = paths[source].size + 1;
-                    }else if(nuevo < paths[dest].cost){
+            for(int u = 0; u < V; ++u){
+                if(paths[u].cost == inf) continue;
+                for(edge & current : adjList[u]){
+                    int v = current.dest;
+                    int nuevo = paths[u].cost + current.cost;
+                    if(nuevo == paths[v].cost && paths[u].size + 1 < paths[v].size){
+                        paths[v].previous = u;
+                        paths[v].size = paths[u].size + 1;
+                    }else if(nuevo < paths[v].cost){
                         if(j == V){
                             cout << "Ciclo negativo\n";
                             return {};
                         }
-                        paths[dest].previous = source;
-                        paths[dest].size = paths[source].size + 1;
-                        paths[dest].cost = nuevo;
+                        paths[v].previous = u;
+                        paths[v].size = paths[u].size + 1;
+                        paths[v].cost = nuevo;
                         cambio = true;
                     }
                 }
@@ -213,69 +199,62 @@ struct grafo{
 
     vector<vector<int>> floyd(){
         vector<vector<int>> tmp = costMatrix;
-        for(int k = 0; k < V; k++){
-            for(int i = 0; i < V; i++){
-                for(int j = 0; j < V; j++){
+        for(int k = 0; k < V; ++k)
+            for(int i = 0; i < V; ++i)
+                for(int j = 0; j < V; ++j)
                     if(tmp[i][k] != inf && tmp[k][j] != inf)
                         tmp[i][j] = min(tmp[i][j], tmp[i][k] + tmp[k][j]);
-                }
-            }
-        }
         return tmp;
     }
 
     vector<vector<bool>> transitiveClosure(){
         vector<vector<bool>> tmp = adjMatrix;
-        for(int k = 0; k < V; k++){
-            for(int i = 0; i < V; i++){
-                for(int j = 0; j < V; j++){
+        for(int k = 0; k < V; ++k)
+            for(int i = 0; i < V; ++i)
+                for(int j = 0; j < V; ++j)
                     tmp[i][j] = tmp[i][j] || (tmp[i][k] && tmp[k][j]);
-                }
-            }
-        }
         return tmp;
     }
 
     void DFSClosure(int start, int source, vector<vector<bool>> & tmp){
         for(edge & current : adjList[source]){
-            if(!tmp[start][current.dest]){
-                tmp[start][current.dest] = true;
-                DFSClosure(start, current.dest, tmp);
+            int v = current.dest;
+            if(!tmp[start][v]){
+                tmp[start][v] = true;
+                DFSClosure(start, v, tmp);
             }
         }
     }
 
     vector<vector<bool>> transitiveClosureDFS(){
         vector<vector<bool>> tmp(V, vector<bool>(V, false));
-        for(int i = 0; i < V; i++){
-            DFSClosure(i, i, tmp);
-        }
+        for(int u = 0; u < V; u++)
+            DFSClosure(u, u, tmp);
         return tmp;
     }
 
     bool isBipartite(){
         vector<int> side(V, -1);
-        bool is_bipartite = true;
         queue<int> q;
         for (int st = 0; st < V; ++st) {
-            if (side[st] == -1) {
-                q.push(st);
-                side[st] = 0;
-                while (!q.empty()) {
-                    int v = q.front();
-                    q.pop();
-                    for (edge & u : adjList[v]) {
-                        if (side[u.dest] == -1) {
-                            side[u.dest] = side[v] ^ 1;
-                            q.push(u.dest);
-                        } else {
-                            is_bipartite &= side[u.dest] != side[v];
-                        }
+            if(side[st] != -1) continue;
+            q.push(st);
+            side[st] = 0;
+            while (!q.empty()) {
+                int u = q.front();
+                q.pop();
+                for (edge & current : adjList[u]) {
+                    int v = current.dest;
+                    if (side[v] == -1) {
+                        side[v] = side[u] ^ 1;
+                        q.push(v);
+                    } else {
+                        if(side[v] == side[u]) return false;
                     }
                 }
             }
         }
-        return is_bipartite;
+        return true;
     }
 
     vector<int> topologicalSort(){
@@ -284,7 +263,8 @@ struct grafo{
         vector<int> indegree(V);
         for(auto & node : adjList){
             for(edge & current : node){
-                ++indegree[current.dest];
+                int v = current.dest;
+                ++indegree[v];
             }
         }
         queue<int> Q;
@@ -297,8 +277,9 @@ struct grafo{
             order.push_back(source);
             ++visited;
             for(edge & current : adjList[source]){
-                --indegree[current.dest];
-                if(indegree[current.dest] == 0) Q.push(current.dest);
+                int v = current.dest;
+                --indegree[v];
+                if(indegree[v] == 0) Q.push(v);
             }
         }
         if(visited == V) return order;
@@ -308,7 +289,10 @@ struct grafo{
     void DFSCycle(int u, vector<int> & color, bool & cycle){
         if(color[u] == 0){
             color[u] = 1;
-            for(edge & current : adjList[u]) DFSCycle(current.dest, color, cycle);
+            for(edge & current : adjList[u]){
+                int v = current.dest;
+                DFSCycle(v, color, cycle);
+            }
             color[u] = 2;
         }else if(color[u] == 1){
             cycle = true;
@@ -318,9 +302,10 @@ struct grafo{
     bool DFSCycle(int u, vector<bool> & visited, int source){
         visited[u] = true;
         for(edge & current : adjList[u]){
-            if(!visited[current.dest]){
-                if(DFSCycle(current.dest, visited, u)) return true;
-            }else if(current.dest != source){
+            int v = current.dest;
+            if(!visited[v]){
+                if(DFSCycle(v, visited, u)) return true;
+            }else if(v != source){
                 return true;
             }
             return false;
@@ -331,36 +316,97 @@ struct grafo{
         if(dir){
             vector<int> color(V);
             bool cycle = false;
-            for(int i = 0; i < V; ++i){
-                DFSCycle(i, color, cycle);
+            for(int u = 0; u < V; ++u){
+                DFSCycle(u, color, cycle);
                 if(cycle) return true;
             }
             return false;
         }else{
             vector<bool> visited(V, false);
-            for(int i = 0; i < V; ++i){
-                if(!visited[i] && DFSCycle(i, visited, -1)) return true;
+            for(int u = 0; u < V; ++u){
+                if(!visited[u] && DFSCycle(u, visited, -1)) return true;
             }
             return false;
         }
     }
 
+    int articulationBridges(int u, int p, vector<int> & low, vector<int> & label, int & time, vector<bool> & points, vector<edge> & bridges){
+        label[u] = low[u] = ++time;
+        int hijos = 0, ret = 0;
+        for(edge & current : adjList[u]){
+            int v = current.dest;
+            if(v == p && !ret++) continue;
+            if(!label[v]){
+                ++hijos;
+                articulationBridges(v, u, low, label, time, points, bridges);
+                if(label[u] <= low[v])
+                    points[u] = true;
+                else if(label[u] < low[v])
+                    bridges.push_back(current);
+                low[u] = min(low[u], low[v]);
+            }
+            low[u] = min(low[u], label[v]);
+        }
+        return hijos;
+    }
+
+    pair<vector<bool>, vector<edge>> articulationBridges(){
+        vector<int> low(V), label(V);
+        vector<bool> points(V);
+        vector<edge> bridges;
+        int time = 0;
+        for(int u = 0; u < V; ++u)
+            if(!label[u])
+                points[u] = articulationBridges(u, -1, low, label, time, points, bridges) > 1;
+        return make_pair(points, bridges);
+    }
+
+    void scc(int u, vector<int> & low, vector<int> & label, int & time, vector<vector<int>> & ans, stack<int> & S){
+        label[u] = low[u] = ++time;
+        S.push(u);
+        for(edge & current : adjList[u]){
+            int v = current.dest;
+            if(!label[v]) scc(v, low, label, time, ans, S);
+            low[u] = min(low[u], low[v]);
+        }
+        if(label[u] == low[u]){
+            vector<int> comp;
+            while(S.top() != u){
+                comp.push_back(S.top());
+                low[S.top()] = V + 1;
+                S.pop();
+            }
+            comp.push_back(S.top());
+            S.pop();
+            low[u] = V + 1;
+        }
+    }
+
+    vector<vector<int>> scc(){
+        vector<int> low(V), label(V);
+        int time = 0;
+        vector<vector<int>> ans;
+        stack<int> S;
+        for(int u = 0; u < V; ++u)
+            if(!label[u]) scc(u, low, label, time, ans, S);
+        return ans;
+    }
+
     void DFSComponents(int source, vector<bool> & visited){
         visited[source] = true;
         for(edge & current : adjList[source]){
-            if(!visited[current.dest]){
-                DFSComponents(current.dest, visited);
-            }
+            int v = current.dest;
+            if(!visited[v]) DFSComponents(v, visited);
         }
     }
 
     int components(){
         int ans = 0;
         vector<bool> visited(V, false);
-        for(int i = 0; i < V; i++){
-            if(!visited[i]){
-                DFSComponents(i, visited);
-                ans++;
+        for(int u = 0; u < V; ++u){
+            if(!visited[u]){
+                DFSComponents(u, visited);
+                ++ans;
             }
         }
         return ans;
@@ -370,14 +416,15 @@ struct grafo{
         sort(edges.begin(), edges.end());
         vector<edge> MST;
         disjointSet DS(V);
-        for(int i = 0; i < V; i++)
-            DS.makeSet(i);
+        for(int u = 0; u < V; ++u)
+            DS.makeSet(u);
         int i = 0;
         while(i < edges.size() && MST.size() < V - 1){
             edge current = edges[i++];
-            if(DS.findSet(current.source) != DS.findSet(current.dest)){
+            int u = current.source, v = current.dest;
+            if(DS.findSet(u) != DS.findSet(v)){
                 MST.push_back(current);
-                DS.unionSet(current.source, current.dest);
+                DS.unionSet(u, v);
             }
         }
         return MST;

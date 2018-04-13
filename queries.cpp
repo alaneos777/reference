@@ -18,16 +18,24 @@ struct SegmentTree{
 			ST[i] = ST[i << 1] + ST[i << 1 | 1];
 	}
 
-	//single element update
+	//single element update in pos
 	void update(int pos, T value){
-		for(ST[pos += N] = value; pos > 1; pos >>= 1)
-			ST[pos >> 1] = ST[pos] + ST[pos ^ 1];
+		ST[pos += N] = value;
+		while(pos >>= 1)
+			ST[pos] = ST[pos << 1] + ST[pos << 1 | 1];
+	}
+
+	//single element update in [l, r]
+	void update(int l, int r, T value){
+		for(int i = l; i <= r; ++i)
+			ST[N + i] = value;
+		for(int i = r; i > l; --i)
+			ST[i] = ST[i << 1] + ST[i << 1 | 1];
 	}
 
 	//range query, [l, r]
 	T query(int l, int r){
 		++r;
-		l = max(0, l), r = min(N, r);
 		T res = 0;
 		for(l += N, r += N; l < r; l >>= 1, r >>= 1) {
 			if(l & 1) res += ST[l++];
@@ -399,7 +407,7 @@ struct AVLTree
 	}
 };
 
-/*int main(){
+int main(){
 	int n, q, t, pos, value, l, r;
 	cin >> n;
 	vector<int> a(n);
@@ -409,18 +417,21 @@ struct AVLTree
 	cin >> q;
 	while(q--){
 		cin >> t;
-		if(t == 1){ //update
+		if(t == 1){ //update single element
 			cin >> pos >> value;
 			st->update(pos, value);
 		}else if(t == 2){ //query
 			cin >> l >> r;
 			cout << st->query(l, r) << "\n";
+		}else if(t == 3){ //update range with element
+			cin >> l >> r >> value;
+			st->update(l, r, value);
 		}
 	}
 	return 0;
-}*/
+}
 
-int main(){
+/*int main(){
 	int q, t, n, m;
 	AVLTree<int> *avl = new AVLTree<int>;
 	cin >> q;
@@ -447,4 +458,4 @@ int main(){
 		}
 	}
 	return 0;
-}
+}*/
