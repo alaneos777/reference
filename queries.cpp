@@ -27,19 +27,23 @@ struct SegmentTree{
 
 	//single element update in [l, r]
 	void update(int l, int r, T value){
+		l += N, r += N;
 		for(int i = l; i <= r; ++i)
-			ST[N + i] = value;
-		for(int i = r; i > l; --i)
-			ST[i] = ST[i << 1] + ST[i << 1 | 1];
+			ST[i] = value;
+		l >>= 1, r >>= 1;
+		while(l >= 1){
+			for(int i = r; i >= l; --i)
+				ST[i] = ST[i << 1] + ST[i << 1 | 1];
+			l >>= 1, r >>= 1;
+		}
 	}
 
 	//range query, [l, r]
 	T query(int l, int r){
-		++r;
 		T res = 0;
-		for(l += N, r += N; l < r; l >>= 1, r >>= 1) {
+		for(l += N, r += N; l <= r; l >>= 1, r >>= 1) {
 			if(l & 1) res += ST[l++];
-			if(r & 1) res += ST[--r];
+			if(!(r & 1)) res += ST[r--];
 		}
 		return res;
 	}
@@ -82,6 +86,16 @@ struct FenwickTree{
 	//range query, [l, r]
 	T query(int l, int r){
 		return query(r) - query(l - 1);
+	}
+};
+
+struct MOquery{
+	int l, r, index, S;
+	bool operator<(const MOquery & q) const{
+		int c_o = l / S, c_q = q.l / S;
+		if(c_o == c_q)
+			return r < q.r;
+		return c_o < c_q;
 	}
 };
 
@@ -135,6 +149,31 @@ struct SQRT{
 		}
 		return res;
 	}
+
+	vector<T> MO(vector<MOquery> & queries){
+		vector<T> ans(queries.size());
+		sort(queries.begin(), queries.end());
+		T current = 0;
+		int prevL = 0, prevR = -1;
+		int i, j;
+		for(const MOquery & q : queries){
+			for(i = prevL, j = min(prevR, q.l - 1); i <= j; ++i){
+				current -= A[i];
+			}
+			for(i = q.l; i <= prevL - 1; ++i){
+				current += A[i];
+			}
+			for(i = max(prevR + 1, q.l); i <= q.r; ++i){
+				current += A[i];
+			}
+			for(i = q.r + 1; i <= prevR; ++i){
+				current -= A[i];
+			}
+			prevL = q.l, prevR = q.r;
+			ans[q.index] = current;
+		}
+		return ans;
+	}
 };
 
 template<typename T>
@@ -149,15 +188,19 @@ struct AVLNode
 	AVLNode(T value){
 		left = right = NULL;
 		this->value = value;
-		height = 1, size = 0;
+		height = 1, size = 1;
 	}
 
-	short int balance(){
+	inline short int balance(){
 		return (right ? right->height : 0) - (left ? left->height : 0);
 	}
 
-	void updateHeight(){
+	inline void updateHeight(){
 		height = 1 + max(left ? left->height : 0, right ? right->height : 0);
+	}
+
+	inline void updateSize(){
+		size = 1 + (left ? left->size : 0) + (right ? right->size : 0);
 	}
 
 	AVLNode *maxLeftChild(){
@@ -184,8 +227,8 @@ struct AVLTree
 		size = 0;
 	}
 
-	int nodeSize(AVLNode<T> *& pos){
-		return pos ? pos->size + 1: 0;
+	inline int nodeSize(AVLNode<T> *& pos){
+		return pos ? pos->size: 0;
 	}
 
 	void leftRotate(AVLNode<T> *& x){
@@ -193,11 +236,8 @@ struct AVLTree
 		AVLNode<T> *t = y->left;
 		y->left = x;
 		x->right = t;
-		x->updateHeight();
-		y->updateHeight();
-		int size = nodeSize(t);
-		x->size = x->size - (y->size + 1) + size;
-		y->size = y->size - size + (x->size + 1);
+		x->updateHeight(), x->updateSize();
+		y->updateHeight(), y->updateSize();
 		x = y;
 	}
 
@@ -206,11 +246,8 @@ struct AVLTree
 		AVLNode<T> *t = x->right;
 		x->right = y;
 		y->left = t;
-		y->updateHeight();
-		x->updateHeight();
-		int size = nodeSize(t);
-		y->size = y->size - (x->size + 1) + size;
-		x->size = x->size - size + (y->size + 1);
+		y->updateHeight(), y->updateSize();
+		x->updateHeight(), x->updateSize();
 		y = x;
 	}
 
@@ -239,7 +276,7 @@ struct AVLTree
 		pos = new AVLNode<T>(arr[m]);
 		build(pos->left, arr, i, m - 1);
 		build(pos->right, arr, m + 1, j);
-		pos->size = j - i;
+		pos->size = j - i + 1;
 		pos->updateHeight();
 	}
 
@@ -407,7 +444,7 @@ struct AVLTree
 	}
 };
 
-int main(){
+/*int main(){
 	int n, q, t, pos, value, l, r;
 	cin >> n;
 	vector<int> a(n);
@@ -429,9 +466,29 @@ int main(){
 		}
 	}
 	return 0;
-}
+}*/
 
 /*int main(){
+	int n, q, l, r;
+	cin >> n;
+	vector<int> a(n);
+	for(int i = 0; i < n; i++) cin >> a[i];
+	SQRT<int> *s = new SQRT<int>(n);
+	s->build(a);
+	cin >> q;
+	vector<MOquery> queries(q);
+	for(int i = 0; i < q; ++i){
+		cin >> l >> r;
+		queries[i] = {l, r, i, s->S};
+	}
+	vector<int> ans = s->MO(queries);
+	for(int & x : ans){
+		cout << x << "\n";
+	}
+}
+*/
+
+int main(){
 	int q, t, n, m;
 	AVLTree<int> *avl = new AVLTree<int>;
 	cin >> q;
@@ -458,4 +515,4 @@ int main(){
 		}
 	}
 	return 0;
-}*/
+}

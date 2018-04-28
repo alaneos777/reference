@@ -84,7 +84,8 @@ lli modularInverse(lli a, lli m){
 	while(r1){
 		si = s0 - s1 * (r0 / r1), s0 = s1, s1 = si;
 		ri = r0 % r1, r0 = r1, r1 = ri;
-	} 
+	}
+	if(r0 < 0) s0 *= -1;
 	if(s0 < 0) s0 += m;
 	return s0;
 }
@@ -391,7 +392,6 @@ pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
 	lli a_n = powMod(a, n, m);
 	lli ans = 0;
 	unordered_map<lli, lli> firstHalf;
-	set<lli> solutions;
 	lli current = a_n;
 	for(lli p = 1; p <= n; p++){
 		firstHalf[current] = p;
@@ -541,29 +541,29 @@ int romanToDecimal(string n){
 	return ans;
 }
 
-int mod = 1e9 + 7;
+lli mod = 1e9 + 7;
 
-vector<int> P;
+vector<lli> P;
 
 //number of ways to write n as a sum of positive integers
-int partitionsP(int n){
+lli partitionsP(int n){
 	if(n < 0) return 0;
 	if(P[n]) return P[n];
-	int ans = 0, tmp, pos1 = 1, pos2 = 2, inc1 = 4, inc2 = 5;
+	int pos1 = 1, pos2 = 2, inc1 = 4, inc2 = 5;
+	lli ans = 0;
 	for(int k = 1; k <= n; k++){
-		tmp = (n >= pos1 ? P[n - pos1] : 0) + (n >= pos2 ? P[n - pos2] : 0);
-		if(tmp >= mod) tmp -= mod;
+		lli tmp = (n >= pos1 ? P[n - pos1] : 0) + (n >= pos2 ? P[n - pos2] : 0);
 		if(k & 1){
 			ans += tmp;
-			if(ans >= mod) ans -= mod;
 		}else{
 			ans -= tmp;
-			if(ans < 0) ans += mod;
 		}
 		if(n < pos2) break;
 		pos1 += inc1, pos2 += inc2;
 		inc1 += 3, inc2 += 3;
 	}
+	ans %= mod;
+	if(ans < 0) ans += mod;
 	return ans;
 }
 
@@ -575,7 +575,7 @@ void calculateFunctionP(int n){
 	}
 }
 
-vector<int> Q;
+vector<lli> Q;
 
 bool isPerfectSquare(int n){
 	int r = sqrt(n);
@@ -598,25 +598,24 @@ int s(int n){
 
 //number of ways to write n as a sum of distinct positive integers
 //number of ways to write n as a sum of odd positive integers
-int partitionsQ(int n){
+lli partitionsQ(int n){
 	if(n < 0) return 0;
 	if(Q[n]) return Q[n];
-	int ans = 0, pos = 1, inc = 3;
+	int pos = 1, inc = 3;
+	lli ans = 0;
 	int limit = sqrt(n);
 	for(int k = 1; k <= limit; k++){
 		if(k & 1){
 			ans += Q[n - pos];
-			if(ans >= mod) ans -= mod;
 		}else{
 			ans -= Q[n - pos];
-			if(ans < 0) ans += mod;
 		}
 		pos += inc;
 		inc += 2;
 	}
 	ans <<= 1;
 	ans += s(n);
-	if(ans >= mod) ans -= mod;
+	ans %= mod;
 	if(ans < 0) ans += mod;
 	return ans;
 }
@@ -726,9 +725,9 @@ int main(){
 		cout << "P(" << i << ") = " << P[i] << "\n";
 	}*/
 
-	/*calculateFunctionQ(1e5);
+	calculateFunctionQ(1e5);
 	for(int i = 99900; i <= 100000; i++){
 		cout << "Q(" << i << ") = " << Q[i] << "\n";
-	}*/
+	}
 	return 0;
 }

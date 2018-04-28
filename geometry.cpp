@@ -78,6 +78,17 @@ struct point{
 	}
 };
 
+istream &operator>>(istream &is, point & P){
+	point p;
+    is >> p.x >> p.y;
+    P = p;
+    return is;
+}
+
+ostream &operator<<(ostream &os, const point & p) { 
+    return os << fixed << setprecision(8) << p.x << " " << p.y;
+}
+
 int sgn(double x){
 	if(abs(x) < eps){
 		return 0;
@@ -157,7 +168,7 @@ int intersectSegmentsInfo(point & a, point & b, point & c, point & d){
 
 double distancePointLine(point & a, point & v, point & p){
 	//line: a + tv, point p
-	return v.cross(p - a) / v.length();
+	return abs(v.cross(p - a)) / v.length();
 }
 
 double perimeter(vector<point> & points){
@@ -220,15 +231,4 @@ int pointInPolygon(vector<point> & points, point & p){
 		rays += (intersectSegmentsInfo(p, bottomLeft, points[i], points[(i + 1) % n]) == 1 ? 1 : 0);
 	}
 	return rays & 1; //0: point outside, 1: point inside
-}
-
-istream &operator>>(istream &is, point & P){
-	point p;
-    is >> p.x >> p.y;
-    P = p;
-    return is;
-}
-
-ostream &operator<<(ostream &os, const point & p) { 
-    return os << fixed << setprecision(2) << p.x << " " << p.y;
 }

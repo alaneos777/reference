@@ -1,0 +1,337 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\decimalpoint
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[margin=0.8in,landscape]{geometry}
+\usepackage{fancyhdr}
+\usepackage[inline]{enumitem}
+\usepackage{float}
+\usepackage{cancel}
+\usepackage{bigints}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{listingsutf8}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{apacite}
+\usepackage{minted}
+\usepackage{tcolorbox}
+\usepackage{multicol}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks,
+	citecolor=black,
+	filecolor=black,
+	linkcolor=black,
+	urlcolor=black
+}
+\twocolumn
+\usepackage{tipa}
+\pagestyle{fancy}
+\newcommand{\xvdash}[1]{%
+	\vdash^{\mkern-10mu\scriptscriptstyle\rule[-.9ex]{0pt}{0pt}#1}%
+}
+\setlength{\headheight}{15pt} 
+\lhead{Reference}
+\rhead{\thepage}
+\lfoot{ESCOM-IPN}
+\renewcommand{\footrulewidth}{0.5pt}
+\setlength{\parskip}{0.5em}
+\newcommand{\ve}[1]{\overrightarrow{#1}}
+\newcommand{\abs}[1]{\left\lvert #1 \right\lvert}
+\newcommand{\blank}{\text{\textcrb}}
+\title{Reference}
+
+\lstdefinestyle{customc}{
+	belowcaptionskip=1\baselineskip,
+	breaklines=true,
+	frame=L,
+	xleftmargin=\parindent,
+	language=C++,
+	showstringspaces=false,
+	basicstyle=\ttfamily,
+	keywordstyle=\bfseries\color{green!40!black},
+	commentstyle=\itshape\color{purple!40!black},
+	identifierstyle=\color{blue},
+	numbers=left,
+	stringstyle=\color{orange},
+}
+
+\begin{document}
+	\tableofcontents
+	
+	\clearpage
+	\section{Teoría de números}
+		\subsection{Funciones básicas}
+			\subsubsection{Función piso y techo}
+			\inputminted[tabsize=2,breaklines,firstline=5,lastline=21,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Exponenciación y multiplicación binaria}
+			\inputminted[tabsize=2,breaklines,firstline=23,lastline=46,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Mínimo común múltiplo y máximo común divisor}
+			\inputminted[tabsize=2,breaklines,firstline=48,lastline=68,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Euclides extendido e inverso modular}
+			\inputminted[tabsize=2,breaklines,firstline=70,lastline=91,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Exponenciación binaria modular}
+			\inputminted[tabsize=2,breaklines,firstline=93,lastline=106,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Teorema chino del residuo}
+			\inputminted[tabsize=2,breaklines,firstline=108,lastline=117,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Coeficiente binomial}
+			\inputminted[tabsize=2,breaklines,firstline=450,lastline=458,fontsize=\small]{c++}{numberTheory.cpp}
+		
+		\subsection{Cribas}
+			\subsubsection{Criba de divisores}
+			\inputminted[tabsize=2,breaklines,firstline=119,lastline=130,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Criba de primos}
+			\inputminted[tabsize=2,breaklines,firstline=132,lastline=149,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Criba de factor primo más pequeño}
+			\inputminted[tabsize=2,breaklines,firstline=151,lastline=164,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Criba de factores primos}
+			\inputminted[tabsize=2,breaklines,firstline=166,lastline=175,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Criba de la función $\varphi$ de Euler}
+			\inputminted[tabsize=2,breaklines,firstline=177,lastline=188,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Triángulo de Pascal}
+			\inputminted[tabsize=2,breaklines,firstline=190,lastline=201,fontsize=\small]{c++}{numberTheory.cpp}
+		
+		\subsection{Factorización}
+			\subsubsection{Factorización de un número}
+			\inputminted[tabsize=2,breaklines,firstline=203,lastline=216,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Potencia de un primo que divide a un factorial}
+			\inputminted[tabsize=2,breaklines,firstline=431,lastline=439,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Factorización de un factorial}
+			\inputminted[tabsize=2,breaklines,firstline=441,lastline=448,fontsize=\small]{c++}{numberTheory.cpp}
+		
+		\subsection{Funciones multiplicativas famosas}
+			\subsubsection{Función $\sigma$}
+			\inputminted[tabsize=2,breaklines,firstline=218,lastline=235,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Función $\Omega$}
+			\inputminted[tabsize=2,breaklines,firstline=237,lastline=245,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Función $\omega$}
+			\inputminted[tabsize=2,breaklines,firstline=247,lastline=255,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Función $\varphi$ de Euler}
+			\inputminted[tabsize=2,breaklines,firstline=262,lastline=270,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Función $\mu$}
+			\inputminted[tabsize=2,breaklines,firstline=288,lastline=299,fontsize=\small]{c++}{numberTheory.cpp}
+			
+		\subsection{Orden multiplicativo, raíces primitivas y raíces de la unidad}
+			\subsubsection{Función $\lambda$ de Carmichael}
+			\inputminted[tabsize=2,breaklines,firstline=272,lastline=286,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Orden multiplicativo módulo $m$}
+			\inputminted[tabsize=2,breaklines,firstline=301,lastline=317,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Número de raíces primitivas (generadores) módulo $m$}
+			\inputminted[tabsize=2,breaklines,firstline=319,lastline=325,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Test individual de raíz primitiva módulo $m$}
+			\inputminted[tabsize=2,breaklines,firstline=327,lastline=337,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Test individual de raíz $k$-ésima de la unidad módulo $m$}
+			\inputminted[tabsize=2,breaklines,firstline=339,lastline=348,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Encontrar la primera raíz primitiva módulo $m$}
+			\inputminted[tabsize=2,breaklines,firstline=350,lastline=367,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Encontrar la primera raíz $k$-ésima de la unidad módulo $m$}
+			\inputminted[tabsize=2,breaklines,firstline=369,lastline=385,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Logaritmo discreto}
+			\inputminted[tabsize=2,breaklines,firstline=387,lastline=410,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Raíz $k$-ésima discreta}
+			\inputminted[tabsize=2,breaklines,firstline=412,lastline=429,fontsize=\small]{c++}{numberTheory.cpp}
+			
+		\subsection{Particiones}
+			\subsubsection{Función $P$ (particiones de un entero positivo)}
+			\inputminted[tabsize=2,breaklines,firstline=544,lastline=576,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Función $Q$ (particiones de un entero positivo en distintos sumandos)}
+			\inputminted[tabsize=2,breaklines,firstline=578,lastline=629,fontsize=\small]{c++}{numberTheory.cpp}
+			
+		\subsection{Otros}
+			\subsubsection{Fracciones continuas}
+			\inputminted[tabsize=2,breaklines,firstline=631,lastline=671,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Ecuación de Pell}
+			\inputminted[tabsize=2,breaklines,firstline=673,lastline=686,fontsize=\small]{c++}{numberTheory.cpp}
+			
+	\newpage
+	\section{Números racionales}
+		\subsection{Estructura \texttt{fraccion}}
+		\inputminted[tabsize=2,breaklines,firstline=7,lastline=125,fontsize=\small]{c++}{fraccion.cpp}
+		
+	\newpage
+	\section{Álgebra lineal}
+		\subsection{Estructura \texttt{matrix}}
+		\inputminted[tabsize=2,breaklines,firstline=9,lastline=33,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=122,lastline=227,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Gauss Jordan}
+		\inputminted[tabsize=2,breaklines,firstline=35,lastline=73,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Matriz inversa}
+		\inputminted[tabsize=2,breaklines,firstline=80,lastline=86,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=260,lastline=281,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Transpuesta}
+		\inputminted[tabsize=2,breaklines,firstline=250,lastline=258,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Traza}
+		\inputminted[tabsize=2,breaklines,firstline=283,lastline=289,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Determinante}
+		\inputminted[tabsize=2,breaklines,firstline=291,lastline=307,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Matriz de cofactores y adjunta}
+		\inputminted[tabsize=2,breaklines,firstline=341,lastline=376,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Factorización $PA=LU$}
+		\inputminted[tabsize=2,breaklines,firstline=378,lastline=394,fontsize=\small]{c++}{matrix.cpp}
+		
+	\newpage
+	\section{FFT}
+		\subsection{Funciones previas}
+		\inputminted[tabsize=2,breaklines,firstline=3,lastline=15,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=32,lastline=47,fontsize=\small]{c++}{fft.cpp}
+		
+		\subsection{FFT con raíces de la unidad complejas}
+		\inputminted[tabsize=2,breaklines,firstline=49,lastline=77,fontsize=\small]{c++}{fft.cpp}
+		
+		\subsection{FFT con raíces de la unidad discretas (NTT)}
+		\inputminted[tabsize=2,breaklines,firstline=17,lastline=20,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=79,lastline=105,fontsize=\small]{c++}{fft.cpp}
+			\subsubsection{Otros valores para escoger la raíz y el módulo}
+				\begin{table}[H]
+					\centering
+					\begin{tabular}{|p{2cm}|p{1.7cm}|p{2cm}|p{4.5cm}|}
+						\hline
+						Raíz $k$-ésima de la unidad ($\omega$) & $\omega^{-1}$ & Tamaño máximo del arreglo ($k$) & Módulo $p$ \\ \hline
+						15 & 30584 & $2^{14}$ & $4 \times 2^{14} + 1 = 65537$ \\ \hline
+						9 & 7282 & $2^{15}$ & $2 \times 2^{15} + 1 = 65537$ \\ \hline
+						3 & 21846 & $2^{16}$ & $1 \times 2^{16} + 1 = 65537$ \\ \hline
+						8 & 688129 & $2^{17}$ & $6 \times 2^{17} + 1 = 786433$ \\ \hline
+						5 & 471860 & $2^{18}$ & $3 \times 2^{18} + 1 = 786433$ \\ \hline
+						12 & 3364182 & $2^{19}$ & $11 \times 2^{19} + 1 = 5767169$ \\ \hline
+						\textbf{5} & \textbf{4404020} & $\mathbf{2^{20}}$ & $7 \times 2^{20} + 1 = \textbf{7340033}$ \\ \hline
+						38 & 21247462 & $2^{21}$ & $11 \times 2^{21} + 1 = 23068673$ \\ \hline
+						21 & 49932191 & $2^{22}$ & $25 \times 2^{22} + 1 = 104857601$ \\ \hline
+						4 & 125829121 & $2^{23}$ & $20 \times 2^{23} + 1 = 167772161$ \\ \hline
+						2 & 83886081 & $2^{24}$ & $10 \times 2^{24} + 1 = 167772161$ \\ \hline
+						17 & 29606852 & $2^{25}$ & $5 \times 2^{25} + 1 = 167772161$ \\ \hline
+						30 & 15658735 & $2^{26}$ & $7 \times 2^{26} + 1 = 469762049$ \\ \hline
+						137 & 749463956 & $2^{27}$ & $15 \times 2^{27} + 1 = 2013265921$ \\ \hline
+					\end{tabular}
+				\end{table}
+		
+		\subsection{Aplicaciones}
+			\subsubsection{Multiplicación de polinomios}
+			\inputminted[tabsize=2,breaklines,firstline=107,lastline=133,fontsize=\small]{c++}{fft.cpp}
+			
+			\subsubsection{Multiplicación de números enteros grandes}
+			\inputminted[tabsize=2,breaklines,firstline=135,lastline=171,fontsize=\small]{c++}{fft.cpp}
+			
+	\newpage
+	\section{Geometría}
+		\subsection{Estructura \texttt{point}}
+		\inputminted[tabsize=2,breaklines,firstline=4,lastline=100,fontsize=\small]{c++}{geometry.cpp}
+
+		\subsection{Verificar si un punto pertenece a una línea o segmento}
+		\inputminted[tabsize=2,breaklines,firstline=102,lastline=111,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Intersección de líneas}
+		\inputminted[tabsize=2,breaklines,firstline=113,lastline=133,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Intersección de segmentos}
+		\inputminted[tabsize=2,breaklines,firstline=150,lastline=167,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Distancia punto-recta}
+		\inputminted[tabsize=2,breaklines,firstline=169,lastline=172,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Perímetro y área de un polígono}
+		\inputminted[tabsize=2,breaklines,firstline=174,lastline=190,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Envolvente convexa (convex hull) de un polígono}
+		\inputminted[tabsize=2,breaklines,firstline=192,lastline=211,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Verificar si un punto pertenece al perímetro de un polígono}
+		\inputminted[tabsize=2,breaklines,firstline=213,lastline=221,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Verificar si un punto pertenece a un polígono}
+		\inputminted[tabsize=2,breaklines,firstline=223,lastline=234,fontsize=\small]{c++}{geometry.cpp}
+		
+	\newpage
+	\section{Grafos}
+		\subsection{Estructura \texttt{disjointSet}}
+		\inputminted[tabsize=2,breaklines,firstline=7,lastline=40,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Estructura \texttt{edge}}
+		\inputminted[tabsize=2,breaklines,firstline=42,lastline=81,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Estructura \texttt{path}}
+		\inputminted[tabsize=2,breaklines,firstline=83,lastline=88,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsubsection{Estructura \texttt{graph}}
+		\inputminted[tabsize=2,breaklines,firstline=90,lastline=130,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Dijkstra con reconstrucción del camino más corto con menos vértices}
+		\inputminted[tabsize=2,breaklines,firstline=132,lastline=159,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Bellman Ford con reconstrucción del camino más corto con menos vértices}
+		\inputminted[tabsize=2,breaklines,firstline=161,lastline=195,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Floyd}
+		\inputminted[tabsize=2,breaklines,firstline=197,lastline=205,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Cerradura transitiva $O(V^3)$}
+		\inputminted[tabsize=2,breaklines,firstline=207,lastline=214,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Cerradura transitiva $O(V^2)$}
+		\inputminted[tabsize=2,breaklines,firstline=216,lastline=231,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Verificar si el grafo es bipartito}
+		\inputminted[tabsize=2,breaklines,firstline=233,lastline=255,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Orden topológico}
+		\inputminted[tabsize=2,breaklines,firstline=257,lastline=284,fontsize=\small]{c++}{graph.cpp}
+
+		\subsection{Detectar ciclos}
+		\inputminted[tabsize=2,breaklines,firstline=286,lastline=328,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Puentes y puntos de articulación}
+		\inputminted[tabsize=2,breaklines,firstline=330,lastline=359,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Componentes fuertemente conexas}
+		\inputminted[tabsize=2,breaklines,firstline=361,lastline=391,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Árbol mínimo de expansión (Kruskal)}
+		\inputminted[tabsize=2,breaklines,firstline=413,lastline=429,fontsize=\small]{c++}{graph.cpp}
+		
+	\newpage
+	\section{Estructuras de datos}
+		\subsection{Segment Tree}
+		\inputminted[tabsize=2,breaklines,firstline=4,lastline=50,fontsize=\small]{c++}{queries.cpp}
+		
+		\subsection{Fenwick Tree}
+		\inputminted[tabsize=2,breaklines,firstline=52,lastline=90,fontsize=\small]{c++}{queries.cpp}
+
+\end{document}
