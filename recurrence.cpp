@@ -2,7 +2,7 @@
 using namespace std;
 typedef long long int lli;
 
-lli mod = 1e9 + 7;
+lli mod = 1e7 + 19;
 
 void multByOne(lli *polynomial, lli *original, int degree){
 	lli first = polynomial[degree - 1];
