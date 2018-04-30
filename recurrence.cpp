@@ -2,47 +2,58 @@
 using namespace std;
 typedef long long int lli;
 
-lli mod = 1e7 + 19;
+lli mod = 1e9 + 7;
 
-void multByOne(vector<lli> & polynomial, vector<lli> & original){
-	lli first = polynomial.back();
-	for(int i = polynomial.size() - 1; i >= 0; i--){
-		polynomial[i] = (first * original[i]) % mod;
+void multByOne(lli *polynomial, lli *original, int degree){
+	lli first = polynomial[degree - 1];
+	for(int i = degree - 1; i >= 0; --i){
+		polynomial[i] = first * original[i];
 		if(i > 0){
 			polynomial[i] += polynomial[i - 1];
-			polynomial[i] %= mod;
 		}
+	}
+	for(int i = 0; i < degree; ++i){
+		polynomial[i] %= mod;
 	}
 }
 
-vector<lli> mult(vector<lli> & P, vector<lli> & Q, vector<vector<lli>> & residues){
-	int degree = P.size();
-	vector<lli> R(degree), S(degree - 1);
+lli *mult(lli *P, lli *Q, lli **residues, int degree){
+	lli *R = new lli[degree]();
+	lli *S = new lli[degree - 1]();
 	for(int i = 0; i < degree; i++){
 		for(int j = 0; j < degree; j++){
-			int pos = i + j;
-			if(pos < degree){
-				R[pos] += (P[i] * Q[j]) % mod;
-				R[pos] %= mod;
+			if(i + j < degree){
+				R[i + j] += P[i] * Q[j];
 			}else{
-				pos -= degree;
-				S[pos] += (P[i] * Q[j]) % mod;
-				S[pos] %= mod;
+				S[i + j - degree] += P[i] * Q[j];
 			}
 		}
 	}
 	for(int i = 0; i < degree - 1; i++){
+		S[i] %= mod;
+	}
+	for(int i = 0; i < degree - 1; i++){
 		for(int j = 0; j < degree; j++){
-			R[j] += (S[i] * residues[i][j]) % mod;
-			R[j] %= mod;
+			R[j] += S[i] * residues[i][j];
 		}
+	}
+	for(int i = 0; i < degree; i++){
+		R[i] %= mod;
 	}
 	return R;
 }
 
-lli solveRecurrence(vector<lli> & charPoly, vector<lli> & initValues, vector<vector<lli>> & residues, lli n){
-	int degree = charPoly.size();
-	vector<lli> tmp(degree), ans(degree);
+lli solveRecurrence(lli *charPoly, lli *initValues, int degree, lli n){
+	lli **residues = new lli*[degree - 1];
+	lli *current = new lli[degree];
+	copy(charPoly, charPoly + degree, current);
+	for(int i = 0; i < degree - 1; i++){
+		residues[i] = new lli[degree];
+		copy(current, current + degree, residues[i]);
+		if(i != degree - 2) multByOne(current, charPoly, degree);
+	}
+	lli *tmp = new lli[degree]();
+	lli *ans = new lli[degree]();
 	ans[0] = 1;
 	if(degree > 1){
 		tmp[1] = 1;
@@ -50,39 +61,31 @@ lli solveRecurrence(vector<lli> & charPoly, vector<lli> & initValues, vector<vec
 		tmp[0] = charPoly[0];
 	}
 	while(n){
-		if(n & 1) ans = mult(ans, tmp, residues);
+		if(n & 1) ans = mult(ans, tmp, residues, degree);
 		n >>= 1;
-		if(n) tmp = mult(tmp, tmp, residues);
+		if(n) tmp = mult(tmp, tmp, residues, degree);
 	}
 	lli nValue = 0;
 	for(int i = 0; i < degree; i++){
-		nValue += (ans[i] * initValues[i]) % mod;
-		nValue %= mod;
+		nValue += ans[i] * initValues[i];
 	}
-	if(nValue < 0) nValue += mod;
-	return nValue;
+	return nValue % mod;
 }
 
 int main(){
 	int degree;
 	cin >> degree;
-	vector<lli> charPoly(degree), initValues(degree);
+	lli *charPoly = new lli[degree];
+	lli *initValues = new lli[degree];
 	for(int i = 0; i < degree; i++){
 		cin >> charPoly[i];
 	}
 	for(int i = 0; i < degree; i++){
 		cin >> initValues[i];
 	}
-	vector<vector<lli>> residues;
-	vector<lli> current = charPoly;
-	for(int i = 0; i < degree - 1; i++){
-		residues.push_back(current);
-		if(i != degree - 2) multByOne(current, charPoly);
-	}
-
 	lli n;
 	cin >> n;
-	lli F_n = solveRecurrence(charPoly, initValues, residues, n);
+	lli F_n = solveRecurrence(charPoly, initValues, degree, n);
 	cout << F_n;
 	return 0;
 }

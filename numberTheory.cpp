@@ -402,7 +402,7 @@ pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
 		if(firstHalf.count(current)){
 			lli p = firstHalf[current];
 			lli x = n * p - q;
-			return make_pair(x, order);
+			return make_pair(x % order, order);
 		}
 		current = (current * a) % m;
 	}
