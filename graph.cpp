@@ -1,8 +1,7 @@
 #include <bits/stdc++.h>
-
 using namespace std;
 
-int inf = numeric_limits<int>::max();
+int inf = 1 << 30;
 
 struct disjointSet{
 	int N;
@@ -57,26 +56,10 @@ struct edge{
 		return source == b.source && dest == b.dest && cost == b.cost;
 	}
 	bool operator<(const edge & b) const{
-		if(cost == b.cost){
-			if(dest == b.dest){
-				return source < b.source;
-			}else{
-				return dest < b.dest;
-			}
-		}else{
-			return cost < b.cost;
-		}
+		return cost < b.cost;
 	}
 	bool operator>(const edge & b) const{
-		if(cost == b.cost){
-			if(dest == b.dest){
-				return source > b.source;
-			}else{
-				return dest > b.dest;
-			}
-		}else{
-			return cost > b.cost;
-		}
+		return cost > b.cost;
 	}
 };
 
@@ -213,8 +196,8 @@ struct graph{
 		return tmp;
 	}
 
-	void DFSClosure(int start, int source, vector<vector<bool>> & tmp){
-		for(edge & current : adjList[source]){
+	void DFSClosure(int start, int u, vector<vector<bool>> & tmp){
+		for(edge & current : adjList[u]){
 			int v = current.dest;
 			if(!tmp[start][v]){
 				tmp[start][v] = true;
@@ -283,48 +266,25 @@ struct graph{
 		else return {};
 	}
 
-	void DFSCycle(int u, vector<int> & color, bool & cycle){
-		if(color[u] == 0){
-			color[u] = 1;
-			for(edge & current : adjList[u]){
-				int v = current.dest;
-				DFSCycle(v, color, cycle);
-			}
-			color[u] = 2;
-		}else if(color[u] == 1){
-			cycle = true;
-		}
-	}
-
-	bool DFSCycle(int u, vector<bool> & visited, int source){
-		visited[u] = true;
+	bool DFSCycle(int u, int parent, vector<int> & color){
+		color[u] = 1;
 		for(edge & current : adjList[u]){
 			int v = current.dest;
-			if(!visited[v]){
-				if(DFSCycle(v, visited, u)) return true;
-			}else if(v != source){
+			if(color[v] == 0)
+				return DFSCycle(v, u, color);
+			else if(color[v] == 1 && (dir || v != parent))
 				return true;
-			}
-			return false;
 		}
+		color[u] = 2;
+		return false;
 	}
 
 	bool hasCycle(){
-		if(dir){
-			vector<int> color(V);
-			bool cycle = false;
-			for(int u = 0; u < V; ++u){
-				DFSCycle(u, color, cycle);
-				if(cycle) return true;
-			}
-			return false;
-		}else{
-			vector<bool> visited(V, false);
-			for(int u = 0; u < V; ++u){
-				if(!visited[u] && DFSCycle(u, visited, -1)) return true;
-			}
-			return false;
-		}
+		vector<int> color(V);
+		for(int u = 0; u < V; ++u)
+			if(color[u] == 0 && DFSCycle(u, -1, color))
+				return true;
+		return false;
 	}
 
 	int articulationBridges(int u, int p, vector<int> & low, vector<int> & label, int & time, vector<bool> & points, vector<edge> & bridges){
@@ -428,6 +388,62 @@ struct graph{
 		return MST;
 	}
 
+	bool tryKuhn(int u, vector<bool> & used, vector<int> & left, vector<int> & right){
+		if(used[u]) return false;
+		used[u] = true;
+		for(edge & current : adjList[u]){
+			int v = current.dest;
+			if(right[v] == -1 || tryKuhn(right[v], used, left, right)){
+				right[v] = u;
+				left[u] = v;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool augmentingPath(int u, vector<bool> & used, vector<int> & left, vector<int> & right){
+		used[u] = true;
+		for(edge & current : adjList[u]){
+			int v = current.dest;
+			if(right[v] == -1){
+				right[v] = u;
+				left[u] = v;
+				return true;
+			}
+		}
+		for(edge & current : adjList[u]){
+			int v = current.dest;
+			if(!used[right[v]] && augmentingPath(right[v], used, left, right)){
+				right[v] = u;
+				left[u] = v;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//vertices from the left side numbered from 0 to l-1
+	//vertices from the right side numbered from 0 to r-1
+	//graph[u] represents the left side
+	//graph[u][v] represents the right side
+	//we can use tryKuhn() or augmentingPath()
+	vector<pair<int, int>> maxMatching(int l, int r){
+		vector<int> left(l, -1), right(r, -1);
+		vector<bool> used(l, false);
+		for(int u = 0; u < l; ++u){
+			tryKuhn(u, used, left, right);
+			fill(used.begin(), used.end(), false);
+		}
+		vector<pair<int, int>> ans;
+		for(int u = 0; u < r; ++u){
+			if(right[u] != -1){
+				ans.push_back({right[u], u});
+			}
+		}
+		return ans;
+	}
+
 	graph inducido(vector<int> nuevos){
 		int tam = nuevos.size();
 		graph ans(tam, true);
@@ -439,6 +455,128 @@ struct graph{
 			}
 		}
 		return ans;
+	}
+};
+
+struct tree{
+	vector<int> parent, level, weight;
+	vector<vector<int>> dists, DP;
+	int n, root;
+
+	void graph_to_tree(int prev, int u, graph & G){
+		for(edge & curr : G.adjList[u]){
+			int v = curr.dest;
+			int w = curr.cost;
+			if(v == prev) continue;
+			parent[v] = u;
+			weight[v] = w;
+			graph_to_tree(u, v, G);
+		}
+	}
+
+	int dfs(int i){
+		if(i == root) return 0;
+		if(level[parent[i]] != -1) return level[i] = 1 + level[parent[i]];
+		return level[i] = 1 + dfs(parent[i]);
+	}
+
+	void buildLevels(){
+		for(int i = n - 1; i >= 0; --i){
+			if(level[i] == -1){
+				level[i] = dfs(i);
+			}
+		}
+	}
+
+	tree(int n, int root){
+		this->n = n;
+		this->root = root;
+		parent.resize(n);
+		level.resize(n, -1);
+		weight.resize(n);
+		dists.resize(n, vector<int>(20));
+		DP.resize(n, vector<int>(20));
+		level[root] = 0;
+		parent[root] = root;
+	}
+
+	tree(graph & G, int root){
+		tree(G.V, root);
+		graph_to_tree(-1, root, G);
+		buildLevels();
+	}
+
+	void pre(){
+		for(int u = 0; u < n; u++){
+			DP[u][0] = parent[u];
+			dists[u][0] = weight[u];
+		}
+		for(int i = 1; (1 << i) <= n; ++i){
+			for(int u = 0; u < n; ++u){
+				DP[u][i] = DP[DP[u][i - 1]][i - 1];
+				dists[u][i] = dists[u][i - 1] + dists[DP[u][i - 1]][i - 1];
+			}
+		}
+	}
+
+	int ancestor(int p, int k){
+		int h = level[p] - k;
+		if(h < 0) return -1;
+		int lg;
+		for(lg = 1; (1 << lg) <= level[p]; ++lg);
+		lg--;
+		for(int i = lg; i >= 0; --i){
+			if(level[p] - (1 << i) >= h){
+				p = DP[p][i];
+			}
+		}
+		return p;
+	}
+
+	int lca(int p, int q){
+		if(level[p] < level[q]) swap(p, q);
+		int lg;
+		for(lg = 1; (1 << lg) <= level[p]; ++lg);
+		lg--;
+		for(int i = lg; i >= 0; --i){
+			if(level[p] - (1 << i) >= level[q]){
+				p = DP[p][i];
+			}
+		}
+		if(p == q) return p;
+	 
+		for(int i = lg; i >= 0; --i){
+			if(DP[p][i] != -1 && DP[p][i] != DP[q][i]){
+				p = DP[p][i];
+				q = DP[q][i];
+			}
+		}
+		return parent[p];
+	}
+
+	int dist(int p, int q){
+		if(level[p] < level[q]) swap(p, q);
+		int lg;
+		for(lg = 1; (1 << lg) <= level[p]; ++lg);
+		lg--;
+		int sum = 0;
+		for(int i = lg; i >= 0; --i){
+			if(level[p] - (1 << i) >= level[q]){
+				sum += dists[p][i];
+				p = DP[p][i];
+			}
+		}
+		if(p == q) return sum;
+	 
+		for(int i = lg; i >= 0; --i){
+			if(DP[p][i] != -1 && DP[p][i] != DP[q][i]){
+				sum += dists[p][i] + dists[q][i];
+				p = DP[p][i];
+				q = DP[q][i];
+			}
+		}
+		sum += dists[p][0] + dists[q][0];
+		return sum;
 	}
 };
 

@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-typedef long long int lli;
+typedef __int128 lli;
 
 lli piso(lli a, lli b){
 	if((a >= 0 && b > 0) || (a < 0 && b < 0)){
@@ -472,9 +472,9 @@ string decimalToBaseB(lli n, lli b){
 	return ans;
 }
 
-lli baseBtoDecimal(string & n, lli b){
+lli baseBtoDecimal(const string & n, lli b){
 	lli ans = 0;
-	for(char & digito : n){
+	for(const char & digito : n){
 		if(48 <= digito && digito <= 57){
 			ans = ans * b + (digito - 48);
 		}else if(65 <= digito && digito <= 90){
@@ -685,8 +685,155 @@ pair<lli, lli> PellEquation(lli n){
 	return make_pair(den, num);
 }
 
+bool isPrimeMillerRabin(lli n){
+	if(n < 2) return false;
+	if(n == 2) return true;
+	lli d = n - 1, s = 0;
+	while(!(d & 1)){
+		d >>= 1;
+		++s;
+	}
+	for(int i = 0; i < 16; ++i){
+		lli a = 1 + rand() % (n - 1);
+		lli m = powMod(a, d, n);
+		if(m == 1 || m == n - 1) goto exit;
+		for(int k = 0; k < s - 1; ++k){
+			m = m * m % n;
+			if(m == n - 1) goto exit;
+		}
+		return false;
+		exit:;
+	}
+	return true;
+}
+
+lli factorPollardRho(lli n){
+	lli a = 1 + rand() % (n - 1);
+	lli b = 1 + rand() % (n - 1);
+	lli x = 2, y = 2, d = 1;
+	while(d == 1 || d == -1){
+		x = x * (x + b) % n + a;
+		y = y * (y + b) % n + a;
+		y = y * (y + b) % n + a;
+		d = gcd(x - y, n);
+	}
+	return abs(d);
+}
+
+map<lli, int> fact;
+void factorizePollardRho(lli n){
+	while(n > 1 && !isPrimeMillerRabin(n)){
+		lli f;
+		do{
+			f = factorPollardRho(n);
+		}while(f == n);
+		n /= f;
+		factorizePollardRho(f);
+		for(auto & it : fact){
+			while(n % it.first == 0){
+				n /= it.first;
+				++it.second;
+			}
+		}
+	}
+	if(n > 1) ++fact[n];
+}
+
+//find all inverses (from 1 to p-1) modulo p
+vector<lli> allInverses(lli p){
+	vector<lli> ans(p);
+	ans[1] = 1;
+	for(lli i = 2; i < p; ++i)
+		ans[i] = p - (p / i) * ans[p % i] % p;
+	return ans;
+}
+
+//very fast fibonacci
+inline void modula(lli & n){
+	if(n < 0) n += mod;
+	if(n >= mod) n -= mod;
+}
+
+array<lli, 2> mult(array<lli, 2> & A, array<lli, 2> & B){
+	array<lli, 2> C;
+	C[0] = A[0] * B[0] % mod;
+	lli C2 = A[1] * B[1] % mod;
+	C[1] = (A[0] + A[1]) * (B[0] + B[1]) % mod - (C[0] + C2);
+	C[0] += C2;
+	C[1] += C2;
+	modula(C[0]), modula(C[1]);
+	return C;
+}
+
+lli fibo(lli n){
+	array<lli, 2> ans = {1, 0}, tmp = {0, 1};
+	while(n){
+		if(n & 1) ans = mult(ans, tmp);
+		n >>= 1;
+		if(n) tmp = mult(tmp, tmp);
+	}
+	return ans[1];
+}
+
+ostream &operator<<(ostream &os, const __int128 & value){
+	char buffer[64];
+	char *pos = end(buffer) - 1;
+	*pos = '\0';
+	__int128 tmp = value < 0 ? -value : value;
+	do{
+		--pos;
+		*pos = tmp % 10 + '0';
+		tmp /= 10;
+	}while(tmp != 0);
+	if(value < 0){
+		--pos;
+		*pos = '-';
+	}
+	return os << pos;
+}
+
+istream &operator>>(istream &is, __int128 & value){
+	char buffer[64];
+	is >> buffer;
+	char *pos = begin(buffer);
+	int sgn = 1;
+	value = 0;
+	if(*pos == '-'){
+		sgn = -1;
+		++pos;
+	}else if(*pos == '+'){
+		++pos;
+	}
+	while(*pos != '\0'){
+		value = value * 10 + (*pos - '0');
+		++pos;
+	}
+	value *= sgn;
+	return is;
+}
+
+void info_ntt(lli e, lli limit){
+	lli n = 1ll << e;
+	for(lli k = 1; k <= limit; ++k){
+		lli p = k * n + 1;
+		if(isPrimeMillerRabin(p)){
+			lli w = findFirstPrimitiveKthRootUnity(n, p);
+			cout << "w = " << w << "\nw^-1 = " << modularInverse(w, p) << "\nk = " << k << "\nn = " << n << "\np = " << p << "\n\n";
+		}
+	}
+}
+
 int main(){
-	primesSieve(1e5);
+	srand(time(NULL));
+
+	/*lli x;
+	cin >> x;
+	factorizePollardRho(x);
+	for(auto & it : fact){
+		cout << it.first << " " << it.second << "\n";
+	}*/
+
+	//primesSieve(1e5);
 	/*lli p, n, q;
 	cin >> p >> n >> q;
 	auto cf = ContinuedFraction(p, n, q);
@@ -725,9 +872,20 @@ int main(){
 		cout << "P(" << i << ") = " << P[i] << "\n";
 	}*/
 
-	calculateFunctionQ(1e5);
+	/*calculateFunctionQ(1e5);
 	for(int i = 99900; i <= 100000; i++){
 		cout << "Q(" << i << ") = " << Q[i] << "\n";
-	}
+	}*/
+
+	/*lli e;
+	cin >> e;
+	info_ntt(e, 100);*/
+
+	/*lli p;
+	cin >> p;
+	vector<lli> inverses = allInverses(p);
+	for(lli i = 1; i < p; ++i){
+		cout << i << "^-1 mod " << p << " = " << inverses[i] << "\n";
+	}*/
 	return 0;
 }

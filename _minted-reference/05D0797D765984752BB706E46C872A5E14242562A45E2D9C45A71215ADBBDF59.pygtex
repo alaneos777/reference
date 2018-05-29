@@ -1,0 +1,236 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cp}{\PYGZsh{}include} \PYG{c+cpf}{\PYGZlt{}bits/stdc++.h\PYGZgt{}}
+\PYG{k}{using} \PYG{k}{namespace} \PYG{n}{std}\PYG{p}{;}
+
+\PYG{k+kt}{double} \PYG{n}{eps} \PYG{o}{=} \PYG{l+m+mf}{1e\PYGZhy{}8}\PYG{p}{;}
+\PYG{c+cp}{\PYGZsh{} define M\PYGZus{}PI 3.14159265358979323846}
+\PYG{c+cp}{\PYGZsh{} define M\PYGZus{}E 2.71828182845904523536}
+
+\PYG{k}{struct} \PYG{n}{point}\PYG{p}{\PYGZob{}}
+	\PYG{k+kt}{double} \PYG{n}{x}\PYG{p}{,} \PYG{n}{y}\PYG{p}{;}
+
+	\PYG{n}{point}\PYG{p}{()\PYGZob{}}
+		\PYG{n}{x} \PYG{o}{=} \PYG{n}{y} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{point}\PYG{p}{(}\PYG{k+kt}{double} \PYG{n}{x}\PYG{p}{,} \PYG{k+kt}{double} \PYG{n}{y}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{x} \PYG{o}{=} \PYG{n}{x}\PYG{p}{,} \PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{y} \PYG{o}{=} \PYG{n}{y}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{n}{point} \PYG{k}{operator}\PYG{o}{+}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{point}\PYG{p}{(}\PYG{n}{x} \PYG{o}{+} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o}{+} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{point} \PYG{k}{operator}\PYG{o}{\PYGZhy{}}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{point}\PYG{p}{(}\PYG{n}{x} \PYG{o}{\PYGZhy{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{,} \PYG{n}{y} \PYG{o}{\PYGZhy{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{point} \PYG{k}{operator}\PYG{o}{*}\PYG{p}{(}\PYG{k}{const} \PYG{k+kt}{double} \PYG{o}{\PYGZam{}} \PYG{n}{k}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{point}\PYG{p}{(}\PYG{n}{x} \PYG{o}{*} \PYG{n}{k}\PYG{p}{,} \PYG{n}{y} \PYG{o}{*} \PYG{n}{k}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{point} \PYG{k}{operator}\PYG{o}{/}\PYG{p}{(}\PYG{k}{const} \PYG{k+kt}{double} \PYG{o}{\PYGZam{}} \PYG{n}{k}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{point}\PYG{p}{(}\PYG{n}{x} \PYG{o}{/} \PYG{n}{k}\PYG{p}{,} \PYG{n}{y} \PYG{o}{/} \PYG{n}{k}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{n}{point} \PYG{n}{rotate}\PYG{p}{(}\PYG{k}{const} \PYG{k+kt}{double} \PYG{n}{angle}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{point}\PYG{p}{(}\PYG{n}{x} \PYG{o}{*} \PYG{n}{cos}\PYG{p}{(}\PYG{n}{angle}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{y} \PYG{o}{*} \PYG{n}{sin}\PYG{p}{(}\PYG{n}{angle}\PYG{p}{),} \PYG{n}{x} \PYG{o}{*} \PYG{n}{sin}\PYG{p}{(}\PYG{n}{angle}\PYG{p}{)} \PYG{o}{+} \PYG{n}{y} \PYG{o}{*} \PYG{n}{cos}\PYG{p}{(}\PYG{n}{angle}\PYG{p}{));}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{point} \PYG{n}{rotate}\PYG{p}{(}\PYG{k}{const} \PYG{k+kt}{double} \PYG{n}{angle}\PYG{p}{,} \PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{p} \PYG{o}{+} \PYG{p}{((}\PYG{o}{*}\PYG{k}{this}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{p}\PYG{p}{).}\PYG{n}{rotate}\PYG{p}{(}\PYG{n}{angle}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{k+kt}{double} \PYG{n}{dot}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{x} \PYG{o}{*} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x} \PYG{o}{+} \PYG{n}{y} \PYG{o}{*} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{double} \PYG{n}{length}\PYG{p}{()} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{dot}\PYG{p}{(}\PYG{o}{*}\PYG{k}{this}\PYG{p}{));}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{double} \PYG{n}{cross}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{x} \PYG{o}{*} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y} \PYG{o}{\PYGZhy{}} \PYG{n}{y} \PYG{o}{*} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{n}{point} \PYG{n}{normalize}\PYG{p}{()} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{p}{(}\PYG{o}{*}\PYG{k}{this}\PYG{p}{)} \PYG{o}{/} \PYG{n}{length}\PYG{p}{();}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{n}{point} \PYG{n}{projection}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{p}{(}\PYG{o}{*}\PYG{k}{this}\PYG{p}{)} \PYG{o}{*} \PYG{n}{p}\PYG{p}{.}\PYG{n}{dot}\PYG{p}{(}\PYG{o}{*}\PYG{k}{this}\PYG{p}{)} \PYG{o}{/} \PYG{n}{dot}\PYG{p}{(}\PYG{o}{*}\PYG{k}{this}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{point} \PYG{n}{normal}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{p} \PYG{o}{\PYGZhy{}} \PYG{n}{projection}\PYG{p}{(}\PYG{n}{p}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{k+kt}{bool} \PYG{k}{operator}\PYG{o}{==}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{abs}\PYG{p}{(}\PYG{n}{x} \PYG{o}{\PYGZhy{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eps} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{abs}\PYG{p}{(}\PYG{n}{y} \PYG{o}{\PYGZhy{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{bool} \PYG{k}{operator}\PYG{o}{!=}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{o}{!}\PYG{p}{(}\PYG{o}{*}\PYG{k}{this} \PYG{o}{==} \PYG{n}{p}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{bool} \PYG{k}{operator}\PYG{o}{\PYGZlt{}}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{x} \PYG{o}{\PYGZhy{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{return} \PYG{n}{y} \PYG{o}{\PYGZlt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+			\PYG{k}{return} \PYG{n}{x} \PYG{o}{\PYGZlt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{bool} \PYG{k}{operator}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{k}{const}\PYG{p}{\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{x} \PYG{o}{\PYGZhy{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{return} \PYG{n}{y} \PYG{o}{\PYGZgt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+			\PYG{k}{return} \PYG{n}{x} \PYG{o}{\PYGZgt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+
+\PYG{n}{istream} \PYG{o}{\PYGZam{}}\PYG{k}{operator}\PYG{o}{\PYGZgt{}\PYGZgt{}}\PYG{p}{(}\PYG{n}{istream} \PYG{o}{\PYGZam{}}\PYG{n}{is}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{P}\PYG{p}{)\PYGZob{}}
+	\PYG{n}{point} \PYG{n}{p}\PYG{p}{;}
+    \PYG{n}{is} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x} \PYG{o}{\PYGZgt{}\PYGZgt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{;}
+    \PYG{n}{P} \PYG{o}{=} \PYG{n}{p}\PYG{p}{;}
+    \PYG{k}{return} \PYG{n}{is}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{ostream} \PYG{o}{\PYGZam{}}\PYG{k}{operator}\PYG{o}{\PYGZlt{}\PYGZlt{}}\PYG{p}{(}\PYG{n}{ostream} \PYG{o}{\PYGZam{}}\PYG{n}{os}\PYG{p}{,} \PYG{k}{const} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)} \PYG{p}{\PYGZob{}} 
+    \PYG{k}{return} \PYG{n}{os} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{fixed} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{setprecision}\PYG{p}{(}\PYG{l+m+mi}{8}\PYG{p}{)} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{x} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{l+s}{\PYGZdq{} \PYGZdq{}} \PYG{o}{\PYGZlt{}\PYGZlt{}} \PYG{n}{p}\PYG{p}{.}\PYG{n}{y}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{int} \PYG{n}{sgn}\PYG{p}{(}\PYG{k+kt}{double} \PYG{n}{x}\PYG{p}{)\PYGZob{}}
+	\PYG{k}{if}\PYG{p}{(}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{x}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{return} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}\PYG{k}{else} \PYG{k}{if}\PYG{p}{(}\PYG{n}{x} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{return} \PYG{l+m+mi}{1}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{bool} \PYG{n}{pointInLine}\PYG{p}{(}\PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{b}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)\PYGZob{}}
+	\PYG{c+c1}{//line ab, point p}
+	\PYG{k}{return} \PYG{n}{abs}\PYG{p}{((}\PYG{n}{p} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{).}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{b} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{))} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{bool} \PYG{n}{pointInSegment}\PYG{p}{(}\PYG{n}{point} \PYG{n}{a}\PYG{p}{,} \PYG{n}{point} \PYG{n}{b}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)\PYGZob{}}
+	\PYG{c+c1}{//segment ab, point p}
+	\PYG{k}{if}\PYG{p}{(}\PYG{n}{a} \PYG{o}{\PYGZgt{}} \PYG{n}{b}\PYG{p}{)} \PYG{n}{swap}\PYG{p}{(}\PYG{n}{a}\PYG{p}{,} \PYG{n}{b}\PYG{p}{);}
+	\PYG{k}{return} \PYG{n+nf}{pointInLine}\PYG{p}{(}\PYG{n}{a}\PYG{p}{,} \PYG{n}{b}\PYG{p}{,} \PYG{n}{p}\PYG{p}{)} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{o}{!}\PYG{p}{(}\PYG{n}{p} \PYG{o}{\PYGZlt{}} \PYG{n}{a} \PYG{o}{||} \PYG{n}{p} \PYG{o}{\PYGZgt{}} \PYG{n}{b}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{int} \PYG{n}{intersectLinesInfo}\PYG{p}{(}\PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{b}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{c}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{d}\PYG{p}{)\PYGZob{}}
+	\PYG{c+c1}{//line ab, line cd}
+	\PYG{n}{point} \PYG{n}{v1} \PYG{o}{=} \PYG{n}{b} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{v2} \PYG{o}{=} \PYG{n}{d} \PYG{o}{\PYGZhy{}} \PYG{n}{c}\PYG{p}{;}
+	\PYG{k+kt}{double} \PYG{n}{det} \PYG{o}{=} \PYG{n}{v1}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{v2}\PYG{p}{);}
+	\PYG{k}{if}\PYG{p}{(}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{det}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{abs}\PYG{p}{((}\PYG{n}{c} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{).}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{v1}\PYG{p}{))} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;} \PYG{c+c1}{//infinity points}
+		\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+			\PYG{k}{return} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{c+c1}{//no points}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{l+m+mi}{1}\PYG{p}{;} \PYG{c+c1}{//single point}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{point} \PYG{n}{intersectLines}\PYG{p}{(}\PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{b}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{c}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{d}\PYG{p}{)\PYGZob{}}
+	\PYG{c+c1}{//assuming that they intersect}
+	\PYG{n}{point} \PYG{n}{v1} \PYG{o}{=} \PYG{n}{b} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{v2} \PYG{o}{=} \PYG{n}{d} \PYG{o}{\PYGZhy{}} \PYG{n}{c}\PYG{p}{;}
+	\PYG{k+kt}{double} \PYG{n}{det} \PYG{o}{=} \PYG{n}{v1}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{v2}\PYG{p}{);}
+	\PYG{k}{return} \PYG{n}{a} \PYG{o}{+} \PYG{n}{v1} \PYG{o}{*} \PYG{p}{((}\PYG{n}{c} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{).}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{v2}\PYG{p}{)} \PYG{o}{/} \PYG{n}{det}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{int} \PYG{n}{intersectLineSegmentInfo}\PYG{p}{(}\PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{b}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{c}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{d}\PYG{p}{)\PYGZob{}}
+	\PYG{c+c1}{//line ab, segment cd}
+	\PYG{n}{point} \PYG{n}{v1} \PYG{o}{=} \PYG{n}{b} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{v2} \PYG{o}{=} \PYG{n}{d} \PYG{o}{\PYGZhy{}} \PYG{n}{c}\PYG{p}{;}
+	\PYG{k+kt}{double} \PYG{n}{det} \PYG{o}{=} \PYG{n}{v1}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{v2}\PYG{p}{);}
+	\PYG{k}{if}\PYG{p}{(}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{det}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{abs}\PYG{p}{((}\PYG{n}{c} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{).}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{v1}\PYG{p}{))} \PYG{o}{\PYGZlt{}} \PYG{n}{eps}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;} \PYG{c+c1}{//infinity points}
+		\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+			\PYG{k}{return} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{c+c1}{//no point}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{sgn}\PYG{p}{(}\PYG{n}{v1}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{c} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{))} \PYG{o}{!=} \PYG{n}{sgn}\PYG{p}{(}\PYG{n}{v1}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{d} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{));} \PYG{c+c1}{//1: single point, 0: no point}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{int} \PYG{n}{intersectSegmentsInfo}\PYG{p}{(}\PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{b}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{c}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{d}\PYG{p}{)\PYGZob{}}
+	\PYG{c+c1}{//segment ab, segment cd}
+	\PYG{n}{point} \PYG{n}{v1} \PYG{o}{=} \PYG{n}{b} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{v2} \PYG{o}{=} \PYG{n}{d} \PYG{o}{\PYGZhy{}} \PYG{n}{c}\PYG{p}{;}
+	\PYG{k+kt}{int} \PYG{n}{t} \PYG{o}{=} \PYG{n}{sgn}\PYG{p}{(}\PYG{n}{v1}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{c} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{)),} \PYG{n}{u} \PYG{o}{=} \PYG{n}{sgn}\PYG{p}{(}\PYG{n}{v1}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{d} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{));}
+	\PYG{k}{if}\PYG{p}{(}\PYG{n}{t} \PYG{o}{==} \PYG{n}{u}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{t} \PYG{o}{==} \PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{pointInSegment}\PYG{p}{(}\PYG{n}{a}\PYG{p}{,} \PYG{n}{b}\PYG{p}{,} \PYG{n}{c}\PYG{p}{)} \PYG{o}{||} \PYG{n}{pointInSegment}\PYG{p}{(}\PYG{n}{a}\PYG{p}{,} \PYG{n}{b}\PYG{p}{,} \PYG{n}{d}\PYG{p}{)} \PYG{o}{||} \PYG{n}{pointInSegment}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{d}\PYG{p}{,} \PYG{n}{a}\PYG{p}{)} \PYG{o}{||} \PYG{n}{pointInSegment}\PYG{p}{(}\PYG{n}{c}\PYG{p}{,} \PYG{n}{d}\PYG{p}{,} \PYG{n}{b}\PYG{p}{))\PYGZob{}}
+				\PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;} \PYG{c+c1}{//infinity points}
+			\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+				\PYG{k}{return} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{c+c1}{//no point}
+			\PYG{p}{\PYGZcb{}}
+		\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+			\PYG{k}{return} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{c+c1}{//no point}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}\PYG{k}{else}\PYG{p}{\PYGZob{}}
+		\PYG{k}{return} \PYG{n}{sgn}\PYG{p}{(}\PYG{n}{v2}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{a} \PYG{o}{\PYGZhy{}} \PYG{n}{c}\PYG{p}{))} \PYG{o}{!=} \PYG{n}{sgn}\PYG{p}{(}\PYG{n}{v2}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{b} \PYG{o}{\PYGZhy{}} \PYG{n}{c}\PYG{p}{));} \PYG{c+c1}{//1: single point, 0: no point}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{double} \PYG{n}{distancePointLine}\PYG{p}{(}\PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{a}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{v}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)\PYGZob{}}
+	\PYG{c+c1}{//line: a + tv, point p}
+	\PYG{k}{return} \PYG{n}{abs}\PYG{p}{(}\PYG{n}{v}\PYG{p}{.}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{p} \PYG{o}{\PYGZhy{}} \PYG{n}{a}\PYG{p}{))} \PYG{o}{/} \PYG{n}{v}\PYG{p}{.}\PYG{n}{length}\PYG{p}{();}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{double} \PYG{n}{perimeter}\PYG{p}{(}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{point}\PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZam{}} \PYG{n}{points}\PYG{p}{)\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{n} \PYG{o}{=} \PYG{n}{points}\PYG{p}{.}\PYG{n}{size}\PYG{p}{();}
+	\PYG{k+kt}{double} \PYG{n}{ans} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{n}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{ans} \PYG{o}{+=} \PYG{p}{(}\PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{points}\PYG{p}{[(}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)} \PYG{o}{\PYGZpc{}} \PYG{n}{n}\PYG{p}{]).}\PYG{n}{length}\PYG{p}{();}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k}{return} \PYG{n}{ans}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{double} \PYG{n}{area}\PYG{p}{(}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{point}\PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZam{}} \PYG{n}{points}\PYG{p}{)\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{n} \PYG{o}{=} \PYG{n}{points}\PYG{p}{.}\PYG{n}{size}\PYG{p}{();}
+	\PYG{k+kt}{double} \PYG{n}{ans} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{n}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{ans} \PYG{o}{+=} \PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{points}\PYG{p}{[(}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)} \PYG{o}{\PYGZpc{}} \PYG{n}{n}\PYG{p}{]);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k}{return} \PYG{n}{abs}\PYG{p}{(}\PYG{n}{ans} \PYG{o}{/} \PYG{l+m+mi}{2}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{point}\PYG{o}{\PYGZgt{}} \PYG{n}{convexHull}\PYG{p}{(}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{point}\PYG{o}{\PYGZgt{}} \PYG{n}{points}\PYG{p}{)\PYGZob{}}
+	\PYG{n}{sort}\PYG{p}{(}\PYG{n}{points}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{points}\PYG{p}{.}\PYG{n}{end}\PYG{p}{());}
+	\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{point}\PYG{o}{\PYGZgt{}} \PYG{n}{L}\PYG{p}{,} \PYG{n}{U}\PYG{p}{;}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{points}\PYG{p}{.}\PYG{n}{size}\PYG{p}{();} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{while}\PYG{p}{(}\PYG{n}{L}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZgt{}=} \PYG{l+m+mi}{2} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{p}{(}\PYG{n}{L}\PYG{p}{[}\PYG{n}{L}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{2}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{L}\PYG{p}{[}\PYG{n}{L}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZlt{}=} \PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+			\PYG{n}{L}\PYG{p}{.}\PYG{n}{pop\PYGZus{}back}\PYG{p}{();}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{n}{L}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{n}{points}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZgt{}=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i}\PYG{o}{\PYGZhy{}\PYGZhy{}}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{while}\PYG{p}{(}\PYG{n}{U}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZgt{}=} \PYG{l+m+mi}{2} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{p}{(}\PYG{n}{U}\PYG{p}{[}\PYG{n}{U}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{2}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]).}\PYG{n}{cross}\PYG{p}{(}\PYG{n}{U}\PYG{p}{[}\PYG{n}{U}\PYG{p}{.}\PYG{n}{size}\PYG{p}{()} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{]} \PYG{o}{\PYGZhy{}} \PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{])} \PYG{o}{\PYGZlt{}=} \PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+			\PYG{n}{U}\PYG{p}{.}\PYG{n}{pop\PYGZus{}back}\PYG{p}{();}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{n}{U}\PYG{p}{.}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{L}\PYG{p}{.}\PYG{n}{pop\PYGZus{}back}\PYG{p}{();}
+	\PYG{n}{U}\PYG{p}{.}\PYG{n}{pop\PYGZus{}back}\PYG{p}{();}
+	\PYG{n}{L}\PYG{p}{.}\PYG{n}{insert}\PYG{p}{(}\PYG{n}{L}\PYG{p}{.}\PYG{n}{end}\PYG{p}{(),} \PYG{n}{U}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{U}\PYG{p}{.}\PYG{n}{end}\PYG{p}{());}
+	\PYG{k}{return} \PYG{n}{L}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{bool} \PYG{n}{pointInPerimeter}\PYG{p}{(}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{point}\PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZam{}} \PYG{n}{points}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{n} \PYG{o}{=} \PYG{n}{points}\PYG{p}{.}\PYG{n}{size}\PYG{p}{();}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{n}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{pointInSegment}\PYG{p}{(}\PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{],} \PYG{n}{points}\PYG{p}{[(}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)} \PYG{o}{\PYGZpc{}} \PYG{n}{n}\PYG{p}{],} \PYG{n}{p}\PYG{p}{))\PYGZob{}}
+			\PYG{k}{return} \PYG{n+nb}{true}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k}{return} \PYG{n+nb}{false}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kt}{int} \PYG{n}{pointInPolygon}\PYG{p}{(}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{point}\PYG{o}{\PYGZgt{}} \PYG{o}{\PYGZam{}} \PYG{n}{points}\PYG{p}{,} \PYG{n}{point} \PYG{o}{\PYGZam{}} \PYG{n}{p}\PYG{p}{)\PYGZob{}}
+	\PYG{k}{if}\PYG{p}{(}\PYG{n}{pointInPerimeter}\PYG{p}{(}\PYG{n}{points}\PYG{p}{,} \PYG{n}{p}\PYG{p}{))\PYGZob{}}
+		\PYG{k}{return} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;} \PYG{c+c1}{//point in the perimeter}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{point} \PYG{n}{bottomLeft} \PYG{o}{=} \PYG{p}{(}\PYG{o}{*}\PYG{n}{min\PYGZus{}element}\PYG{p}{(}\PYG{n}{points}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{points}\PYG{p}{.}\PYG{n}{end}\PYG{p}{()))} \PYG{o}{\PYGZhy{}} \PYG{n}{point}\PYG{p}{(}\PYG{n}{M\PYGZus{}E}\PYG{p}{,} \PYG{n}{M\PYGZus{}PI}\PYG{p}{);}
+	\PYG{k+kt}{int} \PYG{n}{n} \PYG{o}{=} \PYG{n}{points}\PYG{p}{.}\PYG{n}{size}\PYG{p}{();}
+	\PYG{k+kt}{int} \PYG{n}{rays} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{n}\PYG{p}{;} \PYG{n}{i}\PYG{o}{++}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{rays} \PYG{o}{+=} \PYG{p}{(}\PYG{n}{intersectSegmentsInfo}\PYG{p}{(}\PYG{n}{p}\PYG{p}{,} \PYG{n}{bottomLeft}\PYG{p}{,} \PYG{n}{points}\PYG{p}{[}\PYG{n}{i}\PYG{p}{],} \PYG{n}{points}\PYG{p}{[(}\PYG{n}{i} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{)} \PYG{o}{\PYGZpc{}} \PYG{n}{n}\PYG{p}{])} \PYG{o}{==} \PYG{l+m+mi}{1} \PYG{o}{?} \PYG{l+m+mi}{1} \PYG{o}{:} \PYG{l+m+mi}{0}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k}{return} \PYG{n}{rays} \PYG{o}{\PYGZam{}} \PYG{l+m+mi}{1}\PYG{p}{;} \PYG{c+c1}{//0: point outside, 1: point inside}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

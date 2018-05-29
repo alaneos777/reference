@@ -79,6 +79,9 @@
 			\subsubsection{Euclides extendido e inverso modular}
 			\inputminted[tabsize=2,breaklines,firstline=70,lastline=91,fontsize=\small]{c++}{numberTheory.cpp}
 			
+			\subsubsection{Todos los inversos módulo $p$}
+			\inputminted[tabsize=2,breaklines,firstline=742,lastline=749,fontsize=\small]{c++}{numberTheory.cpp}
+			
 			\subsubsection{Exponenciación binaria modular}
 			\inputminted[tabsize=2,breaklines,firstline=93,lastline=106,fontsize=\small]{c++}{numberTheory.cpp}
 			
@@ -87,6 +90,9 @@
 			
 			\subsubsection{Coeficiente binomial}
 			\inputminted[tabsize=2,breaklines,firstline=450,lastline=458,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Fibonacci}
+			\inputminted[tabsize=2,breaklines,firstline=751,lastline=776,fontsize=\small]{c++}{numberTheory.cpp}
 		
 		\subsection{Cribas}
 			\subsubsection{Criba de divisores}
@@ -116,6 +122,9 @@
 			
 			\subsubsection{Factorización de un factorial}
 			\inputminted[tabsize=2,breaklines,firstline=441,lastline=448,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Factorización usando Pollard-Rho}
+			\inputminted[tabsize=2,breaklines,firstline=688,lastline=740,fontsize=\small]{c++}{numberTheory.cpp}
 		
 		\subsection{Funciones multiplicativas famosas}
 			\subsubsection{Función $\sigma$}
@@ -169,6 +178,9 @@
 			\inputminted[tabsize=2,breaklines,firstline=578,lastline=629,fontsize=\small]{c++}{numberTheory.cpp}
 			
 		\subsection{Otros}
+			\subsubsection{Cambio de base}
+			\inputminted[tabsize=2,breaklines,firstline=460,lastline=487,fontsize=\small]{c++}{numberTheory.cpp}
+			
 			\subsubsection{Fracciones continuas}
 			\inputminted[tabsize=2,breaklines,firstline=631,lastline=671,fontsize=\small]{c++}{numberTheory.cpp}
 			
@@ -178,7 +190,7 @@
 	\newpage
 	\section{Números racionales}
 		\subsection{Estructura \texttt{fraccion}}
-		\inputminted[tabsize=2,breaklines,firstline=7,lastline=125,fontsize=\small]{c++}{fraccion.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=7,lastline=123,fontsize=\small]{c++}{fraccion.cpp}
 		
 	\newpage
 	\section{Álgebra lineal}
@@ -215,7 +227,7 @@
 		\inputminted[tabsize=2,breaklines,firstline=408,lastline=422,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Recurrencias lineales}
-		\inputminted[tabsize=2,breaklines,fontsize=\small]{c++}{recurrence.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=7,lastline=66,fontsize=\small]{c++}{recurrence.cpp}
 		
 	\newpage
 	\section{FFT}
@@ -235,7 +247,7 @@
 					\centering
 					\begin{tabular}{|p{2cm}|p{1.7cm}|p{2cm}|p{4.5cm}|}
 						\hline
-						Raíz $k$-ésima de la unidad ($\omega$) & $\omega^{-1}$ & Tamaño máximo del arreglo ($k$) & Módulo $p$ \\ \hline
+						Raíz $n$-ésima de la unidad ($\omega$) & $\omega^{-1}$ & Tamaño máximo del arreglo ($n$) & Módulo $p$ \\ \hline
 						15 & 30584 & $2^{14}$ & $4 \times 2^{14} + 1 = 65537$ \\ \hline
 						9 & 7282 & $2^{15}$ & $2 \times 2^{15} + 1 = 65537$ \\ \hline
 						3 & 21846 & $2^{16}$ & $1 \times 2^{16} + 1 = 65537$ \\ \hline
@@ -246,6 +258,7 @@
 						38 & 21247462 & $2^{21}$ & $11 \times 2^{21} + 1 = 23068673$ \\ \hline
 						21 & 49932191 & $2^{22}$ & $25 \times 2^{22} + 1 = 104857601$ \\ \hline
 						4 & 125829121 & $2^{23}$ & $20 \times 2^{23} + 1 = 167772161$ \\ \hline
+						\textbf{31} & \textbf{128805723} & $\mathbf{2^{23}}$ & $119 \times 2^{23} + 1 = \textbf{998244353}$ \\ \hline
 						2 & 83886081 & $2^{24}$ & $10 \times 2^{24} + 1 = 167772161$ \\ \hline
 						17 & 29606852 & $2^{25}$ & $5 \times 2^{25} + 1 = 167772161$ \\ \hline
 						30 & 15658735 & $2^{26}$ & $7 \times 2^{26} + 1 = 469762049$ \\ \hline
@@ -292,49 +305,80 @@
 	\newpage
 	\section{Grafos}
 		\subsection{Estructura \texttt{disjointSet}}
-		\inputminted[tabsize=2,breaklines,firstline=7,lastline=40,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=6,lastline=39,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Estructura \texttt{edge}}
-		\inputminted[tabsize=2,breaklines,firstline=42,lastline=81,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=41,lastline=64,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Estructura \texttt{path}}
-		\inputminted[tabsize=2,breaklines,firstline=83,lastline=88,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=66,lastline=71,fontsize=\small]{c++}{graph.cpp}
 		
-		\subsubsection{Estructura \texttt{graph}}
-		\inputminted[tabsize=2,breaklines,firstline=90,lastline=130,fontsize=\small]{c++}{graph.cpp}
+		\subsection{Estructura \texttt{graph}}
+		\inputminted[tabsize=2,breaklines,firstline=73,lastline=113,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Dijkstra con reconstrucción del camino más corto con menos vértices}
-		\inputminted[tabsize=2,breaklines,firstline=132,lastline=159,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=115,lastline=142,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Bellman Ford con reconstrucción del camino más corto con menos vértices}
-		\inputminted[tabsize=2,breaklines,firstline=161,lastline=195,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=144,lastline=178,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Floyd}
-		\inputminted[tabsize=2,breaklines,firstline=197,lastline=205,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=180,lastline=188,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Cerradura transitiva $O(V^3)$}
-		\inputminted[tabsize=2,breaklines,firstline=207,lastline=214,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=190,lastline=197,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Cerradura transitiva $O(V^2)$}
-		\inputminted[tabsize=2,breaklines,firstline=216,lastline=231,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=199,lastline=214,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Verificar si el grafo es bipartito}
-		\inputminted[tabsize=2,breaklines,firstline=233,lastline=255,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=216,lastline=238,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Orden topológico}
-		\inputminted[tabsize=2,breaklines,firstline=257,lastline=284,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=240,lastline=267,fontsize=\small]{c++}{graph.cpp}
 
 		\subsection{Detectar ciclos}
-		\inputminted[tabsize=2,breaklines,firstline=286,lastline=328,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=269,lastline=288,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Puentes y puntos de articulación}
-		\inputminted[tabsize=2,breaklines,firstline=330,lastline=359,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=290,lastline=319,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Componentes fuertemente conexas}
-		\inputminted[tabsize=2,breaklines,firstline=361,lastline=391,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=321,lastline=351,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Árbol mínimo de expansión (Kruskal)}
-		\inputminted[tabsize=2,breaklines,firstline=413,lastline=429,fontsize=\small]{c++}{graph.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=373,lastline=389,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Máximo emparejamiento bipartito}
+		\inputminted[tabsize=2,breaklines,firstline=391,lastline=445,fontsize=\small]{c++}{graph.cpp}
+		
+	\newpage
+	\section{Árboles}		
+		\subsection{Estructura \texttt{tree}}
+		\inputminted[tabsize=2,breaklines,firstline=461,lastline=520,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{$k$-ésimo ancestro}
+		\inputminted[tabsize=2,breaklines,firstline=522,lastline=534,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{LCA}
+		\inputminted[tabsize=2,breaklines,firstline=536,lastline=555,fontsize=\small]{c++}{graph.cpp}
+		
+		\subsection{Distancia entre dos nodos}
+		\inputminted[tabsize=2,breaklines,firstline=557,lastline=580,fontsize=\small]{c++}{graph.cpp}
+		
+	\newpage
+	\section{Flujos}
+		\subsection{Estructura \texttt{flowEdge}}
+		\inputminted[tabsize=2,breaklines,firstline=4,lastline=21,fontsize=\small]{c++}{flow.cpp}
+		
+		\subsection{Estructura \texttt{flowGraph}}
+		\inputminted[tabsize=2,breaklines,firstline=23,lastline=46,fontsize=\small]{c++}{flow.cpp}
+		
+		\subsection{Algoritmo de Edmonds-Karp $O(VE^2)$}
+		\inputminted[tabsize=2,breaklines,firstline=90,lastline=115,fontsize=\small]{c++}{flow.cpp}
+		
+		\subsection{Algoritmo de Dinic $O(V^2E)$}
+		\inputminted[tabsize=2,breaklines,firstline=48,lastline=88,fontsize=\small]{c++}{flow.cpp}
 		
 	\newpage
 	\section{Estructuras de datos}

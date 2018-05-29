@@ -10,9 +10,8 @@ struct fraccion{
         num = 0, den = 1;
     }
     fraccion(lli x, lli y){
-        if(y < 0){
+        if(y < 0)
             x *= -1, y *=-1;
-        }
         lli d = __gcd(abs(x), abs(y));
         num = x/d, den = y/d;
     }
@@ -119,7 +118,6 @@ istream &operator>>(istream &is, fraccion & f){
         istringstream(str.substr(0, pos)) >> num;
         istringstream(str.substr(pos + 1)) >> den;
     }
-    fraccion nueva(num, den);
-    f = nueva;
+    f = fraccion(num, den);
     return is;
 }

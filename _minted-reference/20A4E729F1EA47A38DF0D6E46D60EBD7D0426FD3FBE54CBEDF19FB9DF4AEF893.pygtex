@@ -1,0 +1,118 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cp}{\PYGZsh{}include} \PYG{c+cpf}{\PYGZlt{}bits/stdc++.h\PYGZgt{}}
+\PYG{k}{using} \PYG{k}{namespace} \PYG{n}{std}\PYG{p}{;}
+
+\PYG{k}{template}\PYG{o}{\PYGZlt{}}\PYG{k}{typename} \PYG{n}{T}\PYG{o}{\PYGZgt{}}
+\PYG{k}{struct} \PYG{n}{flowEdge}\PYG{p}{\PYGZob{}}
+	\PYG{k+kt}{int} \PYG{n}{dest}\PYG{p}{;}
+	\PYG{n}{T} \PYG{n}{flow}\PYG{p}{,} \PYG{n}{capacity}\PYG{p}{;}
+	\PYG{n}{flowEdge} \PYG{o}{*}\PYG{n}{res}\PYG{p}{;}
+	\PYG{n}{flowEdge}\PYG{p}{()\PYGZob{}}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest} \PYG{o}{=} \PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow} \PYG{o}{=} \PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{capacity} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{res} \PYG{o}{=} \PYG{n+nb}{NULL}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{flowEdge}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{dest}\PYG{p}{,} \PYG{n}{T} \PYG{n}{flow}\PYG{p}{,} \PYG{n}{T} \PYG{n}{capacity}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest} \PYG{o}{=} \PYG{n}{dest}\PYG{p}{,} \PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow} \PYG{o}{=} \PYG{n}{flow}\PYG{p}{,} \PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{capacity} \PYG{o}{=} \PYG{n}{capacity}\PYG{p}{;}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{res} \PYG{o}{=} \PYG{n+nb}{NULL}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{void} \PYG{n}{addFlow}\PYG{p}{(}\PYG{n}{T} \PYG{n}{flow}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow} \PYG{o}{+=} \PYG{n}{flow}\PYG{p}{;}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{res}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow} \PYG{o}{\PYGZhy{}=} \PYG{n}{flow}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+
+\PYG{k}{template}\PYG{o}{\PYGZlt{}}\PYG{k}{typename} \PYG{n}{T}\PYG{o}{\PYGZgt{}}
+\PYG{k}{struct} \PYG{n}{flowGraph}\PYG{p}{\PYGZob{}}
+	\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}*\PYGZgt{}\PYGZgt{}} \PYG{n}{adjList}\PYG{p}{;}
+	\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{n}{dist}\PYG{p}{,} \PYG{n}{pos}\PYG{p}{;}
+	\PYG{k+kt}{int} \PYG{n}{V}\PYG{p}{;}
+	\PYG{n}{flowGraph}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{V}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{this}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{V} \PYG{o}{=} \PYG{n}{V}\PYG{p}{;}
+		\PYG{n}{adjList}\PYG{p}{.}\PYG{n}{resize}\PYG{p}{(}\PYG{n}{V}\PYG{p}{);}
+		\PYG{n}{dist}\PYG{p}{.}\PYG{n}{resize}\PYG{p}{(}\PYG{n}{V}\PYG{p}{);}
+		\PYG{n}{pos}\PYG{p}{.}\PYG{n}{resize}\PYG{p}{(}\PYG{n}{V}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{o}{\PYGZti{}}\PYG{n}{flowGraph}\PYG{p}{()\PYGZob{}}
+		\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{i} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{V}\PYG{p}{;} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)}
+			\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{j} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{j} \PYG{o}{\PYGZlt{}} \PYG{n}{adjList}\PYG{p}{[}\PYG{n}{i}\PYG{p}{].}\PYG{n}{size}\PYG{p}{();} \PYG{o}{++}\PYG{n}{j}\PYG{p}{)}
+				\PYG{k}{delete} \PYG{n}{adjList}\PYG{p}{[}\PYG{n}{i}\PYG{p}{][}\PYG{n}{j}\PYG{p}{];}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{k+kt}{void} \PYG{n}{addEdge}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{u}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{v}\PYG{p}{,} \PYG{n}{T} \PYG{n}{capacity}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{n}{uv} \PYG{o}{=} \PYG{k}{new} \PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{v}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{capacity}\PYG{p}{);}
+		\PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{n}{vu} \PYG{o}{=} \PYG{k}{new} \PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{u}\PYG{p}{,} \PYG{n}{capacity}\PYG{p}{,} \PYG{n}{capacity}\PYG{p}{);}
+		\PYG{n}{uv}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{res} \PYG{o}{=} \PYG{n}{vu}\PYG{p}{;}
+		\PYG{n}{vu}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{res} \PYG{o}{=} \PYG{n}{uv}\PYG{p}{;}
+		\PYG{n}{adjList}\PYG{p}{[}\PYG{n}{u}\PYG{p}{].}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{uv}\PYG{p}{);}
+		\PYG{n}{adjList}\PYG{p}{[}\PYG{n}{v}\PYG{p}{].}\PYG{n}{push\PYGZus{}back}\PYG{p}{(}\PYG{n}{vu}\PYG{p}{);}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{c+c1}{//Maximun Flow using Dinic Algorithm O(EV\PYGZca{}2)}
+	\PYG{n}{T} \PYG{n}{blockingFlow}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{u}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{t}\PYG{p}{,} \PYG{n}{T} \PYG{n}{flow}\PYG{p}{)\PYGZob{}}
+		\PYG{k}{if}\PYG{p}{(}\PYG{n}{u} \PYG{o}{==} \PYG{n}{t}\PYG{p}{)} \PYG{k}{return} \PYG{n}{flow}\PYG{p}{;}
+		\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{o}{\PYGZam{}}\PYG{n}{i} \PYG{o}{=} \PYG{n}{pos}\PYG{p}{[}\PYG{n}{u}\PYG{p}{];} \PYG{n}{i} \PYG{o}{\PYGZlt{}} \PYG{n}{adjList}\PYG{p}{[}\PYG{n}{u}\PYG{p}{].}\PYG{n}{size}\PYG{p}{();} \PYG{o}{++}\PYG{n}{i}\PYG{p}{)\PYGZob{}}
+			\PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{n}{v} \PYG{o}{=} \PYG{n}{adjList}\PYG{p}{[}\PYG{n}{u}\PYG{p}{][}\PYG{n}{i}\PYG{p}{];}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{capacity} \PYG{o}{\PYGZgt{}} \PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{dist}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]} \PYG{o}{+} \PYG{l+m+mi}{1} \PYG{o}{==} \PYG{n}{dist}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{])\PYGZob{}}
+				\PYG{n}{T} \PYG{n}{fv} \PYG{o}{=} \PYG{n}{blockingFlow}\PYG{p}{(}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{,} \PYG{n}{t}\PYG{p}{,} \PYG{n}{min}\PYG{p}{(}\PYG{n}{flow}\PYG{p}{,} \PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{capacity} \PYG{o}{\PYGZhy{}} \PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow}\PYG{p}{));}
+				\PYG{k}{if}\PYG{p}{(}\PYG{n}{fv} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0}\PYG{p}{)\PYGZob{}}
+					\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{addFlow}\PYG{p}{(}\PYG{n}{fv}\PYG{p}{);}
+					\PYG{k}{return} \PYG{n}{fv}\PYG{p}{;}
+				\PYG{p}{\PYGZcb{}}
+			\PYG{p}{\PYGZcb{}}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{k}{return} \PYG{l+m+mi}{0}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+	\PYG{n}{T} \PYG{n}{dinic}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{s}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{t}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{T} \PYG{n}{maxFlow} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+		\PYG{n}{dist}\PYG{p}{[}\PYG{n}{t}\PYG{p}{]} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+		\PYG{k}{while}\PYG{p}{(}\PYG{n}{dist}\PYG{p}{[}\PYG{n}{t}\PYG{p}{]} \PYG{o}{!=} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)\PYGZob{}}
+			\PYG{n}{fill}\PYG{p}{(}\PYG{n}{dist}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{dist}\PYG{p}{.}\PYG{n}{end}\PYG{p}{(),} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{);}
+			\PYG{n}{queue}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{n}{Q}\PYG{p}{;}
+			\PYG{n}{Q}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{s}\PYG{p}{);}
+			\PYG{n}{dist}\PYG{p}{[}\PYG{n}{s}\PYG{p}{]} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+			\PYG{k}{while}\PYG{p}{(}\PYG{o}{!}\PYG{n}{Q}\PYG{p}{.}\PYG{n}{empty}\PYG{p}{())\PYGZob{}}
+				\PYG{k+kt}{int} \PYG{n}{u} \PYG{o}{=} \PYG{n}{Q}\PYG{p}{.}\PYG{n}{front}\PYG{p}{();} \PYG{n}{Q}\PYG{p}{.}\PYG{n}{pop}\PYG{p}{();}
+				\PYG{k}{for}\PYG{p}{(}\PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{n+nl}{v} \PYG{p}{:} \PYG{n}{adjList}\PYG{p}{[}\PYG{n}{u}\PYG{p}{])\PYGZob{}}
+					\PYG{k}{if}\PYG{p}{(}\PYG{n}{dist}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{]} \PYG{o}{==} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow} \PYG{o}{!=} \PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{capacity}\PYG{p}{)\PYGZob{}}
+						\PYG{n}{dist}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{]} \PYG{o}{=} \PYG{n}{dist}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{;}
+						\PYG{n}{Q}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{);}
+					\PYG{p}{\PYGZcb{}}
+				\PYG{p}{\PYGZcb{}}
+			\PYG{p}{\PYGZcb{}}
+			\PYG{k}{if}\PYG{p}{(}\PYG{n}{dist}\PYG{p}{[}\PYG{n}{t}\PYG{p}{]} \PYG{o}{!=} \PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)\PYGZob{}}
+				\PYG{n}{T} \PYG{n}{f}\PYG{p}{;}
+				\PYG{n}{fill}\PYG{p}{(}\PYG{n}{pos}\PYG{p}{.}\PYG{n}{begin}\PYG{p}{(),} \PYG{n}{pos}\PYG{p}{.}\PYG{n}{end}\PYG{p}{(),} \PYG{l+m+mi}{0}\PYG{p}{);}
+				\PYG{k}{while}\PYG{p}{(}\PYG{n}{f} \PYG{o}{=} \PYG{n}{blockingFlow}\PYG{p}{(}\PYG{n}{s}\PYG{p}{,} \PYG{n}{t}\PYG{p}{,} \PYG{n}{numeric\PYGZus{}limits}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}::}\PYG{n}{max}\PYG{p}{()))}
+					\PYG{n}{maxFlow} \PYG{o}{+=} \PYG{n}{f}\PYG{p}{;}
+			\PYG{p}{\PYGZcb{}}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{k}{return} \PYG{n}{maxFlow}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+
+	\PYG{c+c1}{//Maximun Flow using Edmonds\PYGZhy{}Karp Algorithm O(VE\PYGZca{}2)}
+	\PYG{n}{T} \PYG{n}{edmondsKarp}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{s}\PYG{p}{,} \PYG{k+kt}{int} \PYG{n}{t}\PYG{p}{)\PYGZob{}}
+		\PYG{n}{T} \PYG{n}{maxFlow} \PYG{o}{=} \PYG{l+m+mi}{0}\PYG{p}{;}
+		\PYG{k}{while}\PYG{p}{(}\PYG{n+nb}{true}\PYG{p}{)\PYGZob{}}
+			\PYG{n}{vector}\PYG{o}{\PYGZlt{}}\PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}*\PYGZgt{}} \PYG{n}{parent}\PYG{p}{(}\PYG{n}{V}\PYG{p}{);}
+			\PYG{n}{queue}\PYG{o}{\PYGZlt{}}\PYG{k+kt}{int}\PYG{o}{\PYGZgt{}} \PYG{n}{Q}\PYG{p}{;}
+			\PYG{n}{Q}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{s}\PYG{p}{);}
+			\PYG{k}{while}\PYG{p}{(}\PYG{o}{!}\PYG{n}{Q}\PYG{p}{.}\PYG{n}{empty}\PYG{p}{()} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{o}{!}\PYG{n}{parent}\PYG{p}{[}\PYG{n}{t}\PYG{p}{])\PYGZob{}}
+				\PYG{k+kt}{int} \PYG{n}{u} \PYG{o}{=} \PYG{n}{Q}\PYG{p}{.}\PYG{n}{front}\PYG{p}{();} \PYG{n}{Q}\PYG{p}{.}\PYG{n}{pop}\PYG{p}{();}
+				\PYG{k}{for}\PYG{p}{(}\PYG{n}{flowEdge}\PYG{o}{\PYGZlt{}}\PYG{n}{T}\PYG{o}{\PYGZgt{}} \PYG{o}{*}\PYG{n+nl}{v} \PYG{p}{:} \PYG{n}{adjList}\PYG{p}{[}\PYG{n}{u}\PYG{p}{])\PYGZob{}}
+					\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n}{parent}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{]} \PYG{o}{\PYGZam{}\PYGZam{}} \PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{capacity} \PYG{o}{\PYGZgt{}} \PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow}\PYG{p}{)\PYGZob{}}
+						\PYG{n}{parent}\PYG{p}{[}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{]} \PYG{o}{=} \PYG{n}{v}\PYG{p}{;}
+						\PYG{n}{Q}\PYG{p}{.}\PYG{n}{push}\PYG{p}{(}\PYG{n}{v}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{);}
+					\PYG{p}{\PYGZcb{}}
+				\PYG{p}{\PYGZcb{}}
+			\PYG{p}{\PYGZcb{}}
+			\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n}{parent}\PYG{p}{[}\PYG{n}{t}\PYG{p}{])} \PYG{k}{break}\PYG{p}{;}
+			\PYG{n}{T} \PYG{n}{f} \PYG{o}{=} \PYG{n}{inf}\PYG{p}{;}
+			\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{u} \PYG{o}{=} \PYG{n}{t}\PYG{p}{;} \PYG{n}{u} \PYG{o}{!=} \PYG{n}{s}\PYG{p}{;} \PYG{n}{u} \PYG{o}{=} \PYG{n}{parent}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{res}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{)}
+				\PYG{n}{f} \PYG{o}{=} \PYG{n}{min}\PYG{p}{(}\PYG{n}{f}\PYG{p}{,} \PYG{n}{parent}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{capacity} \PYG{o}{\PYGZhy{}} \PYG{n}{parent}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{flow}\PYG{p}{);}
+			\PYG{k}{for}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{u} \PYG{o}{=} \PYG{n}{t}\PYG{p}{;} \PYG{n}{u} \PYG{o}{!=} \PYG{n}{s}\PYG{p}{;} \PYG{n}{u} \PYG{o}{=} \PYG{n}{parent}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{res}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{dest}\PYG{p}{)}
+				\PYG{n}{parent}\PYG{p}{[}\PYG{n}{u}\PYG{p}{]}\PYG{o}{\PYGZhy{}\PYGZgt{}}\PYG{n}{addFlow}\PYG{p}{(}\PYG{n}{f}\PYG{p}{);}
+			\PYG{n}{maxFlow} \PYG{o}{+=} \PYG{n}{f}\PYG{p}{;}
+		\PYG{p}{\PYGZcb{}}
+		\PYG{k}{return} \PYG{n}{maxFlow}\PYG{p}{;}
+	\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+\end{Verbatim}
