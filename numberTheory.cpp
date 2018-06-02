@@ -750,8 +750,8 @@ vector<lli> allInverses(lli p){
 
 //very fast fibonacci
 inline void modula(lli & n){
-	if(n < 0) n += mod;
-	if(n >= mod) n -= mod;
+	while(n < 0) n += mod;
+	while(n >= mod) n -= mod;
 }
 
 array<lli, 2> mult(array<lli, 2> & A, array<lli, 2> & B){
@@ -773,6 +773,64 @@ lli fibo(lli n){
 		if(n) tmp = mult(tmp, tmp);
 	}
 	return ans[1];
+}
+
+//number of ordered factorizations of n
+lli orderedFactorizations(lli n){
+	//skip the factorization if you already know the powers
+	auto fact = factorize(n);
+	int k = 0, q = 0;
+	vector<int> powers(k + 1);
+	for(auto & f : fact){
+		powers[k + 1] = f.second;
+		q += f.second;
+		++k;
+	}
+	vector<lli> prod(q + 1, 1);
+	//we need Ncr until the max_power+Omega(n) row
+	//module if needed
+	for(int i = 0; i <= q; i++){
+		for(int j = 1; j <= k; j++){
+			prod[i] = prod[i] * Ncr[powers[j] + i][powers[j]];
+		}
+	}
+	lli ans = 0;
+	for(int j = 1; j <= q; j++){
+		int alt = 1;
+		for(int i = 0; i < j; i++){
+			ans = ans + alt * Ncr[j][i] * prod[j - i - 1];
+			alt *= -1;
+		}
+	}
+	return ans;
+}
+
+//Number of unordered factorizations of n with
+//largest part at most m
+//Call unorderedFactorizations(n, n) to get all of them
+//Add this to the main to speed up the map:
+//mem.reserve(1024); mem.max_load_factor(0.25);
+struct HASH{
+  size_t operator()(const pair<int,int>&x)const{
+    return hash<long long>()(((long long)x.first)^(((long long)x.second)<<32));
+  }
+};
+unordered_map<pair<int, int>, lli, HASH> mem;
+lli unorderedFactorizations(int m, int n){
+	if(m == 1 && n == 1) return 1;
+	if(m == 1) return 0;
+	if(n == 1) return 1;
+	if(mem.count({m, n})) return mem[{m, n}];
+	lli ans = 0;
+	int l = sqrt(n);
+	for(int i = 1; i <= l; ++i){
+		if(n % i == 0){
+			lli a = i, b = n / i;
+			if(a <= m) ans += unorderedFactorizations(a, b);
+			if(a != b && b <= m) ans += unorderedFactorizations(b, a);
+		}
+	}
+	return mem[{m, n}] = ans;
 }
 
 ostream &operator<<(ostream &os, const __int128 & value){
@@ -805,7 +863,7 @@ istream &operator>>(istream &is, __int128 & value){
 		++pos;
 	}
 	while(*pos != '\0'){
-		value = value * 10 + (*pos - '0');
+		value = (value << 3) + (value << 1) + (*pos - '0');
 		++pos;
 	}
 	value *= sgn;
@@ -825,6 +883,8 @@ void info_ntt(lli e, lli limit){
 
 int main(){
 	srand(time(NULL));
+	primesSieve(1e5);
+	ncrSieve(300);
 
 	/*lli x;
 	cin >> x;
@@ -833,7 +893,6 @@ int main(){
 		cout << it.first << " " << it.second << "\n";
 	}*/
 
-	//primesSieve(1e5);
 	/*lli p, n, q;
 	cin >> p >> n >> q;
 	auto cf = ContinuedFraction(p, n, q);
@@ -887,5 +946,9 @@ int main(){
 	for(lli i = 1; i < p; ++i){
 		cout << i << "^-1 mod " << p << " = " << inverses[i] << "\n";
 	}*/
+
+	/*lli n;
+	cin >> n;
+	cout << unorderedFactorizations(n, n);*/
 	return 0;
 }

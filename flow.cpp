@@ -4,14 +4,14 @@ using namespace std;
 template<typename T>
 struct flowEdge{
 	int dest;
-	T flow, capacity;
+	T flow, capacity, cost;
 	flowEdge *res;
 	flowEdge(){
-		this->dest = this->flow = this->capacity = 0;
+		this->dest = this->flow = this->capacity = this->cost = 0;
 		this->res = NULL;
 	}
-	flowEdge(int dest, T flow, T capacity){
-		this->dest = dest, this->flow = flow, this->capacity = capacity;
+	flowEdge(int dest, T flow, T capacity, T cost = 0){
+		this->dest = dest, this->flow = flow, this->capacity = capacity, this->cost = cost;
 		this->res = NULL;
 	}
 	void addFlow(T flow){
@@ -22,6 +22,7 @@ struct flowEdge{
 
 template<typename T>
 struct flowGraph{
+	T inf = numeric_limits<T>::max();
 	vector<vector<flowEdge<T>*>> adjList;
 	vector<int> dist, pos;
 	int V;
@@ -36,9 +37,9 @@ struct flowGraph{
 			for(int j = 0; j < adjList[i].size(); ++j)
 				delete adjList[i][j];
 	}
-	void addEdge(int u, int v, T capacity){
-		flowEdge<T> *uv = new flowEdge<T>(v, 0, capacity);
-		flowEdge<T> *vu = new flowEdge<T>(u, capacity, capacity);
+	void addEdge(int u, int v, T capacity, T cost = 0){
+		flowEdge<T> *uv = new flowEdge<T>(v, 0, capacity, cost);
+		flowEdge<T> *vu = new flowEdge<T>(u, capacity, capacity, -cost);
 		uv->res = vu;
 		vu->res = uv;
 		adjList[u].push_back(uv);
@@ -80,7 +81,7 @@ struct flowGraph{
 			if(dist[t] != -1){
 				T f;
 				fill(pos.begin(), pos.end(), 0);
-				while(f = blockingFlow(s, t, numeric_limits<T>::max()))
+				while(f = blockingFlow(s, t, inf))
 					maxFlow += f;
 			}
 		}
@@ -90,8 +91,9 @@ struct flowGraph{
 	//Maximun Flow using Edmonds-Karp Algorithm O(VE^2)
 	T edmondsKarp(int s, int t){
 		T maxFlow = 0;
+		vector<flowEdge<T>*> parent(V);
 		while(true){
-			vector<flowEdge<T>*> parent(V);
+			fill(parent.begin(), parent.end(), nullptr);
 			queue<int> Q;
 			Q.push(s);
 			while(!Q.empty() && !parent[t]){
@@ -112,5 +114,42 @@ struct flowGraph{
 			maxFlow += f;
 		}
 		return maxFlow;
+	}
+
+	//Max Flow Min Cost
+	pair<T, T> maxFlowMinCost(int s, int t){
+		vector<bool> inQueue(V);
+		vector<T> distance(V), cap(V);
+		vector<flowEdge<T>*> parent(V);
+		T maxFlow = 0, minCost = 0;
+		while(true){
+			fill(distance.begin(), distance.end(), inf);
+			fill(parent.begin(), parent.end(), nullptr);
+			fill(cap.begin(), cap.end(), 0);
+			distance[s] = 0;
+			cap[s] = inf;
+			queue<int> Q;
+			Q.push(s);
+			while(!Q.empty()){
+				int u = Q.front(); Q.pop(); inQueue[u] = 0;
+				for(flowEdge<T> *v : adjList[u]){
+					if(v->capacity > v->flow && distance[v->dest] > distance[u] + v->cost){
+						distance[v->dest] = distance[u] + v->cost;
+						parent[v->dest] = v;
+						cap[v->dest] = min(cap[u], v->capacity - v->flow);
+						if(!inQueue[v->dest]){
+							Q.push(v->dest);
+							inQueue[v->dest] = true;
+						}
+					}
+				}
+			}
+			if(!parent[t]) break;
+			maxFlow += cap[t];
+			minCost += cap[t] * distance[t];
+			for(int u = t; u != s; u = parent[u]->res->dest)
+				parent[u]->addFlow(cap[t]);
+		}
+		return {maxFlow, minCost};
 	}
 };

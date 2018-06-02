@@ -39,7 +39,7 @@ struct point{
 		return x * p.x + y * p.y;
 	}
 	double length() const{
-		return sqrt(dot(*this));
+		return hypot(x, y);
 	}
 	double cross(const point & p) const{
 		return x * p.y - y * p.x;
@@ -231,4 +231,32 @@ int pointInPolygon(vector<point> & points, point & p){
 		rays += (intersectSegmentsInfo(p, bottomLeft, points[i], points[(i + 1) % n]) == 1 ? 1 : 0);
 	}
 	return rays & 1; //0: point outside, 1: point inside
+}
+
+bool comp1(const point & a, const point & b){
+	return a.y < b.y;
+}
+pair<point, point> closestPairOfPoints(vector<point> points){
+	sort(points.begin(), points.end(), comp1);
+	set<point> S;
+	double ans = 1e9;
+	point p, q;
+	int pos = 0;
+	for(int i = 0; i < points.size(); ++i){
+		while(pos < i && abs(points[i].y - points[pos].y) >= ans){
+			S.erase(points[pos++]);
+		}
+		auto lower = S.lower_bound({-1e9, points[i].x - ans - eps});
+		auto upper = S.upper_bound({-1e9, points[i].x + ans + eps});
+		for(auto it = lower; it != upper; ++it){
+			double d = (points[i] - *it).length();
+			if(d < ans){
+				ans = d;
+				p = points[i];
+				q = *it;
+			}
+		}
+		S.insert(points[i]);
+	}
+	return {p, q};
 }
