@@ -1,0 +1,8 @@
+*.exe
+*.out
+_minted-*
+*.aux
+*.log
+*.mintedcmd
+*.toc
+*.synctex.gz

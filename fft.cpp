@@ -10,8 +10,37 @@ int nearestPowerOfTwo(int n){
 	return ans;
 }
 
-bool isZero(comp z){
-	return abs(z.real()) < 1e-3;
+void fft(vector<comp> & X, int inv){
+	int n = X.size();
+	int len, len2, i, j, k;
+	for(i = 1, j = 0; i < n - 1; ++i){
+		for (k = n >> 1; (j ^= k) < k; k >>= 1);
+		if (i < j) swap(X[i], X[j]);
+	}
+	double ang;
+	comp t, u, v;
+	vector<comp> wlen_pw(n >> 1);
+	wlen_pw[0] = 1;
+	for(len = 2; len <= n; len <<= 1){
+		ang = inv == -1 ? -2 * PI / len : 2 * PI / len;
+		len2 = len >> 1;
+		comp wlen(cos(ang), sin(ang));
+		for(i = 1; i < len2; ++i){
+			wlen_pw[i] = wlen_pw[i - 1] * wlen;
+		}
+		for(i = 0; i < n; i += len){
+			for(j = 0; j < len2; ++j){
+				t = X[i + j + len2] * wlen_pw[j];
+				X[i + j + len2] = X[i + j] - t;
+				X[i + j] += t;
+			}
+		}
+	}
+	if(inv == -1){
+		for(i = 0; i < n; ++i){
+			X[i] /= n;
+		}
+	}
 }
 
 const int p = 7340033;
@@ -20,86 +49,42 @@ const int root_1 = 4404020;
 const int root_pw = 1 << 20;
 
 int inverse(int a, int n){
-    int r0 = a, r1 = n, ri, s0 = 1, s1 = 0, si;
-    while(r1){
-        si = s0 - s1 * (r0 / r1), s0 = s1, s1 = si;
-        ri = r0 % r1, r0 = r1, r1 = ri;
-    }
-    if(s0 < 0) s0 += n;
-    return s0;
-}
-
-template<typename T>
-void swapPositions(vector<T> & X){
-	int n = X.size();
-	int bit;
-	for (int i = 1, j = 0; i < n; ++i) {
-		bit = n >> 1;
-		while(j & bit){
-			j ^= bit;
-			bit >>= 1;
-		}
-		j ^= bit;
-		if (i < j){
-			swap (X[i], X[j]);
-		}
+	int r0 = a, r1 = n, ri, s0 = 1, s1 = 0, si;
+	while(r1){
+		si = s0 - s1 * (r0 / r1), s0 = s1, s1 = si;
+		ri = r0 % r1, r0 = r1, r1 = ri;
 	}
+	if(s0 < 0) s0 += n;
+	return s0;
 }
 
-void fft(vector<comp> & X, int inv){
+void ntt(vector<int> & X, int inv){
 	int n = X.size();
-    swapPositions<comp>(X);
-    int len, len2, i, j;
-    double ang;
-    comp t, u, v;
-    vector<comp> wlen_pw(n >> 1);
-    wlen_pw[0] = 1;
-    for(len = 2; len <= n; len <<= 1) {
-        ang = inv == -1 ? -2 * PI / len : 2 * PI / len;
-        len2 = len >> 1;
-        comp wlen(cos(ang), sin(ang));
-        for(i = 1; i < len2; ++i){
-            wlen_pw[i] = wlen_pw[i - 1] * wlen;
-        }
-        for(i = 0; i < n; i += len) {
-            for(j = 0; j < len2; ++j) {
-                t = X[i + j + len2] * wlen_pw[j];
-                X[i + j + len2] = X[i + j] - t;
-                X[i + j] += t;
-            }
-        }
-    }
-    if(inv == -1){
-        for(i = 0; i < n; ++i){
-            X[i] /= n;
-        }
-    }
-}
-
-void ntt(vector<int> & X, int inv) {
-	int n = X.size();
-	swapPositions<int>(X);
-	int len, len2, wlen, i, j, u, v, w;
-	for (len = 2; len <= n; len <<= 1) {
+	int len, len2, wlen, i, j, k, u, v, w;
+	for(i = 1, j = 0; i < n - 1; ++i){
+		for (k = n >> 1; (j ^= k) < k; k >>= 1);
+		if (i < j) swap(X[i], X[j]);
+	}
+	for (len = 2; len <= n; len <<= 1){
 		len2 = len >> 1;
 		wlen = (inv == -1) ? root_1 : root;
 		for (i = len; i < root_pw; i <<= 1){
-			wlen = wlen * 1ll * wlen % p;
+			wlen = (lli)wlen * wlen % p;
 		}
-		for (i = 0; i < n; i += len) {
+		for (i = 0; i < n; i += len){
 			w = 1;
-			for (j = 0; j < len2; ++j) {
-				u = X[i + j], v = X[i + j + len2] * 1ll * w % p;
+			for (j = 0; j < len2; ++j){
+				u = X[i + j], v = (lli)X[i + j + len2] * w % p;
 				X[i + j] = u + v < p ? u + v : u + v - p;
 				X[i + j + len2] = u - v < 0 ? u - v + p : u - v;
-				w = w * 1ll * wlen % p;
+				w = (lli)w * wlen % p;
 			}
 		}
 	}
-	if (inv == -1) {
+	if (inv == -1){
 		int nrev = inverse(n, p);
 		for (i = 0; i < n; ++i){
-			X[i] = X[i] * 1ll * nrev % p;
+			X[i] = (lli)X[i] * nrev % p;
 		}
 	}
 }
@@ -126,7 +111,7 @@ void multiplyPolynomials(vector<int> & A, vector<int> & B){
 	ntt(A, 1);
 	ntt(B, 1);
 	for(int i = 0; i < size; i++){
-		A[i] = A[i] * 1ll * B[i] % p;
+		A[i] = (lli)A[i] * B[i] % p;
 	}
 	ntt(A, -1);
 	A.resize(degree + 1);
@@ -170,6 +155,58 @@ string multiplyNumbers(const string & a, const string & b){
 	return ss.str();
 }
 
+vector<int> inversePolynomial(vector<int> & A){
+	vector<int> R(1, inverse(A[0], p));
+	while(R.size() < A.size()){
+		int c = 2 * R.size();
+		R.resize(c);
+		vector<int> TR = R;
+		TR.resize(nearestPowerOfTwo(2 * c));
+		vector<int> TF(TR.size());
+		for(int i = 0; i < c; ++i){
+			TF[i] = A[i];
+		}
+		ntt(TR, 1);
+		ntt(TF, 1);
+		for(int i = 0; i < TR.size(); ++i){
+			TR[i] = (lli)TR[i] * TR[i] % p * TF[i] % p;
+		}
+		ntt(TR, -1);
+		TR.resize(2 * c);
+		for(int i = 0; i < c; ++i){
+			R[i] = R[i] + R[i] - TR[i];
+			while(R[i] < 0) R[i] += p;
+			while(R[i] >= p) R[i] -= p;
+		}
+	}
+	R.resize(A.size());
+	return R;
+}
+
+const int inv2 = inverse(2, p);
+
+vector<int> sqrtPolynomial(vector<int> & A){
+	int r0 = 1; //r0^2 = A[0] mod p
+	vector<int> R(1, r0);
+	while(R.size() < A.size()){
+		int c = 2 * R.size();
+		R.resize(c);
+		vector<int> TF(c);
+		for(int i = 0; i < c; ++i){
+			TF[i] = A[i];
+		}
+		vector<int> IR = inversePolynomial(R);
+		multiplyPolynomials(TF, IR);
+		for(int i = 0; i < c; ++i){
+			R[i] = R[i] + TF[i];
+			if(R[i] >= p) R[i] -= p;
+			R[i] = (lli)R[i] * inv2 % p;
+		}
+	}
+	R.resize(A.size());
+	return R;
+}
+
 void test_fft(){
 	int degX, degY;
 	cin >> degX >> degY;
@@ -179,8 +216,8 @@ void test_fft(){
 	for(int i = 0; i <= degY; i++) cin >> Y[i];
 
 	std::clock_t start;
-    double duration;
-    start = std::clock();
+	double duration;
+	start = std::clock();
 
 	multiplyPolynomials(X, Y);
 
@@ -200,8 +237,8 @@ void test_ntt(){
 	for(int i = 0; i <= degY; i++) cin >> Y[i];
 
 	std::clock_t start;
-    double duration;
-    start = std::clock();
+	double duration;
+	start = std::clock();
 
 	multiplyPolynomials(X, Y);
 
@@ -253,13 +290,23 @@ void test_random_mult(){
 
 int main(){
 	srand(time(NULL));
-	string a, b;
+	/*string a, b;
 	cin >> a >> b;
 	cout << multiplyNumbers(a, b) << "\n";
 	test_random_mult();
 	test_random_fft();
 	test_random_ntt();
 	test_fft();
-	test_ntt();
+	test_ntt();*/
+	int n;
+	cin >> n;
+	vector<int> test(n);
+	for(int i = 0; i < n; ++i) cin >> test[i];
+	vector<int> R = sqrtPolynomial(test);
+	for(int i = 0; i < R.size(); ++i) cout << R[i] << " ";
+	cout << "\n";
+	vector<int> R_ = R;
+	multiplyPolynomials(R, R_);
+	for(int i = 0; i < R.size(); ++i) cout << R[i] << " ";
 	return 0;
 }

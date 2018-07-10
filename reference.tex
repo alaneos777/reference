@@ -235,19 +235,18 @@
 		\subsection{Recurrencias lineales}
 		\inputminted[tabsize=2,breaklines,firstline=7,lastline=66,fontsize=\small]{c++}{recurrence.cpp}
 		
+		\subsection{Simplex}
+		
 	\newpage
 	\section{FFT}
 		\subsection{Funciones previas}
-		\inputminted[tabsize=2,breaklines,firstline=3,lastline=15,fontsize=\small]{c++}{fft.cpp}
-		\inputminted[tabsize=2,breaklines,firstline=32,lastline=47,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=3,lastline=11,fontsize=\small]{c++}{fft.cpp}
 		
 		\subsection{FFT con raíces de la unidad complejas}
-		\inputminted[tabsize=2,breaklines,firstline=49,lastline=77,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=13,lastline=44,fontsize=\small]{c++}{fft.cpp}
 		
 		\subsection{FFT con raíces de la unidad discretas (NTT)}
-		\inputminted[tabsize=2,breaklines,firstline=17,lastline=20,fontsize=\small]{c++}{fft.cpp}
-		\inputminted[tabsize=2,breaklines,firstline=22,lastline=30,fontsize=\small]{c++}{fft.cpp}
-		\inputminted[tabsize=2,breaklines,firstline=79,lastline=105,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=46,lastline=90,fontsize=\small]{c++}{fft.cpp}
 			\subsubsection{Otros valores para escoger la raíz y el módulo}
 				\begin{table}[H]
 					\centering
@@ -274,10 +273,16 @@
 		
 		\subsection{Aplicaciones}
 			\subsubsection{Multiplicación de polinomios}
-			\inputminted[tabsize=2,breaklines,firstline=107,lastline=133,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=92,lastline=118,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Multiplicación de números enteros grandes}
-			\inputminted[tabsize=2,breaklines,firstline=135,lastline=171,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=120,lastline=156,fontsize=\small]{c++}{fft.cpp}
+			
+			\subsubsection{Inverso de un polinomio}
+			\inputminted[tabsize=2,breaklines,firstline=158,lastline=184,fontsize=\small]{c++}{fft.cpp}
+			
+			\subsubsection{Raíz cuadrada de un polinomio}
+			\inputminted[tabsize=2,breaklines,firstline=186,lastline=208,fontsize=\small]{c++}{fft.cpp}
 			
 	\newpage
 	\section{Geometría}
@@ -310,6 +315,9 @@
 		
 		\subsection{Par de puntos más cercanos}
 		\inputminted[tabsize=2,breaklines,firstline=236,lastline=262,fontsize=\small]{c++}{geometry.cpp}
+		
+		\subsection{Centroide de un polígono}
+		\inputminted[tabsize=2,breaklines,firstline=264,lastline=274,fontsize=\small]{c++}{geometry.cpp}
 		
 	\newpage
 	\section{Grafos}
@@ -375,6 +383,11 @@
 		\subsection{Distancia entre dos nodos}
 		\inputminted[tabsize=2,breaklines,firstline=557,lastline=580,fontsize=\small]{c++}{graph.cpp}
 		
+		\subsection{HLD}
+		
+		
+		\subsection{Link Cut}
+		
 	\newpage
 	\section{Flujos}
 		\subsection{Estructura \texttt{flowEdge}}
@@ -395,9 +408,60 @@
 	\newpage
 	\section{Estructuras de datos}
 		\subsection{Segment Tree}
-		\inputminted[tabsize=2,breaklines,firstline=4,lastline=50,fontsize=\small]{c++}{queries.cpp}
+			\subsubsection{Point updates, range queries}
+			\inputminted[tabsize=2,breaklines,firstline=4,lastline=37,fontsize=\small]{c++}{queries.cpp}
+			
+			\subsubsection{Dinamic with lazy propagation}
+			\inputminted[tabsize=2,breaklines,firstline=39,lastline=90,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Fenwick Tree}
-		\inputminted[tabsize=2,breaklines,firstline=52,lastline=90,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=92,lastline=129,fontsize=\small]{c++}{queries.cpp}
+		
+		\subsection{SQRT Decomposition}
+		\inputminted[tabsize=2,breaklines,firstline=131,lastline=209,fontsize=\small]{c++}{queries.cpp}
+		
+		\subsection{AVL Tree}
+		\inputminted[tabsize=2,breaklines,firstline=211,lastline=422,fontsize=\small]{c++}{queries.cpp}
+		
+		\subsection{Treap}
+		\inputminted[tabsize=2,breaklines,firstline=424,lastline=517,fontsize=\small]{c++}{queries.cpp}
+		
+		\subsection{Ordered Set C++}
+		
+		
+		\subsection{Splay Tree}
+		
+		
+		\subsection{Sparse table}
+		
+		
+		\subsection{Wavelet Tree}
+		
+	\newpage
+	\section{Cadenas}
+		\subsection{KMP}
+		\inputminted[tabsize=2,breaklines,firstline=4,lastline=39,fontsize=\small]{c++}{strings.cpp}
+		
+		\subsection{Aho-Corasick}
+		\inputminted[tabsize=2,breaklines,firstline=41,lastline=142,fontsize=\small]{c++}{strings.cpp}
+		
+		\subsection{Rabin-Karp}
+		
+		
+		\subsection{Suffix Array}
+	
+	\newpage
+	\section{Varios}
+		\subsection{Lectura y escritura de \texttt{\_\_int128}}
+		\inputminted[tabsize=2,breaklines,firstline=46,lastline=83,fontsize=\small]{c++}{misc.cpp}
+		
+		\subsection{Longest Common Subsequence (LCS)}
+		\inputminted[tabsize=2,breaklines,firstline=21,lastline=33,fontsize=\small]{c++}{misc.cpp}
+		
+		\subsection{Longest Increasing Subsequence (LIS)}
+		\inputminted[tabsize=2,breaklines,firstline=5,lastline=19,fontsize=\small]{c++}{misc.cpp}
+		
+		\subsection{Día de la semana}
+		\inputminted[tabsize=2,breaklines,firstline=35,lastline=44,fontsize=\small]{c++}{misc.cpp}
 
 \end{document}

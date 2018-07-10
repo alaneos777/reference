@@ -780,7 +780,7 @@ lli orderedFactorizations(lli n){
 	//skip the factorization if you already know the powers
 	auto fact = factorize(n);
 	int k = 0, q = 0;
-	vector<int> powers(k + 1);
+	vector<int> powers(fact.size() + 1);
 	for(auto & f : fact){
 		powers[k + 1] = f.second;
 		q += f.second;
@@ -825,7 +825,7 @@ lli unorderedFactorizations(int m, int n){
 	int l = sqrt(n);
 	for(int i = 1; i <= l; ++i){
 		if(n % i == 0){
-			lli a = i, b = n / i;
+			int a = i, b = n / i;
 			if(a <= m) ans += unorderedFactorizations(a, b);
 			if(a != b && b <= m) ans += unorderedFactorizations(b, a);
 		}
@@ -870,9 +870,9 @@ istream &operator>>(istream &is, __int128 & value){
 	return is;
 }
 
-void info_ntt(lli e, lli limit){
+void info_ntt(lli e, lli l, lli r){
 	lli n = 1ll << e;
-	for(lli k = 1; k <= limit; ++k){
+	for(lli k = l; k <= r; ++k){
 		lli p = k * n + 1;
 		if(isPrimeMillerRabin(p)){
 			lli w = findFirstPrimitiveKthRootUnity(n, p);

@@ -8,25 +8,25 @@ double eps = 1e-8;
 struct point{
 	double x, y;
 
-	point(){
-		x = y = 0;
-	}
-	point(double x, double y){
-		this->x = x, this->y = y;
-	}
+	point(): x(0), y(0){}
 
-	point operator+(const point & p) const{
-		return point(x + p.x, y + p.y);
-	}
-	point operator-(const point & p) const{
-		return point(x - p.x, y - p.y);
-	}
-	point operator*(const double & k) const{
-		return point(x * k, y * k);
-	}
-	point operator/(const double & k) const{
-		return point(x / k, y / k);
-	}
+	point(double x, double y): x(x), y(y){}
+
+	point operator+(const point & p) const{return point(x + p.x, y + p.y);}
+	
+	point operator-(const point & p) const{return point(x - p.x, y - p.y);}
+	
+	point operator*(const double & k) const{return point(x * k, y * k);}
+
+	point operator/(const double & k) const{return point(x / k, y / k);}
+
+	point operator+=(const point & p){*this = *this + p; return *this;}
+
+	point operator-=(const point & p){*this = *this - p; return *this;}
+
+	point operator*=(const double & p){*this = *this * p; return *this;}
+
+	point operator/=(const double & p){*this = *this / p; return *this;}
 
 	point rotate(const double angle) const{
 		return point(x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle));
@@ -246,8 +246,8 @@ pair<point, point> closestPairOfPoints(vector<point> points){
 		while(pos < i && abs(points[i].y - points[pos].y) >= ans){
 			S.erase(points[pos++]);
 		}
-		auto lower = S.lower_bound({-1e9, points[i].x - ans - eps});
-		auto upper = S.upper_bound({-1e9, points[i].x + ans + eps});
+		auto lower = S.lower_bound({points[i].x - ans - eps, -1e9});
+		auto upper = S.upper_bound({points[i].x + ans + eps, -1e9});
 		for(auto it = lower; it != upper; ++it){
 			double d = (points[i] - *it).length();
 			if(d < ans){
@@ -259,4 +259,26 @@ pair<point, point> closestPairOfPoints(vector<point> points){
 		S.insert(points[i]);
 	}
 	return {p, q};
+}
+
+point centroid(vector<point> & points){
+	point P;
+	double div = 0;
+	int n = points.size();
+	for(int i = 0; i < n; ++i){
+		double cross = points[i].cross(points[(i + 1) % n]);
+		P += (points[i] + points[(i + 1) % n]) * cross;
+		div += cross;
+	}
+	return P / (3.0 * div);
+}
+
+int main(){
+	int n;
+	cin >> n;
+	vector<point> poly(n);
+	for(int i = 0; i < n; ++i){
+		cin >> poly[i];
+	}
+	cout << centroid(poly) << "\n";
 }

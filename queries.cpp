@@ -6,11 +6,11 @@ struct SegmentTree{
 	int N;
 	vector<T> ST;
 
-	SegmentTree(int N){
-		this->N = N;
+	SegmentTree(int N): N(N){
 		ST.assign(N << 1, 0);
 	}
 
+	//build from an array in O(n)
 	void build(vector<T> & arr){
 		for(int i = 0; i < N; ++i)
 			ST[N + i] = arr[i];
@@ -18,30 +18,17 @@ struct SegmentTree{
 			ST[i] = ST[i << 1] + ST[i << 1 | 1];
 	}
 
-	//single element update in pos
-	void update(int pos, T value){
-		ST[pos += N] = value;
-		while(pos >>= 1)
-			ST[pos] = ST[pos << 1] + ST[pos << 1 | 1];
-	}
-
-	//single element update in [l, r]
-	void update(int l, int r, T value){
-		l += N, r += N;
-		for(int i = l; i <= r; ++i)
-			ST[i] = value;
-		l >>= 1, r >>= 1;
-		while(l >= 1){
-			for(int i = r; i >= l; --i)
-				ST[i] = ST[i << 1] + ST[i << 1 | 1];
-			l >>= 1, r >>= 1;
-		}
+	//single element update in i
+	void update(int i, T value){
+		ST[i += N] = value; //update the element accordingly
+		while(i >>= 1)
+			ST[i] = ST[i << 1] + ST[i << 1 | 1];
 	}
 
 	//range query, [l, r]
 	T query(int l, int r){
 		T res = 0;
-		for(l += N, r += N; l <= r; l >>= 1, r >>= 1) {
+		for(l += N, r += N; l <= r; l >>= 1, r >>= 1){
 			if(l & 1) res += ST[l++];
 			if(!(r & 1)) res += ST[r--];
 		}
@@ -50,12 +37,64 @@ struct SegmentTree{
 };
 
 template<typename T>
+struct SegmentTreeDin{
+	SegmentTreeDin *left, *right;
+	int l, r;
+	T value, lazy;
+ 
+	SegmentTreeDin(int start, int end, vector<T> & arr): left(NULL), right(NULL), l(start), r(end), value(0), lazy(0){
+		if(l == r) value = arr[l];
+		else{
+			int half = l + ((r - l) >> 1);
+			left = new SegmentTreeDin(l, half, arr);
+			right = new SegmentTreeDin(half+1, r, arr);
+			value = left->value + right->value;
+		}
+	}
+ 
+	void propagate(T dif){
+		value += (r - l + 1) * dif;
+		if(l != r){
+			left->lazy += dif;
+			right->lazy += dif;
+		}
+	}
+ 
+	T query(int start, int end){
+		if(lazy != 0){
+			propagate(lazy);
+			lazy = 0;
+		}
+		if(end < l || r < start) return 0;
+		if(start <= l && r <= end) return value;
+		else return left->query(start, end) + right->query(start, end);
+	}
+ 
+	void update(int start, int end, T dif){
+		if(lazy != 0){
+			propagate(lazy);
+			lazy = 0;
+		}
+		if(end < l || r < start) return;
+		if(start <= l && r <= end) propagate(dif);
+		else{
+			left->update(start, end, dif);
+			right->update(start, end, dif);
+			value = left->value + right->value;
+		}
+	}
+
+	void update(int i, T value){
+		update(i, i, value);
+	}
+};
+
+template<typename T>
 struct FenwickTree{
 	int N;
 	vector<T> bit;
 
-	FenwickTree(int N){
-		this->N = N;
+	FenwickTree(int N): N(N){
 		bit.assign(N, 0);
 	}
 
@@ -104,8 +143,7 @@ struct SQRT{
 	int N, S;
 	vector<T> A, B;
 
-	SQRT(int N){
-		this->N = N;
+	SQRT(int N): N(N){
 		this->S = sqrt(N + .0) + 1;
 		A.assign(N, 0);
 		B.assign(S, 0);
@@ -113,9 +151,7 @@ struct SQRT{
 
 	void build(vector<T> & arr){
 		A = vector<int>(arr.begin(), arr.end());
-		for(int i = 0; i < N; ++i){
-			B[i / S] += A[i];
-		}
+		for(int i = 0; i < N; ++i) B[i / S] += A[i];
 	}
 
 	//single element update
@@ -123,9 +159,7 @@ struct SQRT{
 		int k = pos / S;
 		A[pos] = value;
 		T res = 0;
-		for(int i = k * S, end = min(N, (k + 1) * S) - 1; i <= end; ++i){
-			res += A[i];
-		}
+		for(int i = k * S, end = min(N, (k + 1) * S) - 1; i <= end; ++i) res += A[i];
 		B[k] = res;
 	}
 
@@ -134,22 +168,16 @@ struct SQRT{
 		T res = 0;
 		int c_l = l / S, c_r = r / S;
 		if(c_l == c_r){
-			for(int i = l; i <= r; ++i)
-				res += A[i];
+			for(int i = l; i <= r; ++i) res += A[i];
 		}else{
-			for(int i = l, end = (c_l + 1) * S - 1; i <= end; ++i){
-				res += A[i];
-			}
-			for(int i = c_l + 1; i <= c_r - 1; ++i){
-				res += B[i];
-			}
-			for(int i = c_r * S; i <= r; ++i){
-				res += A[i];
-			}
+			for(int i = l, end = (c_l + 1) * S - 1; i <= end; ++i) res += A[i];
+			for(int i = c_l + 1; i <= c_r - 1; ++i) res += B[i];
+			for(int i = c_r * S; i <= r; ++i) res += A[i];
 		}
 		return res;
 	}
 
+	//range queries offline using MO's algorithm
 	vector<T> MO(vector<MOquery> & queries){
 		vector<T> ans(queries.size());
 		sort(queries.begin(), queries.end());
@@ -158,15 +186,19 @@ struct SQRT{
 		int i, j;
 		for(const MOquery & q : queries){
 			for(i = prevL, j = min(prevR, q.l - 1); i <= j; ++i){
+				//remove from the left
 				current -= A[i];
 			}
-			for(i = q.l; i <= prevL - 1; ++i){
+			for(i = prevL - 1; i >= q.l; --i){
+				//add to the left
 				current += A[i];
 			}
 			for(i = max(prevR + 1, q.l); i <= q.r; ++i){
+				//add to the right
 				current += A[i];
 			}
-			for(i = q.r + 1; i <= prevR; ++i){
+			for(i = prevR; i >= q.r + 1; --i){
+				//remove from the right
 				current -= A[i];
 			}
 			prevL = q.l, prevR = q.r;
@@ -179,27 +211,19 @@ struct SQRT{
 template<typename T>
 struct AVLNode
 {
-	AVLNode<T> *left;
-	AVLNode<T> *right;
+	AVLNode<T> *left, *right;
 	short int height;
 	int size;
 	T value;
 
-	AVLNode(T value){
-		left = right = NULL;
-		this->value = value;
-		height = 1, size = 1;
-	}
+	AVLNode(T value = 0): left(NULL), right(NULL), value(value), height(1), size(1){}
 
 	inline short int balance(){
 		return (right ? right->height : 0) - (left ? left->height : 0);
 	}
 
-	inline void updateHeight(){
+	inline void update(){
 		height = 1 + max(left ? left->height : 0, right ? right->height : 0);
-	}
-
-	inline void updateSize(){
 		size = 1 + (left ? left->size : 0) + (right ? right->size : 0);
 	}
 
@@ -208,100 +232,59 @@ struct AVLNode
 		while(ret->left) ret = ret->left;
 		return ret;
 	}
-
-	AVLNode *maxRightChild(){
-		AVLNode *ret = this;
-		while(ret->right) ret = ret->right;
-		return ret;
-	}
 };
 
 template<typename T>
 struct AVLTree
 {
 	AVLNode<T> *root;
-	int size;
 
-	AVLTree(){
-		root = NULL;
-		size = 0;
-	}
+	AVLTree(): root(NULL){}
 
-	inline int nodeSize(AVLNode<T> *& pos){
-		return pos ? pos->size: 0;
-	}
+	inline int nodeSize(AVLNode<T> *& pos){return pos ? pos->size: 0;}
+
+	int size(){return nodeSize(root);}
 
 	void leftRotate(AVLNode<T> *& x){
-		AVLNode<T> *y = x->right;
-		AVLNode<T> *t = y->left;
-		y->left = x;
-		x->right = t;
-		x->updateHeight(), x->updateSize();
-		y->updateHeight(), y->updateSize();
+		AVLNode<T> *y = x->right, *t = y->left;
+		y->left = x, x->right = t;
+		x->update(), y->update();
 		x = y;
 	}
 
 	void rightRotate(AVLNode<T> *& y){
-		AVLNode<T> *x = y->left;
-		AVLNode<T> *t = x->right;
-		x->right = y;
-		y->left = t;
-		y->updateHeight(), y->updateSize();
-		x->updateHeight(), x->updateSize();
+		AVLNode<T> *x = y->left, *t = x->right;
+		x->right = y, y->left = t;
+		y->update(), x->update();
 		y = x;
 	}
 
 	void updateBalance(AVLNode<T> *& pos){
 		short int bal = pos->balance();
 		if(bal > 1){
-			if(pos->right->balance() < 0){
-				rightRotate(pos->right);
+			if(pos->right->balance() < 0)
+				rightRotate(pos->right), leftRotate(pos);
+			else
 				leftRotate(pos);
-			}else{
-				leftRotate(pos);
-			}
 		}else if(bal < -1){
-			if(pos->left->balance() > 0){
-				leftRotate(pos->left);
+			if(pos->left->balance() > 0)
+				leftRotate(pos->left), rightRotate(pos);
+			else
 				rightRotate(pos);
-			}else{
-				rightRotate(pos);
-			}
 		}
 	}
 
-	void build(AVLNode<T> *& pos, const vector<T> & arr, int i, int j){
-		if(i > j) return;
-		int m = i + ((j - i) >> 1);
-		pos = new AVLNode<T>(arr[m]);
-		build(pos->left, arr, i, m - 1);
-		build(pos->right, arr, m + 1, j);
-		pos->size = j - i + 1;
-		pos->updateHeight();
-	}
-
-	void build(const vector<T> & arr){
-		size = arr.size();
-		build(root, arr, 0, size - 1);
-	}
-
-	void insert(AVLNode<T> *&pos, const T & value){
+	void insert(AVLNode<T> *&pos, T & value){
 		if(pos){
 			value < pos->value ? insert(pos->left, value) : insert(pos->right, value);
-			++pos->size;
-			pos->updateHeight();
+			pos->update();
 			updateBalance(pos);
 		}else{
 			pos = new AVLNode<T>(value);
-			++size;
 		}
 	}
 
-	void insert(T value){
-		insert(root, value);
-	}
-
-	AVLNode<T> *search(const T & value){
+	AVLNode<T> *search(T & value){
 		AVLNode<T> *pos = root;
 		while(pos){
 			if(value == pos->value) break;
@@ -310,106 +293,34 @@ struct AVLTree
 		return pos;
 	}
 
-	bool erase(AVLNode<T> *&pos, const T & value){
+	void erase(AVLNode<T> *&pos, T & value){
 		AVLNode<T> *tmp, *next;
-		if(!pos) return false;
-		bool success = false;
-		if(value < pos->value){
-			success = erase(pos->left, value);
-			if(success) --pos->size;
-		}else if(value > pos->value){
-			success = erase(pos->right, value);
-			if(success) --pos->size;
-		}else{
-			success = true;
-			if(!pos->left){
-				pos = pos->right;
-			}else if(!pos->right){
-				pos = pos->left;
-			}else{
-				next = pos->right->maxLeftChild(); //pos->left->maxRightChild();
+		if(!pos) return;
+		if(value < pos->value) erase(pos->left, value);
+		else if(value > pos->value) erase(pos->right, value);
+		else{
+			if(!pos->left) pos = pos->right;
+			else if(!pos->right) pos = pos->left;
+			else{
+				next = pos->right->maxLeftChild();
 				pos->value = next->value;
-				erase(pos->right, pos->value);     //erase(pos->left, pos->value);
-				--pos->size;
+				erase(pos->right, pos->value);
 			}
 		}
-		if(pos && success){
-			pos->updateHeight();
-			updateBalance(pos);
-		}
-		return success;
+		if(pos) pos->update(), updateBalance(pos);
 	}
 
-	void erase(T value){
-		if(erase(root, value)) --size;
+	void insert(T value){insert(root, value);}
+
+	void erase(T value){erase(root, value);}
+
+	void updateVal(T old, T New){
+		if(search(old))
+			erase(old), insert(New);
 	}
 
-	void update(T old, T New){
-		erase(old);
-		insert(New);
-	}
-
-	int lessThan(const T & x){
-		int ans = 0;
-		AVLNode<T> *pos = root;
-		while(pos){
-			if(x > pos->value){
-				ans += nodeSize(pos->left) + 1;
-				pos = pos->right;
-			}else{
-				pos = pos->left;
-			}
-		}
-		return ans;
-	}
-
-	int lessThanOrEqual(const T & x){
-		int ans = 0;
-		AVLNode<T> *pos = root;
-		while(pos){
-			if(x < pos->value){
-				pos = pos->left;
-			}else{
-				ans += nodeSize(pos->left) + 1;
-				pos = pos->right;
-			}
-		}
-		return ans;
-	}
-
-	int greaterThan(const T & x){
-		int ans = 0;
-		AVLNode<T> *pos = root;
-		while(pos){
-			if(x < pos->value){
-				ans += nodeSize(pos->right) + 1;
-				pos = pos->left;
-			}else{
-				pos = pos->right;
-			}
-		}
-		return ans;
-	}
-
-	int greaterThanOrEqual(const T & x){
-		int ans = 0;
-		AVLNode<T> *pos = root;
-		while(pos){
-			if(x > pos->value){
-				pos = pos->right;
-			}else{
-				ans += nodeSize(pos->right) + 1;
-				pos = pos->left;
-			}
-		}
-		return ans;
-	}
-
-	int equalTo(const T & x){
-		return lessThanOrEqual(x) - lessThan(x);
-	}
-
-	T index(int i){
+	T kth(int i){
+		if(i < 0 || i >= nodeSize(root)) return -1;
 		AVLNode<T> *pos = root;
 		while(i != nodeSize(pos->left)){
 			if(i < nodeSize(pos->left)){
@@ -420,6 +331,80 @@ struct AVLTree
 			}
 		}
 		return pos->value;
+	}
+
+	int lessThan(T & x){
+		int ans = 0;
+		AVLNode<T> *pos = root;
+		while(pos){
+			if(x > pos->value){
+				ans += nodeSize(pos->left) + 1;
+				pos = pos->right;
+			}else{
+				pos = pos->left;
+			}
+		}
+		return ans;
+	}
+
+	int lessThanOrEqual(T & x){
+		int ans = 0;
+		AVLNode<T> *pos = root;
+		while(pos){
+			if(x < pos->value){
+				pos = pos->left;
+			}else{
+				ans += nodeSize(pos->left) + 1;
+				pos = pos->right;
+			}
+		}
+		return ans;
+	}
+
+	int greaterThan(T & x){
+		int ans = 0;
+		AVLNode<T> *pos = root;
+		while(pos){
+			if(x < pos->value){
+				ans += nodeSize(pos->right) + 1;
+				pos = pos->left;
+			}else{
+				pos = pos->right;
+			}
+		}
+		return ans;
+	}
+
+	int greaterThanOrEqual(T & x){
+		int ans = 0;
+		AVLNode<T> *pos = root;
+		while(pos){
+			if(x > pos->value){
+				pos = pos->right;
+			}else{
+				ans += nodeSize(pos->right) + 1;
+				pos = pos->left;
+			}
+		}
+		return ans;
+	}
+
+	int equalTo(T & x){
+		return lessThanOrEqual(x) - lessThan(x);
+	}
+
+	void build(AVLNode<T> *& pos, vector<T> & arr, int i, int j){
+		if(i > j) return;
+		int m = i + ((j - i) >> 1);
+		pos = new AVLNode<T>(arr[m]);
+		build(pos->left, arr, i, m - 1);
+		build(pos->right, arr, m + 1, j);
+		pos->update();
+	}
+
+	void build(vector<T> & arr){
+		size = arr.size();
+		build(root, arr, 0, size - 1);
 	}
 
 	void output(AVLNode<T> *pos, vector<T> & arr, int & i){
@@ -434,26 +419,110 @@ struct AVLTree
 		int i = -1;
 		output(root, arr, i);
 	}
+};
 
-	void inorden(AVLNode<T> *pos){
-		if(pos){
-			inorden(pos->left);
-			cout << pos->value << " " << pos->height << " " << pos->balance() << " " << pos->size << "\n";
-			inorden(pos->right);
-		}
+struct Treap{
+	Treap *left, *right;
+	int value;
+	int key, size;
+
+	Treap(int value = 0): value(value), key(rand()), size(1), left(NULL), right(NULL){}
+
+	inline void update(){
+		size = 1 + (left ? left->size : 0) + (right ? right->size : 0);
 	}
 };
 
-/*int main(){
-	int n, q, t, pos, value, l, r;
+inline int nodeSize(Treap* &pos){
+	return pos ? pos->size: 0;
+}
+
+void merge(Treap* &T, Treap* T1, Treap* T2){
+	if(!T1) T = T2;
+	else if(!T2) T = T1;
+	else if(T1->key > T2->key)
+		merge(T1->right, T1->right, T2), T = T1;
+	else
+		merge(T2->left, T1, T2->left), T = T2;
+	if(T) T->update();
+}
+
+void split(Treap* T, int x, Treap* &T1, Treap* &T2){
+	if(!T)
+		return void(T1 = T2 = NULL);
+	if(x < T->value)
+		split(T->left, x, T1, T->left), T2 = T;
+	else
+		split(T->right, x, T->right, T2), T1 = T;
+	if(T) T->update();
+}
+
+Treap* search(Treap* T, int x){
+	while(T){
+		if(x == T->value) break;
+		T = (x < T->value ? T->left : T->right);
+	}
+	return T;
+}
+
+void insert(Treap* &T, Treap* x){
+	if(!T) T = x;
+	else if(x->key > T->key)
+		split(T, x->value, x->left, x->right), T = x;
+	else
+		insert(x->value < T->value ? T->left : T->right, x);
+	if(T) T->update();
+}
+
+void insert(Treap* &T, int x){insert(T, new Treap(x));}
+
+void erase(Treap* &T, int x){
+	if(!T) return;
+	if(T->value == x)
+		merge(T, T->left, T->right);
+	else
+		erase(x < T->value ? T->left : T->right, x);
+	if(T) T->update();
+}
+
+Treap* updateVal(Treap* &T, int old, int New){
+	if(search(T, old))
+		erase(T, old), insert(T, New);
+}
+
+int lessThan(Treap* T, int x){
+	int ans = 0;
+	while(T){
+		if(x > T->value){
+			ans += nodeSize(T->left) + 1;
+			T = T->right;
+		}else{
+			T = T->left;
+		}
+	}
+	return ans;
+}
+
+int kth(Treap* T, int i){
+	if(i < 0 || i >= nodeSize(T)) return -1;
+	while(i != nodeSize(T->left)){
+		if(i < nodeSize(T->left)){
+			T = T->left;
+		}else{
+			i -= nodeSize(T->left) + 1;
+			T = T->right;
+		}
+	}
+	return T->value;
+}
+
+int main(){
+	int n, t, pos, value, l, r;
 	cin >> n;
 	vector<int> a(n);
 	for(int i = 0; i < n; i++) cin >> a[i];
-	SegmentTree<int> *st = new SegmentTree<int>(n);
-	st->build(a);
-	cin >> q;
-	while(q--){
-		cin >> t;
+	SegmentTreeDin<int> *st = new SegmentTreeDin<int>(0, n-1, a);
+	while(cin >> t && t != -1){
 		if(t == 1){ //update single element
 			cin >> pos >> value;
 			st->update(pos, value);
@@ -466,7 +535,7 @@ struct AVLTree
 		}
 	}
 	return 0;
-}*/
+}
 
 /*int main(){
 	int n, q, l, r;
@@ -488,31 +557,53 @@ struct AVLTree
 }
 */
 
-int main(){
-	int q, t, n, m;
+/*int main(){
+	int t, n, m;
 	AVLTree<int> *avl = new AVLTree<int>;
-	cin >> q;
-	while(q--){
-		cin >> t;
+	while(cin >> t && t != -1){
 		cin >> n;
 		if(t == 0){ //insert
 			avl->insert(n);
-			cout << "Inorden:\n"; avl->inorden(avl->root); cout << "Size: " << avl->size << "\n\n";
 		}else if(t == 1){ //search
 			AVLNode<int> *pos = avl->search(n);
 			if(pos) cout << "Found\n";
 			else cout << "Not found\n";
 		}else if(t == 2){ //delete
 			avl->erase(n);
-			cout << "Inorden:\n"; avl->inorden(avl->root); cout << "Size: " << avl->size << "\n\n";
 		}else if(t == 3){ //update
 			cin >> m;
-			avl->update(n, m);
+			avl->updateVal(n, m);
 		}else if(t == 4){ //lessThanOrEqual
 			cout << avl->lessThan(n) << " " << avl->lessThanOrEqual(n) << " " << avl->greaterThan(n) << " " << avl->greaterThanOrEqual(n) << " " << avl->equalTo(n) << "\n";
 		}else if(t == 5){ //get nth element
-			cout << avl->index(n) << "\n";
+			cout << avl->kth(n) << "\n";
 		}
 	}
 	return 0;
-}
+}*/
+
+/*int main(){
+	srand(time(NULL));
+	int t, n, m;
+	Treap *T = NULL;
+	while(cin >> t && t != -1){
+		cin >> n;
+		if(t == 0){ //insert
+			insert(T, n);
+		}else if(t == 1){ //search
+			Treap *pos = search(T, n);
+			if(pos) cout << "Found\n";
+			else cout << "Not found\n";
+		}else if(t == 2){ //delete
+			erase(T, n);
+		}else if(t == 3){ //update
+			cin >> m;
+			updateVal(T, n, m);
+		}else if(t == 4){ //lessThanOrEqual
+			cout << lessThan(T, n) << "\n";
+		}else if(t == 5){ //get nth element
+			cout << kth(T, n) << "\n";
+		}
+	}
+	return 0;
+}*/
