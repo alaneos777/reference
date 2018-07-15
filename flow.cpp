@@ -6,14 +6,10 @@ struct flowEdge{
 	int dest;
 	T flow, capacity, cost;
 	flowEdge *res;
-	flowEdge(){
-		this->dest = this->flow = this->capacity = this->cost = 0;
-		this->res = NULL;
-	}
-	flowEdge(int dest, T flow, T capacity, T cost = 0){
-		this->dest = dest, this->flow = flow, this->capacity = capacity, this->cost = cost;
-		this->res = NULL;
-	}
+
+	flowEdge(): dest(0), flow(0), capacity(0), cost(0), res(NULL){}
+	flowEdge(int dest, T flow, T capacity, T cost = 0): dest(dest), flow(flow), capacity(capacity), cost(cost), res(NULL){}
+
 	void addFlow(T flow){
 		this->flow += flow;
 		this->res->flow -= flow;
@@ -26,12 +22,7 @@ struct flowGraph{
 	vector<vector<flowEdge<T>*>> adjList;
 	vector<int> dist, pos;
 	int V;
-	flowGraph(int V){
-		this->V = V;
-		adjList.resize(V);
-		dist.resize(V);
-		pos.resize(V);
-	}
+	flowGraph(int V): V(V), adjList(V), dist(V), pos(V){}
 	~flowGraph(){
 		for(int i = 0; i < V; ++i)
 			for(int j = 0; j < adjList[i].size(); ++j)

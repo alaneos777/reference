@@ -262,15 +262,11 @@ struct AVLTree
 	void updateBalance(AVLNode<T> *& pos){
 		short int bal = pos->balance();
 		if(bal > 1){
-			if(pos->right->balance() < 0)
-				rightRotate(pos->right), leftRotate(pos);
-			else
-				leftRotate(pos);
+			if(pos->right->balance() < 0) rightRotate(pos->right);
+			leftRotate(pos);
 		}else if(bal < -1){
-			if(pos->left->balance() > 0)
-				leftRotate(pos->left), rightRotate(pos);
-			else
-				rightRotate(pos);
+			if(pos->left->balance() > 0) leftRotate(pos->left);
+			rightRotate(pos);
 		}
 	}
 
@@ -279,9 +275,8 @@ struct AVLTree
 			value < pos->value ? insert(pos->left, value) : insert(pos->right, value);
 			pos->update();
 			updateBalance(pos);
-		}else{
+		}else
 			pos = new AVLNode<T>(value);
-		}
 	}
 
 	AVLNode<T> *search(T & value){
@@ -294,7 +289,6 @@ struct AVLTree
 	}
 
 	void erase(AVLNode<T> *&pos, T & value){
-		AVLNode<T> *tmp, *next;
 		if(!pos) return;
 		if(value < pos->value) erase(pos->left, value);
 		else if(value > pos->value) erase(pos->right, value);
@@ -302,8 +296,7 @@ struct AVLTree
 			if(!pos->left) pos = pos->right;
 			else if(!pos->right) pos = pos->left;
 			else{
-				next = pos->right->maxLeftChild();
-				pos->value = next->value;
+				pos->value = pos->right->maxLeftChild()->value;
 				erase(pos->right, pos->value);
 			}
 		}
@@ -516,7 +509,42 @@ int kth(Treap* T, int i){
 	return T->value;
 }
 
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+
+typedef tree<int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
 int main(){
+	int t, n, m;
+	ordered_set conj;
+	while(cin >> t && t != -1){
+		cin >> n;
+		if(t == 0){ //insert
+			conj.insert(n);
+		}else if(t == 1){ //search
+			if(conj.find(n) != conj.end()) cout << "Found\n";
+			else cout << "Not found\n";
+		}else if(t == 2){ //delete
+			conj.erase(n);
+		}else if(t == 3){ //update
+			cin >> m;
+			if(conj.find(n) != conj.end()){
+				conj.erase(n);
+				conj.insert(n);
+			}
+		}else if(t == 4){ //lower bound
+			cout << conj.order_of_key(n) << "\n";
+		}else if(t == 5){ //get nth element
+			auto pos = conj.find_by_order(n);
+			if(pos != conj.end()) cout << *pos << "\n";
+			else cout << "-1\n";
+		}
+	}
+	return 0;
+}
+
+/*int main(){
 	int n, t, pos, value, l, r;
 	cin >> n;
 	vector<int> a(n);
@@ -535,7 +563,7 @@ int main(){
 		}
 	}
 	return 0;
-}
+}*/
 
 /*int main(){
 	int n, q, l, r;
@@ -599,7 +627,7 @@ int main(){
 		}else if(t == 3){ //update
 			cin >> m;
 			updateVal(T, n, m);
-		}else if(t == 4){ //lessThanOrEqual
+		}else if(t == 4){ //lessThan
 			cout << lessThan(T, n) << "\n";
 		}else if(t == 5){ //get nth element
 			cout << kth(T, n) << "\n";

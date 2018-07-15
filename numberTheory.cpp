@@ -117,70 +117,70 @@ pair<lli, lli> chinese(vector<lli> & a, vector<lli> & n){
 }
 
 vector<lli> divisorsSum;
-vector<vector<lli>> divisors;
-void divisorsSieve(lli n){
+vector<vector<int>> divisors;
+void divisorsSieve(int n){
 	divisorsSum.resize(n + 1, 0);
-	divisors.resize(n + 1, vector<lli>());
-	for(lli i = 1; i <= n; i++){
-		for(lli j = i; j <= n; j += i){
+	divisors.resize(n + 1, vector<int>());
+	for(int i = 1; i <= n; i++){
+		for(int j = i; j <= n; j += i){
 			divisorsSum[j] += i;
 			divisors[j].push_back(i);
 		}
 	}
 }
 
-vector<lli> primes;
+vector<int> primes;
 vector<bool> isPrime;
-void primesSieve(lli n){
+void primesSieve(int n){
 	isPrime.resize(n + 1, true);
 	isPrime[0] = isPrime[1] = false;
 	primes.push_back(2);
-	for(lli i = 4; i <= n; i += 2){
-		isPrime[i] = false;
-	}
-	for(lli i = 3; i <= n; i += 2){
+	for(int i = 4; i <= n; i += 2) isPrime[i] = false;
+	int limit = sqrt(n);
+	for(int i = 3; i <= n; i += 2){
 		if(isPrime[i]){
 			primes.push_back(i);
-			for(lli j = i * i; j <= n; j += 2 * i){
-				isPrime[j] = false;
-			}
+			if(i <= limit)
+				for(int j = i * i; j <= n; j += 2 * i)
+					isPrime[j] = false;
 		}
 	}
 }
 
-vector<lli> lowestPrime;
-void lowestPrimeSieve(lli n){
+
+vector<int> lowestPrime;
+void lowestPrimeSieve(int n){
 	lowestPrime.resize(n + 1, 1);
 	lowestPrime[0] = lowestPrime[1] = 0;
-	for(lli i = 2; i <= n; i++) lowestPrime[i] = (i & 1 ? i : 2);
-	lli limit = sqrt(n);
-	for(lli i = 3; i <= limit; i += 2){
+	for(int i = 2; i <= n; i++) lowestPrime[i] = (i & 1 ? i : 2);
+	int limit = sqrt(n);
+	for(int i = 3; i <= limit; i += 2){
 		if(lowestPrime[i] == i){
-			for(lli j = i * i; j <= n; j += 2 * i){
+			for(int j = i * i; j <= n; j += 2 * i){
 				if(lowestPrime[j] == j) lowestPrime[j] = i;
 			}
 		}
 	}
 }
 
-vector<vector<lli>> primeFactors;
+vector<vector<int>> primeFactors;
 void primeFactorsSieve(lli n){
-	primeFactors.resize(n + 1, vector<lli>());
+	primeFactors.resize(n + 1, vector<int>());
 	for(int i = 0; i < primes.size(); i++){
-		lli p = primes[i];
-		for(lli j = p; j <= n; j += p){
+		int p = primes[i];
+		for(int j = p; j <= n; j += p){
 			primeFactors[j].push_back(p);
 		}
 	}
 }
 
-vector<lli> Phi;
-void phiSieve(lli n){
+vector<int> Phi;
+void phiSieve(int n){
 	Phi.resize(n + 1);
-	for(lli i = 1; i <= n; i++) Phi[i] = i;
-	for(lli i = 2; i <= n; i ++){
+	for(int i = 1; i <= n; i++) Phi[i] = i;
+	for(int i = 2; i <= n; i ++){
 		if(Phi[i] == i){
-			for(lli j = i; j <= n; j += i){
+			for(int j = i; j <= n; j += i){
 				Phi[j] -= Phi[j] / i;
 			}
 		}
@@ -202,7 +202,7 @@ void ncrSieve(lli n){
 
 vector<pair<lli, int>> factorize(lli n){
 	vector<pair<lli, int>> f;
-	for(lli & p : primes){
+	for(lli p : primes){
 		if(p * p > n) break;
 		int pot = 0;
 		while(n % p == 0){
@@ -440,7 +440,7 @@ lli potInFactorial(lli n, lli p){
 
 vector<pair<lli, lli>> factorizeFactorial(lli n){
 	vector<pair<lli, lli>> f;
-	for(lli & p : primes){
+	for(lli p : primes){
 		if(p > n) break;
 		f.push_back(make_pair(p, potInFactorial(n, p)));
 	}
@@ -833,6 +833,19 @@ lli unorderedFactorizations(int m, int n){
 	return mem[{m, n}] = ans;
 }
 
+vector<int> Mu;
+void muSieve(int n){
+	Mu.resize(n + 1, -1);
+	Mu[0] = 0, Mu[1] = 1;
+	for(int i = 2; i <= n; ++i){
+		if(Mu[i]){
+			for(int j = 2*i; j <= n; j += i){
+				Mu[j] -= Mu[i];
+			}
+		}
+	}
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -885,6 +898,11 @@ int main(){
 	srand(time(NULL));
 	primesSieve(1e5);
 	ncrSieve(300);
+	muSieve(300);
+
+	for(int i = 1; i <= 300; ++i){
+		cout << "mu(" << i << ") = " << Mu[i] << "\n";
+	}
 
 	/*lli x;
 	cin >> x;

@@ -1,1 +1,0 @@
-pygmentize -l c -f latex -P commandprefix=PYG -F tokenmerge -o reference.out.pyg "number theory.cpp"@\endcsname 

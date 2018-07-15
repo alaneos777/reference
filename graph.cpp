@@ -1,20 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+typedef vector<int> vi;
+typedef vector<bool> vb;
 int inf = 1 << 30;
 
 struct disjointSet{
 	int N;
 	vector<short int> rank;
-	vector<int> parent;
+	vi parent, count;
 
-	disjointSet(int N){
-		this->N = N;
-		parent.resize(N);
-		rank.resize(N);
-	}
+	disjointSet(int N): N(N), parent(N), count(N), rank(N){}
 
 	void makeSet(int v){
+		count[v] = 1;
 		parent[v] = v;
 	}
 
@@ -24,34 +23,28 @@ struct disjointSet{
 	}
 
 	void unionSet(int a, int b){
-		a = findSet(a);
-		b = findSet(b);
+		a = findSet(a), b = findSet(b);
 		if(a == b) return;
 		if(rank[a] < rank[b]){
 			parent[a] = b;
+			count[b] += count[a];
 		}else{
 			parent[b] = a;
-			if(rank[a] == rank[b]){
-				++rank[a];
-			}
+			count[a] += count[b];
+			if(rank[a] == rank[b]) ++rank[a];
 		}
 	}
 };
 
 struct edge{
 	int source, dest, cost;
-	edge(){
-		this->source = this->dest = this->cost = 0;
-	}
-	edge(int dest, int cost){
-		this->dest = dest;
-		this->cost = cost;
-	}
-	edge(int source, int dest, int cost){
-		this->source = source;
-		this->dest = dest;
-		this->cost = cost;
-	}
+
+	edge(): source(0), dest(0), cost(0){}
+
+	edge(int dest, int cost): dest(dest), cost(cost){}
+
+	edge(int source, int dest, int cost): source(source), dest(dest), cost(cost){}
+
 	bool operator==(const edge & b) const{
 		return source == b.source && dest == b.dest && cost == b.cost;
 	}
@@ -65,37 +58,32 @@ struct edge{
 
 struct path{
 	int cost = inf;
-	vector<int> vertices;
+	vi vertices;
 	int size = 1;
 	int previous = -1;
 };
 
 struct graph{
 	vector<vector<edge>> adjList;
-	vector<vector<bool>> adjMatrix;
-	vector<vector<int>> costMatrix;
+	vector<vb> adjMatrix;
+	vector<vi> costMatrix;
 	vector<edge> edges;
 	int V = 0;
 	bool dir = false;
 
-	graph(int n, bool dirigido){
-		V = n;
-		dir = dirigido;
-		adjList.resize(V, vector<edge>());
-		edges.resize(V);
-		adjMatrix.resize(V, vector<bool>(V, false));
-		costMatrix.resize(V, vector<int>(V, inf));
-		for(int i = 0; i < V; i++)
-			costMatrix[i][i] = 0;
+	graph(int n, bool dir): V(n), dir(dir), adjList(n), edges(n), adjMatrix(n, vb(n)), costMatrix(n, vi(n)){
+		for(int i = 0; i < n; ++i)
+			for(int j = 0; j < n; ++j)
+				costMatrix[i][j] = (i == j ? 0 : inf);
 	}
 
 	void add(int source, int dest, int cost){
-		adjList[source].push_back(edge(source, dest, cost));
-		edges.push_back(edge(source, dest, cost));
+		adjList[source].emplace_back(source, dest, cost);
+		edges.emplace_back(source, dest, cost);
 		adjMatrix[source][dest] = true;
 		costMatrix[source][dest] = cost;
 		if(!dir){
-			adjList[dest].push_back(edge(dest, source, cost));
+			adjList[dest].emplace_back(dest, source, cost);
 			adjMatrix[dest][source] = true;
 			costMatrix[dest][source] = cost;
 		}
@@ -115,10 +103,9 @@ struct graph{
 	vector<path> dijkstra(int start){
 		priority_queue<edge, vector<edge>, greater<edge>> cola;
 		vector<path> paths(V, path());
-		vector<bool> relaxed(V, false);
+		vb relaxed(V);
 		cola.push(edge(start, 0));
 		paths[start].cost = 0;
-		relaxed[start] = true;
 		while(!cola.empty()){
 			int u = cola.top().dest; cola.pop();
 			relaxed[u] = true;
@@ -143,8 +130,8 @@ struct graph{
 
 	vector<path> bellmanFord(int start){
 		vector<path> paths(V, path());
-		vector<int> processed(V);
-		vector<bool> inQueue(V, false);
+		vi processed(V);
+		vb inQueue(V);
 		queue<int> Q;
 		paths[start].cost = 0;
 		Q.push(start);
@@ -177,8 +164,8 @@ struct graph{
 		return paths;
 	}
 
-	vector<vector<int>> floyd(){
-		vector<vector<int>> tmp = costMatrix;
+	vector<vi> floyd(){
+		vector<vi> tmp = costMatrix;
 		for(int k = 0; k < V; ++k)
 			for(int i = 0; i < V; ++i)
 				for(int j = 0; j < V; ++j)
@@ -187,8 +174,8 @@ struct graph{
 		return tmp;
 	}
 
-	vector<vector<bool>> transitiveClosure(){
-		vector<vector<bool>> tmp = adjMatrix;
+	vector<vb> transitiveClosure(){
+		vector<vb> tmp = adjMatrix;
 		for(int k = 0; k < V; ++k)
 			for(int i = 0; i < V; ++i)
 				for(int j = 0; j < V; ++j)
@@ -196,39 +183,38 @@ struct graph{
 		return tmp;
 	}
 
-	void DFSClosure(int start, int u, vector<vector<bool>> & tmp){
-		for(edge & current : adjList[u]){
-			int v = current.dest;
-			if(!tmp[start][v]){
-				tmp[start][v] = true;
-				DFSClosure(start, v, tmp);
+	vector<vb> transitiveClosureDFS(){
+		vector<vb> tmp(V, vb(V));
+		function<void(int, int)> dfs = [&](int start, int u){
+			for(edge & current : adjList[u]){
+				int v = current.dest;
+				if(!tmp[start][v]){
+					tmp[start][v] = true;
+					dfs(start, v);
+				}
 			}
-		}
-	}
-
-	vector<vector<bool>> transitiveClosureDFS(){
-		vector<vector<bool>> tmp(V, vector<bool>(V, false));
+		};
 		for(int u = 0; u < V; u++)
-			DFSClosure(u, u, tmp);
+			dfs(u, u);
 		return tmp;
 	}
 
 	bool isBipartite(){
-		vector<int> side(V, -1);
+		vi side(V, -1);
 		queue<int> q;
-		for (int st = 0; st < V; ++st) {
+		for (int st = 0; st < V; ++st){
 			if(side[st] != -1) continue;
 			q.push(st);
 			side[st] = 0;
-			while (!q.empty()) {
+			while(!q.empty()){
 				int u = q.front();
 				q.pop();
-				for (edge & current : adjList[u]) {
+				for (edge & current : adjList[u]){
 					int v = current.dest;
-					if (side[v] == -1) {
+					if(side[v] == -1) {
 						side[v] = side[u] ^ 1;
 						q.push(v);
-					} else {
+					}else{
 						if(side[v] == side[u]) return false;
 					}
 				}
@@ -237,10 +223,9 @@ struct graph{
 		return true;
 	}
 
-	vector<int> topologicalSort(){
-		vector<int> order;
+	vi topologicalSort(){
 		int visited = 0;
-		vector<int> indegree(V);
+		vi order, indegree(V);
 		for(auto & node : adjList){
 			for(edge & current : node){
 				int v = current.dest;
@@ -266,107 +251,86 @@ struct graph{
 		else return {};
 	}
 
-	bool DFSCycle(int u, int parent, vector<int> & color){
-		color[u] = 1;
-		for(edge & current : adjList[u]){
-			int v = current.dest;
-			if(color[v] == 0)
-				return DFSCycle(v, u, color);
-			else if(color[v] == 1 && (dir || v != parent))
-				return true;
-		}
-		color[u] = 2;
-		return false;
-	}
-
 	bool hasCycle(){
-		vector<int> color(V);
+		vi color(V);
+		function<bool(int, int)> dfs = [&](int u, int parent){
+			color[u] = 1;
+			bool ans = false;
+			int ret = 0;
+			for(edge & current : adjList[u]){
+				int v = current.dest;
+				if(color[v] == 0)
+					ans |= dfs(v, u);
+				else if(color[v] == 1 && (dir || v != parent || ret++))
+					ans = true;
+			}
+			color[u] = 2;
+			return ans;
+		};
 		for(int u = 0; u < V; ++u)
-			if(color[u] == 0 && DFSCycle(u, -1, color))
+			if(color[u] == 0 && dfs(u, -1))
 				return true;
 		return false;
 	}
 
-	int articulationBridges(int u, int p, vector<int> & low, vector<int> & label, int & time, vector<bool> & points, vector<edge> & bridges){
-		label[u] = low[u] = ++time;
-		int hijos = 0, ret = 0;
-		for(edge & current : adjList[u]){
-			int v = current.dest;
-			if(v == p && !ret++) continue;
-			if(!label[v]){
-				++hijos;
-				articulationBridges(v, u, low, label, time, points, bridges);
-				if(label[u] <= low[v])
-					points[u] = true;
-				else if(label[u] < low[v])
-					bridges.push_back(current);
-				low[u] = min(low[u], low[v]);
-			}
-			low[u] = min(low[u], label[v]);
-		}
-		return hijos;
-	}
-
-	pair<vector<bool>, vector<edge>> articulationBridges(){
-		vector<int> low(V), label(V);
-		vector<bool> points(V);
+	pair<vb, vector<edge>> articulationBridges(){
+		vi low(V), label(V);
+		vb points(V);
 		vector<edge> bridges;
 		int time = 0;
+		function<int(int, int)> dfs = [&](int u, int p){
+			label[u] = low[u] = ++time;
+			int hijos = 0, ret = 0;
+			for(edge & current : adjList[u]){
+				int v = current.dest;
+				if(v == p && !ret++) continue;
+				if(!label[v]){
+					++hijos;
+					dfs(v, u);
+					if(label[u] <= low[v])
+						points[u] = true;
+					if(label[u] < low[v])
+						bridges.push_back(current);
+					low[u] = min(low[u], low[v]);
+				}
+				low[u] = min(low[u], label[v]);
+			}
+			return hijos;
+		};
 		for(int u = 0; u < V; ++u)
 			if(!label[u])
-				points[u] = articulationBridges(u, -1, low, label, time, points, bridges) > 1;
+				points[u] = dfs(u, -1) > 1;
 		return make_pair(points, bridges);
 	}
 
-	void scc(int u, vector<int> & low, vector<int> & label, int & time, vector<vector<int>> & ans, stack<int> & S){
-		label[u] = low[u] = ++time;
-		S.push(u);
-		for(edge & current : adjList[u]){
-			int v = current.dest;
-			if(!label[v]) scc(v, low, label, time, ans, S);
-			low[u] = min(low[u], low[v]);
-		}
-		if(label[u] == low[u]){
-			vector<int> comp;
-			while(S.top() != u){
-				comp.push_back(S.top());
-				low[S.top()] = V + 1;
-				S.pop();
-			}
-			comp.push_back(S.top());
-			S.pop();
-			ans.push_back(comp);
-			low[u] = V + 1;
-		}
-	}
-
-	vector<vector<int>> scc(){
-		vector<int> low(V), label(V);
+	vector<vi> scc(){
+		vi low(V), label(V);
 		int time = 0;
-		vector<vector<int>> ans;
+		vector<vi> ans;
 		stack<int> S;
-		for(int u = 0; u < V; ++u)
-			if(!label[u]) scc(u, low, label, time, ans, S);
-		return ans;
-	}
-
-	void DFSComponents(int source, vector<bool> & visited){
-		visited[source] = true;
-		for(edge & current : adjList[source]){
-			int v = current.dest;
-			if(!visited[v]) DFSComponents(v, visited);
-		}
-	}
-
-	int components(){
-		int ans = 0;
-		vector<bool> visited(V, false);
-		for(int u = 0; u < V; ++u){
-			if(!visited[u]){
-				DFSComponents(u, visited);
-				++ans;
+		function<void(int)> dfs = [&](int u){
+			label[u] = low[u] = ++time;
+			S.push(u);
+			for(edge & current : adjList[u]){
+				int v = current.dest;
+				if(!label[v]) dfs(v);
+				low[u] = min(low[u], low[v]);
 			}
-		}
+			if(label[u] == low[u]){
+				vi comp;
+				while(S.top() != u){
+					comp.push_back(S.top());
+					low[S.top()] = V + 1;
+					S.pop();
+				}
+				comp.push_back(S.top());
+				S.pop();
+				ans.push_back(comp);
+				low[u] = V + 1;
+			}
+		};
+		for(int u = 0; u < V; ++u)
+			if(!label[u]) dfs(u);
 		return ans;
 	}
 
@@ -388,7 +352,7 @@ struct graph{
 		return MST;
 	}
 
-	bool tryKuhn(int u, vector<bool> & used, vector<int> & left, vector<int> & right){
+	bool tryKuhn(int u, vb & used, vi & left, vi & right){
 		if(used[u]) return false;
 		used[u] = true;
 		for(edge & current : adjList[u]){
@@ -402,7 +366,7 @@ struct graph{
 		return false;
 	}
 
-	bool augmentingPath(int u, vector<bool> & used, vector<int> & left, vector<int> & right){
+	bool augmentingPath(int u, vb & used, vi & left, vi & right){
 		used[u] = true;
 		for(edge & current : adjList[u]){
 			int v = current.dest;
@@ -429,8 +393,8 @@ struct graph{
 	//graph[u][v] represents the right side
 	//we can use tryKuhn() or augmentingPath()
 	vector<pair<int, int>> maxMatching(int l, int r){
-		vector<int> left(l, -1), right(r, -1);
-		vector<bool> used(l, false);
+		vi left(l, -1), right(r, -1);
+		vb used(l);
 		for(int u = 0; u < l; ++u){
 			tryKuhn(u, used, left, right);
 			fill(used.begin(), used.end(), false);
@@ -438,29 +402,36 @@ struct graph{
 		vector<pair<int, int>> ans;
 		for(int u = 0; u < r; ++u){
 			if(right[u] != -1){
-				ans.push_back({right[u], u});
+				ans.emplace_back(right[u], u);
 			}
 		}
 		return ans;
 	}
 
-	graph inducido(vector<int> nuevos){
-		int tam = nuevos.size();
-		graph ans(tam, true);
-		for(int i = 0; i < tam; i++){
-			int v1 = nuevos[i];
-			for(int j = 0; j < tam; j++){
-				int v2 = nuevos[j];
-				if(adjMatrix[v1][v2]) ans.add(i, j, costMatrix[v1][v2]);
+	void dfs(int u, vi & status, vi & parent){
+		status[u] = 1;
+		for(edge & current : adjList[u]){
+			int v = current.dest;
+			if(status[v] == 0){ //not visited
+				parent[v] = u;
+				dfs(v, status, parent);
+			}else if(status[v] == 1){ //explored
+				if(v == parent[u]){
+					//bidirectional node u<-->v
+				}else{
+					//back edge u-v
+				}
+			}else if(status[v] == 2){ //visited
+				//forward edge u-v
 			}
 		}
-		return ans;
+		status[u] = 2;
 	}
 };
 
 struct tree{
-	vector<int> parent, level, weight;
-	vector<vector<int>> dists, DP;
+	vi parent, level, weight;
+	vector<vi> dists, DP;
 	int n, root;
 
 	void graph_to_tree(int prev, int u, graph & G){
@@ -481,27 +452,17 @@ struct tree{
 	}
 
 	void buildLevels(){
-		for(int i = n - 1; i >= 0; --i){
-			if(level[i] == -1){
+		for(int i = n - 1; i >= 0; --i)
+			if(level[i] == -1)
 				level[i] = dfs(i);
-			}
-		}
 	}
 
-	tree(int n, int root){
-		this->n = n;
-		this->root = root;
-		parent.resize(n);
-		level.resize(n, -1);
-		weight.resize(n);
-		dists.resize(n, vector<int>(20));
-		DP.resize(n, vector<int>(20));
+	tree(int n, int root): n(n), root(root), parent(n), level(n, -1), weight(n), dists(n, vi(20)), DP(n, vi(20)){
 		level[root] = 0;
 		parent[root] = root;
 	}
 
-	tree(graph & G, int root){
-		tree(G.V, root);
+	tree(graph & G, int root): n(G.V), root(root), parent(G.V), level(G.V, -1), weight(G.V), dists(G.V, vi(20)), DP(G.V, vi(20)){
 		graph_to_tree(-1, root, G);
 		buildLevels();
 	}
@@ -641,7 +602,7 @@ int main()
 	g.add(8, 6, 6);
 	g.add(3, 5, 14);*/
 
-	graph g(9, false);
+	/*graph g(9, false);
 	g.add(0, 1, 3);
 	g.add(1, 2, 7);
 	g.add(2, 3, 1);
@@ -658,7 +619,7 @@ int main()
 	g.add(6, 4, 3);
 	g.add(4, 7, 3);
 	g.add(7, 5, 3);
-	g.add(5, 8, 2);
+	g.add(5, 8, 2);*/
 
 	/*graph g(6, true);
 	g.add(0, 1, 1);
@@ -717,8 +678,8 @@ int main()
 	}
 	cout << "\n";
 
-	vector< vector<int> > m = g.floyd();
-	for(vector<int> & fila : m){
+	vector< vi > m = g.floyd();
+	for(vi & fila : m){
 		for(int & valor : fila){
 			cout << valor << " ";
 		}
@@ -726,8 +687,8 @@ int main()
 	}
 	cout << "\n";
 
-	vector<vector<bool>> t = g.transitiveClosure();
-	for(vector<bool> & fila : t){
+	vector<vb> t = g.transitiveClosure();
+	for(vb & fila : t){
 		for(bool valor : fila){
 			cout << valor << " ";
 		}
@@ -736,7 +697,7 @@ int main()
 	cout << "\n";
 
 	t = g.transitiveClosureDFS();
-	for(vector<bool> & fila : t){
+	for(vb & fila : t){
 		for(bool valor : fila){
 			cout << valor << " ";
 		}
@@ -744,7 +705,7 @@ int main()
 	}
 	cout << "\n";
 
-	cout << "Componentes: " << g.components() << "\n\nMST:\n";
+	cout << "\nMST:\n";
 
 	vector<edge> MST = g.kruskal();
 	for(edge & current : MST){
@@ -787,7 +748,7 @@ int main()
 	G2.add(2, 3, 4);
 	G2.add(4, 3, -5);*/
 
-	graph G2(5, true);
+	/*graph G2(5, true);
 	G2.add(0, 1, 2);
 	G2.add(1, 2, 2);
 	G2.add(2, 3, -4);
@@ -805,13 +766,39 @@ int main()
 	}
 	cout << endl;
 
-	vector< vector<int> > m = G2.floyd();
-	for(vector<int> & fila : m){
+	vector< vi > m = G2.floyd();
+	for(vi & fila : m){
 		for(int & valor : fila){
 			cout << valor << " ";
 		}
 		cout << "\n";
-	}
+	}*/
 
+	graph grafo(7, true);
+	grafo.add(0, 1, 1);
+	grafo.add(1, 2, 1);
+	grafo.add(2, 3, 1);
+	grafo.add(2, 4, 1);
+	grafo.add(2, 0, 1);
+	grafo.add(4, 5, 1);
+	grafo.add(5, 6, 1);
+	grafo.add(6, 4, 1);
+	//grafo.add(5, 6, 1);
+	auto scc = grafo.scc();
+	cout << "SCC:\n";
+	for(vi & comp : scc){
+		for(int v : comp) cout << v << " ";
+		cout << "\n";
+	}
+	auto art = grafo.articulationBridges();
+	cout << "\nBridges:\n";
+	for(edge & e : art.second){
+		cout << e.source << " - " << e.dest << "\n";
+	}
+	cout << "\nArticulation points:\n";
+	for(int i = 0; i < art.first.size(); ++i){
+		if(art.first[i]) cout << i << " ";
+	}
+	cout << "\nCiclo: " << grafo.hasCycle() << "\n";
 	return 0;
 }
