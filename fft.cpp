@@ -43,11 +43,6 @@ void fft(vector<comp> & X, int inv){
 	}
 }
 
-const int p = 7340033;
-const int root = 5;
-const int root_1 = 4404020;
-const int root_pw = 1 << 20;
-
 int inverse(int a, int n){
 	int r0 = a, r1 = n, ri, s0 = 1, s1 = 0, si;
 	while(r1){
@@ -58,22 +53,27 @@ int inverse(int a, int n){
 	return s0;
 }
 
+const int p = 7340033;
+const int root = 5;
+const int root_1 = inverse(root, p);
+const int root_pw = 1 << 20;
+
 void ntt(vector<int> & X, int inv){
 	int n = X.size();
 	int len, len2, wlen, i, j, k, u, v, w;
 	for(i = 1, j = 0; i < n - 1; ++i){
-		for (k = n >> 1; (j ^= k) < k; k >>= 1);
-		if (i < j) swap(X[i], X[j]);
+		for(k = n >> 1; (j ^= k) < k; k >>= 1);
+		if(i < j) swap(X[i], X[j]);
 	}
-	for (len = 2; len <= n; len <<= 1){
+	for(len = 2; len <= n; len <<= 1){
 		len2 = len >> 1;
 		wlen = (inv == -1) ? root_1 : root;
-		for (i = len; i < root_pw; i <<= 1){
+		for(i = len; i < root_pw; i <<= 1){
 			wlen = (lli)wlen * wlen % p;
 		}
-		for (i = 0; i < n; i += len){
+		for(i = 0; i < n; i += len){
 			w = 1;
-			for (j = 0; j < len2; ++j){
+			for(j = 0; j < len2; ++j){
 				u = X[i + j], v = (lli)X[i + j + len2] * w % p;
 				X[i + j] = u + v < p ? u + v : u + v - p;
 				X[i + j + len2] = u - v < 0 ? u - v + p : u - v;
@@ -81,9 +81,9 @@ void ntt(vector<int> & X, int inv){
 			}
 		}
 	}
-	if (inv == -1){
+	if(inv == -1){
 		int nrev = inverse(n, p);
-		for (i = 0; i < n; ++i){
+		for(i = 0; i < n; ++i){
 			X[i] = (lli)X[i] * nrev % p;
 		}
 	}

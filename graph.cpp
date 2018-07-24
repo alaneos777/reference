@@ -434,37 +434,26 @@ struct tree{
 	vector<vi> dists, DP;
 	int n, root;
 
-	void graph_to_tree(int prev, int u, graph & G){
+	void dfs(int u, graph & G){
 		for(edge & curr : G.adjList[u]){
 			int v = curr.dest;
 			int w = curr.cost;
-			if(v == prev) continue;
-			parent[v] = u;
-			weight[v] = w;
-			graph_to_tree(u, v, G);
+			if(v != parent[u]){
+				parent[v] = u;
+				weight[v] = w;
+				level[v] = level[u] + 1;
+				dfs(v, G);
+			}
 		}
 	}
 
-	int dfs(int i){
-		if(i == root) return 0;
-		if(level[parent[i]] != -1) return level[i] = 1 + level[parent[i]];
-		return level[i] = 1 + dfs(parent[i]);
-	}
-
-	void buildLevels(){
-		for(int i = n - 1; i >= 0; --i)
-			if(level[i] == -1)
-				level[i] = dfs(i);
-	}
-
-	tree(int n, int root): n(n), root(root), parent(n), level(n, -1), weight(n), dists(n, vi(20)), DP(n, vi(20)){
-		level[root] = 0;
+	tree(int n, int root): n(n), root(root), parent(n), level(n), weight(n), dists(n, vi(20)), DP(n, vi(20)){
 		parent[root] = root;
 	}
 
-	tree(graph & G, int root): n(G.V), root(root), parent(G.V), level(G.V, -1), weight(G.V), dists(G.V, vi(20)), DP(G.V, vi(20)){
-		graph_to_tree(-1, root, G);
-		buildLevels();
+	tree(graph & G, int root): n(G.V), root(root), parent(G.V), level(G.V), weight(G.V), dists(G.V, vi(20)), DP(G.V, vi(20)){
+		parent[root] = root;
+		dfs(root, G);
 	}
 
 	void pre(){

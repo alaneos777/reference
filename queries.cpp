@@ -273,10 +273,10 @@ struct AVLTree
 	void insert(AVLNode<T> *&pos, T & value){
 		if(pos){
 			value < pos->value ? insert(pos->left, value) : insert(pos->right, value);
-			pos->update();
-			updateBalance(pos);
-		}else
+			pos->update(), updateBalance(pos);
+		}else{
 			pos = new AVLNode<T>(value);
+		}
 	}
 
 	AVLNode<T> *search(T & value){
@@ -396,8 +396,7 @@ struct AVLTree
 	}
 
 	void build(vector<T> & arr){
-		size = arr.size();
-		build(root, arr, 0, size - 1);
+		build(root, arr, 0, (int)arr.size() - 1);
 	}
 
 	void output(AVLNode<T> *pos, vector<T> & arr, int & i){
@@ -508,6 +507,148 @@ int kth(Treap* T, int i){
 	}
 	return T->value;
 }
+
+//implicit treap
+void split(Treap* T, int i, Treap* &T1, Treap* &T2, int inc){
+	if(!T)
+		return void(T1 = T2 = NULL);
+	int curr = inc + nodeSize(T->left);
+	if(i <= curr)
+		split(T->left, i, T1, T->left, inc), T2 = T;
+	else
+		split(T->right, i, T->right, T2, curr + 1), T1 = T;
+	if(T) T->update();
+}
+
+//insert the element "x" at position "i"
+void insert_at(Treap* &T, int x, int i){
+	Treap *T1 = NULL, *T2 = NULL;
+	split(T, i, T1, T2, 0);
+	merge(T1, T1, new Treap(x));
+	merge(T, T1, T2);
+}
+
+void erase_at(Treap* &T, int i, int inc){
+	if(!T) return;
+	int curr = inc + nodeSize(T->left);
+	if(i == curr)
+		merge(T, T->left, T->right);
+	else
+		erase_at(i < curr ? T->left : T->right, i, i < curr ? inc : curr + 1);
+	if(T) T->update();
+}
+
+//delete element at position "i"
+void erase_at(Treap* &T, int i){erase_at(T, i, 0);}
+
+//update value of element at position "i" with "x"
+void update_at(Treap* T, int x, int i){
+	if(i < 0 || i >= nodeSize(T)) return;
+	while(i != nodeSize(T->left)){
+		if(i < nodeSize(T->left)){
+			T = T->left;
+		}else{
+			i -= nodeSize(T->left) + 1;
+			T = T->right;
+		}
+	}
+	T->value = x;
+}
+
+void inorder(Treap* T){
+	if(!T) return;
+	inorder(T->left);
+	cout << T->value << " ";
+	inorder(T->right);
+}
+
+template<typename T>
+struct SparseTable{
+	vector<vector<T>> ST;
+	vector<int> logs;
+	int K, N;
+
+	SparseTable(vector<T> & arr){
+		N = arr.size();
+		K = log2(N) + 2;
+		ST.assign(K + 1, vector<T>(N));
+		logs.assign(N + 1, 0);
+		for(int i = 2; i <= N; ++i)
+			logs[i] = logs[i >> 1] + 1;
+		for(int i = 0; i < N; ++i)
+			ST[0][i] = arr[i];
+		for(int j = 1; j <= K; ++j)
+			for(int i = 0; i + (1 << j) <= N; ++i)
+				ST[j][i] = min(ST[j - 1][i], ST[j - 1][i + (1 << (j - 1))]);
+	}
+
+	T sum(int l, int r){
+		T ans = 0;
+		for(int j = K; j >= 0; --j){
+			if((1 << j) <= r - l + 1){
+				ans += ST[j][l];
+				l += 1 << j;
+			}
+		}
+		return ans;
+	}
+
+	T minimal(int l, int r){
+		int j = logs[r - l + 1];
+		return min(ST[j][l], ST[j][r - (1 << j) + 1]);
+	}
+};
+
+struct WaveletTree{
+	int lo, hi;
+	WaveletTree *left, *right;
+	vector<int> freq;
+
+	//queries indexed in base 1, complexity O(log(max_element))
+	//build from [from, to) with non-negative values in range [x, y]
+	WaveletTree(vector<int>::iterator from, vector<int>::iterator to, int x, int y): lo(x), hi(y){
+		if(lo == hi || from >= to) return;
+		int m = (lo + hi) / 2;
+		auto f = [m](int x){
+			return x <= m;
+		};
+		freq.reserve(to - from + 1);
+		freq.push_back(0);
+		for(auto it = from; it != to; ++it)
+			freq.push_back(freq.back() + f(*it));
+		auto pivot = stable_partition(from, to, f);
+		left = new WaveletTree(from, pivot, lo, m);
+		right = new WaveletTree(pivot, to, m + 1, hi);
+	}
+
+	//kth element in [l, r]
+	int kth(int l, int r, int k){
+		if(l > r) return 0;
+		if(lo == hi) return lo;
+		int lb = freq[l - 1], rb = freq[r];
+		int inLeft = rb - lb;
+		if(k <= inLeft) return left->kth(lb + 1, rb, k);
+		else return right->kth(l - lb, r - rb, k - inLeft);
+	}
+
+	//number of elements less than or equal to k in [l, r]
+	int lessThanOrEqual(int l, int r, int k){
+		if(l > r || k < lo) return 0;
+		if(hi <= k) return r - l + 1;
+		int lb = freq[l - 1], rb = freq[r];
+		return left->lessThanOrEqual(lb + 1, rb, k) + right->lessThanOrEqual(l - lb, r - rb, k);
+	}
+
+	//number of elements equal to k in [l, r]
+	int equalTo(int l, int r, int k){
+		if(l > r || k < lo || k > hi) return 0;
+		if(lo == hi) return r - l + 1;
+		int lb = freq[l - 1], rb = freq[r];
+		int m = (lo + hi) / 2;
+		if(k <= m) return left->equalTo(lb + 1, rb, k);
+		else return right->equalTo(l - lb, r - rb, k);
+	}
+};
 
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
@@ -634,4 +775,62 @@ int main(){
 		}
 	}
 	return 0;
+}*/
+
+/*int main(){
+	srand(time(NULL));
+	int t, n, i;
+	Treap *T = NULL;
+	while(cin >> t && t != -1){
+		if(t == 0){ //insert n at i
+			cin >> n >> i;
+			insert_at(T, n, i);
+		}else if(t == 1){ //delete at i
+			cin >> i;
+			erase_at(T, i);
+		}else if(t == 2){ //update value at i with n
+			cin >> i >> n;
+			update_at(T, n, i);
+		}else if(t == 3){ //get nth element
+			cin >> n;
+			cout << kth(T, n) << "\n";
+		}else if(t == 4){ //inorder trasversal
+			inorder(T); cout << "\n";
+		}
+	}
+	return 0;
+}*/
+
+/*int main(){
+	int n, l, r;
+	cin >> n;
+	vector<int> arr(n);
+	for(int i = 0; i < n; ++i)
+		cin >> arr[i];
+	SparseTable<int> table(arr);
+	while(cin >> l && l != -1){
+		cin >> r;
+		cout << table.minimal(l, r) << "\n";
+	}
+	return 0;
+}*/
+
+/*int main(){
+	int n, t, l, r, k;
+	cin >> n;
+	vector<int> arr(n);
+	for(int i = 0; i < n; ++i){
+		cin >> arr[i];
+	}
+	WaveletTree w(begin(arr), end(arr), *min_element(begin(arr), end(arr)), *max_element(begin(arr), end(arr)));
+	while(cin >> t && t != -1){
+		cin >> l >> r >> k;
+		if(t == 0){ //kth smallest
+			cout << w.kth(l, r, k) << "\n";
+		}else if(t == 1){ //less than or equal to k
+			cout << w.lessThanOrEqual(l, r, k) << "\n";
+		}else if(t == 2){ //equal to k
+			cout << w.equalTo(l, r, k) << "\n";
+		}
+	}
 }*/

@@ -220,7 +220,7 @@ vector<pair<lli, int>> factorize(lli n){
 //if pot=1 we get the sum of divisors
 lli sigma(lli n, lli pot){
 	lli ans = 1;
-	vector<pair<lli, int>> f = factorize(n);
+	auto f = factorize(n);
 	for(auto & factor : f){
 		lli p = factor.first;
 		int a = factor.second;
@@ -237,7 +237,7 @@ lli sigma(lli n, lli pot){
 //number of total primes with multiplicity dividing n
 int Omega(lli n){
 	int ans = 0;
-	vector<pair<lli, int>> f = factorize(n);
+	auto f = factorize(n);
 	for(auto & factor : f){
 		ans += factor.second;
 	}
@@ -247,7 +247,7 @@ int Omega(lli n){
 //number of distinct primes dividing n
 int omega(lli n){
 	int ans = 0;
-	vector<pair<lli, int>> f = factorize(n);
+	auto f = factorize(n);
 	for(auto & factor : f){
 		++ans;
 	}
@@ -262,7 +262,7 @@ int liouvilleLambda(lli n){
 //number of coprimes with n less than n
 lli phi(lli n){
 	lli ans = n;
-	vector<pair<lli, int>> f = factorize(n);
+	auto f = factorize(n);
 	for(auto & factor : f){
 		ans -= ans / factor.first;
 	}
@@ -273,7 +273,7 @@ lli phi(lli n){
 //every coprime x with n, x^k=1 mod n
 lli carmichaelLambda(lli n){
 	lli ans = 1;
-	vector<pair<lli, int>> f = factorize(n);
+	auto f = factorize(n);
 	for(auto & factor : f){
 		lli p = factor.first;
 		int a = factor.second;
@@ -290,7 +290,7 @@ lli carmichaelLambda(lli n){
 //0 is n has a square prime factor
 int mu(lli n){
 	int ans = 1;
-	vector<pair<lli, int>> f = factorize(n);
+	auto f = factorize(n);
 	for(auto & factor : f){
 		if(factor.second > 1) return 0;
 		ans *= -1;
@@ -302,7 +302,7 @@ int mu(lli n){
 lli multiplicativeOrder(lli x, lli m){
 	if(gcd(x, m) != 1) return -1;
 	lli order = phi(m);
-	vector<pair<lli, int>> f = factorize(order);
+	auto f = factorize(order);
 	for(auto & factor : f){
 		lli p = factor.first;
 		int a = factor.second;
@@ -328,7 +328,7 @@ lli numberOfGenerators(lli m){
 bool testPrimitiveRoot(lli x, lli m){
 	if(gcd(x, m) != 1) return false;
 	lli order = phi(m);
-	vector<pair<lli, int>> f = factorize(order);
+	auto f = factorize(order);
 	for(auto & factor : f){
 		lli p = factor.first;
 		if(powMod(x, order / p, m) == 1) return false;
@@ -339,7 +339,7 @@ bool testPrimitiveRoot(lli x, lli m){
 //test if x^k = 1 mod m and k is the smallest for such x, i.e., x^(k/p) != 1 for every prime divisor of k
 bool testPrimitiveKthRootUnity(lli x, lli k, lli m){
 	if(powMod(x, k, m) != 1) return false;
-	vector<pair<lli, int>> f = factorize(k);
+	auto f = factorize(k);
 	for(auto & factor : f){
 		lli p = factor.first;
 		if(powMod(x, k / p, m) == 1) return false;
@@ -350,7 +350,7 @@ bool testPrimitiveKthRootUnity(lli x, lli k, lli m){
 lli findFirstGenerator(lli m){
 	lli order = phi(m);
 	if(order != carmichaelLambda(m)) return -1; //just an optimization, not required
-	vector<pair<lli, int>> f = factorize(order);
+	auto f = factorize(order);
 	for(lli x = 1; x < m; x++){
 		if(gcd(x, m) != 1) continue;
 		bool test = true;
@@ -368,7 +368,7 @@ lli findFirstGenerator(lli m){
 
 lli findFirstPrimitiveKthRootUnity(lli k, lli m){
 	if(carmichaelLambda(m) % k != 0) return -1; //just an optimization, not required
-	vector<pair<lli, int>> f = factorize(k);
+	auto f = factorize(k);
 	for(lli x = 1; x < m; x++){
 		if(powMod(x, k, m) != 1) continue;
 		bool test = true;
@@ -414,7 +414,7 @@ vector<lli> discreteRoot(lli k, lli b, lli m){
 	if(b % m == 0) return {0};
 	lli g = findFirstGenerator(m);
 	lli power = powMod(g, k, m);
-	pair<lli, lli> y0 = discreteLogarithm(power, b, m);
+	auto y0 = discreteLogarithm(power, b, m);
 	if(y0.first == -1) return {};
 	lli phi_m = phi(m);
 	lli d = gcd(k, phi_m);
@@ -489,7 +489,7 @@ lli baseBtoDecimal(const string & n, lli b){
 string decimalToRoman(int n){
 	int digito, base = 0;
 	string ans = "";
-	vector< vector<char> > datos = {{'I', 'V'}, {'X', 'L'}, {'C', 'D'}, {'M', '\0'}};
+	vector<vector<char>> datos = {{'I', 'V'}, {'X', 'L'}, {'C', 'D'}, {'M', '\0'}};
 	int miles = n / 1000;
 	do{
 		string tmp = "";
@@ -846,6 +846,89 @@ void muSieve(int n){
 	}
 }
 
+vector<int> linearPrimeSieve(int n){
+	vector<int> primes;
+	vector<bool> isPrime(n+1, true);
+	for(int i = 2; i <= n; ++i){
+		if(isPrime[i])
+			primes.push_back(i);
+		for(int p : primes){
+			int d = i * p;
+			if(d > n) break;
+			isPrime[d] = false;
+			if(i % p == 0) break;
+		}
+	}
+	return primes;
+}
+
+//suppose f(n) is a multiplicative function and
+//we want to find f(1), f(2), ..., f(n)
+//we have f(pq) = f(p)f(q) if gcd(p, q) = 1
+//and f(p^a) = g(p, a), where p is prime and a>0
+vector<int> generalSieve(int n, function<int(int, int)> g){
+	vector<int> f(n+1, 1), cnt(n+1), acum(n+1);
+	vector<bool> isPrime(n+1, true);
+	for(int i = 2; i <= n; ++i){
+		if(isPrime[i]){ //case base: f(p)
+			primes.push_back(i);
+			f[i] = g(i, 1);
+			cnt[i] = 1;
+			acum[i] = i;
+		}
+		for(int p : primes){
+			int d = i * p;
+			if(d > n) break;
+			isPrime[d] = false;
+			if(i % p == 0){ //gcd(i, p) != 1
+				f[d] = f[i / acum[i]] * g(p, cnt[i] + 1);
+				cnt[d] = cnt[i] + 1;
+				acum[d] = acum[i] * p;
+				break;
+			}else{ //gcd(i, p) = 1
+				f[d] = f[i] * g(p, 1);
+				cnt[d] = 1;
+				acum[d] = p;
+			}
+		}
+	}
+	return f;
+}
+
+vector<int> segmented_sieve(int limit){
+	const int L1D_CACHE_SIZE = 32768;
+	int raiz = sqrt(limit);
+	int segment_size = max(raiz, L1D_CACHE_SIZE);
+	int s = 3, n = 3;
+	vector<int> primes(1, 2), tmp, next;
+	vector<char> sieve(segment_size);
+	vector<bool> is_prime(raiz + 1, 1);
+	for(int i = 2; i * i <= raiz; i++)
+		if(is_prime[i])
+			for(int j = i * i; j <= raiz; j += i)
+				is_prime[j] = 0;
+	for(int low = 0; low <= limit; low += segment_size){
+		fill(sieve.begin(), sieve.end(), 1);
+		int high = min(low + segment_size - 1, limit);
+		for(; s * s <= high; s += 2){
+			if(is_prime[s]){
+				tmp.push_back(s);
+				next.push_back(s * s - low);
+			}
+		}
+		for(size_t i = 0; i < tmp.size(); i++){
+			int j = next[i];
+			for(int k = tmp[i] * 2; j < segment_size; j += k)
+				sieve[j] = 0;
+			next[i] = j - segment_size;
+		}
+		for(; n <= high; n += 2)
+			if(sieve[n - low])
+				primes.push_back(n);
+	}
+	return primes;
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -888,6 +971,7 @@ void info_ntt(lli e, lli l, lli r){
 	for(lli k = l; k <= r; ++k){
 		lli p = k * n + 1;
 		if(isPrimeMillerRabin(p)){
+			cout << "g = " << findFirstGenerator(p) << "\n";
 			lli w = findFirstPrimitiveKthRootUnity(n, p);
 			cout << "w = " << w << "\nw^-1 = " << modularInverse(w, p) << "\nk = " << k << "\nn = " << n << "\np = " << p << "\n\n";
 		}
@@ -900,9 +984,22 @@ int main(){
 	ncrSieve(300);
 	muSieve(300);
 
-	for(int i = 1; i <= 300; ++i){
+	clock_t start = clock();
+	vector<int> ans = segmented_sieve(1e9);
+	cout << ans.size() << "\n" << ans.back() << "\n";
+	cout << fixed << setprecision(4) << (clock() - start)/(double)CLOCKS_PER_SEC << "s\n";
+
+	/*auto g = [&](int p, int a){
+		return pow(p, a) - pow(p, a-1);
+	};
+	vector<int> pre = generalSieve(105, g);
+	for(int i = 1; i <= 105; ++i){
+		cout << "f(" << i << ") = " << pre[i] << "\n";
+	}*/
+
+	/*for(int i = 1; i <= 300; ++i){
 		cout << "mu(" << i << ") = " << Mu[i] << "\n";
-	}
+	}*/
 
 	/*lli x;
 	cin >> x;
@@ -956,7 +1053,7 @@ int main(){
 
 	/*lli e;
 	cin >> e;
-	info_ntt(e, 100);*/
+	info_ntt(e, 1, 50);*/
 
 	/*lli p;
 	cin >> p;
