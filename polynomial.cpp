@@ -1,11 +1,10 @@
 #include <bits/stdc++.h>
-#include "number theory.cpp"
+#include "numberTheory.cpp"
 #include "fraccion.cpp"
 using namespace std;
-typedef long long int lli;
 typedef complex<long double> comp;
 
-bool igual(double a, double b){
+bool igual(long double a, long double b){
     return abs(a - b) < 1e-9;
 }
 
@@ -18,7 +17,7 @@ struct polinomio{
         for(fraccion x : coef) coeficientes.push_back(x);
         quitar_ceros();
     }
-    polinomio(lli x0){
+    polinomio(ll x0){
         coeficientes.push_back(x0);
     }
     polinomio(fraccion x0){
@@ -183,11 +182,11 @@ polinomio interpolar(vector< pair<fraccion, fraccion> > puntos){
     return ans;
 }
 
-polinomio cyclotomic(lli n){
+polinomio cyclotomic(ll n){
     polinomio num = 1;
     polinomio den = 1;
-    for(lli & d : divisors[n]){
-        lli pot = mu(n / d);
+    for(ll d : divisors[n]){
+        ll pot = mu(n / d);
         vector<fraccion> coef(d + 1);
         coef[d] = 1;
         coef[0] = -1;
@@ -260,3 +259,18 @@ vector<comp> ec_4(comp a, comp b, comp c, comp d, comp e){ //ax^4+bx^3+cx^2+dx+e
     }
     return raices;
 }
+
+/*int main(){
+    comp a, b, c, d;
+    cin >> a >> b >> c >> d;
+    vector<comp> ans = ec_3(a, b, c, d);
+    function<long double(comp, comp)> cross = [&](comp a, comp b){
+        return imag(conj(a) * b);
+    };
+    for(comp root : ans){
+        cout << root << "\n";
+    }
+    long double area = abs((cross(ans[0], ans[1]) + cross(ans[1], ans[2]) + cross(ans[2], ans[0])) * 0.5L);
+    cout << fixed << setprecision(10) << area << "\n";
+    return 0;
+}*/

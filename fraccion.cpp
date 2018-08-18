@@ -2,25 +2,25 @@
 
 using namespace std;
 
-typedef long long int lli;
+typedef long long int ll;
 
 struct fraccion{
-    lli num, den;
+    ll num, den;
     fraccion(){
         num = 0, den = 1;
     }
-    fraccion(lli x, lli y){
+    fraccion(ll x, ll y){
         if(y < 0)
             x *= -1, y *=-1;
-        lli d = __gcd(abs(x), abs(y));
+        ll d = __gcd(abs(x), abs(y));
         num = x/d, den = y/d;
     }
-    fraccion(lli v){
+    fraccion(ll v){
         num = v;
         den = 1;
     }
     fraccion operator+(const fraccion& f) const{
-        lli d = __gcd(den, f.den);
+        ll d = __gcd(den, f.den);
         return fraccion(num*(f.den/d) + f.num*(den/d), den*(f.den/d));
     }
     fraccion operator-() const{
@@ -60,27 +60,27 @@ struct fraccion{
         return *this;
     }
     bool operator==(const fraccion& f) const{
-        lli d = __gcd(den, f.den);
+        ll d = __gcd(den, f.den);
         return (num*(f.den/d) == (den/d)*f.num);
     }
     bool operator!=(const fraccion& f) const{
-        lli d = __gcd(den, f.den);
+        ll d = __gcd(den, f.den);
         return (num*(f.den/d) != (den/d)*f.num);
     }
     bool operator >(const fraccion& f) const{
-        lli d = __gcd(den, f.den);
+        ll d = __gcd(den, f.den);
         return (num*(f.den/d) > (den/d)*f.num);
     }
     bool operator <(const fraccion& f) const{
-        lli d = __gcd(den, f.den);
+        ll d = __gcd(den, f.den);
         return (num*(f.den/d) < (den/d)*f.num);
     }
     bool operator >=(const fraccion& f) const{
-        lli d = __gcd(den, f.den);
+        ll d = __gcd(den, f.den);
         return (num*(f.den/d) >= (den/d)*f.num);
     }
     bool operator <=(const fraccion& f) const{
-        lli d = __gcd(den, f.den);
+        ll d = __gcd(den, f.den);
         return (num*(f.den/d) <= (den/d)*f.num);
     }
     fraccion inverso() const{
@@ -108,7 +108,7 @@ ostream &operator<<(ostream &os, const fraccion & f) {
 }
 
 istream &operator>>(istream &is, fraccion & f){
-    lli num = 0, den = 1;
+    ll num = 0, den = 1;
     string str;
     is >> str;
     size_t pos = str.find("/");

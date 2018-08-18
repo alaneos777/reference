@@ -108,7 +108,7 @@ lli powMod(lli b, lli e, lli m){
 pair<lli, lli> chinese(vector<lli> & a, vector<lli> & n){
 	lli prod = 1, p, ans = 0;
 	for(lli & ni : n) prod *= ni;
-	for(int i = 0; i < a.size(); i++){
+	for(int i = 0; i < a.size(); ++i){
 		p = prod / n[i];
 		ans = (ans + (a[i] % n[i]) * modularInverse(p, n[i]) % prod * p) % prod;
 	}
@@ -120,8 +120,8 @@ vector<lli> divisorsSum;
 vector<vector<int>> divisors;
 void divisorsSieve(int n){
 	divisorsSum.resize(n + 1, 0);
-	divisors.resize(n + 1, vector<int>());
-	for(int i = 1; i <= n; i++){
+	divisors.resize(n + 1);
+	for(int i = 1; i <= n; ++i){
 		for(int j = i; j <= n; j += i){
 			divisorsSum[j] += i;
 			divisors[j].push_back(i);
@@ -147,56 +147,47 @@ void primesSieve(int n){
 	}
 }
 
-
 vector<int> lowestPrime;
 void lowestPrimeSieve(int n){
 	lowestPrime.resize(n + 1, 1);
 	lowestPrime[0] = lowestPrime[1] = 0;
-	for(int i = 2; i <= n; i++) lowestPrime[i] = (i & 1 ? i : 2);
+	for(int i = 2; i <= n; ++i) lowestPrime[i] = (i & 1 ? i : 2);
 	int limit = sqrt(n);
-	for(int i = 3; i <= limit; i += 2){
-		if(lowestPrime[i] == i){
-			for(int j = i * i; j <= n; j += 2 * i){
+	for(int i = 3; i <= limit; i += 2)
+		if(lowestPrime[i] == i)
+			for(int j = i * i; j <= n; j += 2 * i)
 				if(lowestPrime[j] == j) lowestPrime[j] = i;
-			}
-		}
-	}
 }
 
 vector<vector<int>> primeFactors;
 void primeFactorsSieve(lli n){
-	primeFactors.resize(n + 1, vector<int>());
-	for(int i = 0; i < primes.size(); i++){
+	primeFactors.resize(n + 1);
+	for(int i = 0; i < primes.size(); ++i){
 		int p = primes[i];
-		for(int j = p; j <= n; j += p){
+		for(int j = p; j <= n; j += p)
 			primeFactors[j].push_back(p);
-		}
 	}
 }
 
 vector<int> Phi;
 void phiSieve(int n){
 	Phi.resize(n + 1);
-	for(int i = 1; i <= n; i++) Phi[i] = i;
-	for(int i = 2; i <= n; i ++){
-		if(Phi[i] == i){
-			for(int j = i; j <= n; j += i){
+	for(int i = 1; i <= n; ++i) Phi[i] = i;
+	for(int i = 2; i <= n; ++i)
+		if(Phi[i] == i)
+			for(int j = i; j <= n; j += i)
 				Phi[j] -= Phi[j] / i;
-			}
-		}
-	}
 }
 
 vector<vector<lli>> Ncr;
 void ncrSieve(lli n){
-	Ncr.resize(n + 1, vector<lli>());
+	Ncr.resize(n + 1);
 	Ncr[0] = {1};
-	for(lli i = 1; i <= n; i++){
+	for(lli i = 1; i <= n; ++i){
 		Ncr[i].resize(i + 1);
 		Ncr[i][0] = Ncr[i][i] = 1;
-		for(lli j = 1; j <= i / 2; j++){
+		for(lli j = 1; j <= i / 2; j++)
 			Ncr[i][i - j] = Ncr[i][j] = Ncr[i - 1][j - 1] + Ncr[i - 1][j];
-		}
 	}
 }
 
@@ -209,9 +200,9 @@ vector<pair<lli, int>> factorize(lli n){
 			pot++;
 			n /= p;
 		}
-		if(pot) f.push_back(make_pair(p, pot));
+		if(pot) f.emplace_back(p, pot);
 	}
-	if(n > 1) f.push_back(make_pair(n, 1));
+	if(n > 1) f.emplace_back(n, 1);
 	return f;
 }
 
@@ -238,9 +229,8 @@ lli sigma(lli n, lli pot){
 int Omega(lli n){
 	int ans = 0;
 	auto f = factorize(n);
-	for(auto & factor : f){
+	for(auto & factor : f)
 		ans += factor.second;
-	}
 	return ans;
 }
 
@@ -248,9 +238,8 @@ int Omega(lli n){
 int omega(lli n){
 	int ans = 0;
 	auto f = factorize(n);
-	for(auto & factor : f){
+	for(auto & factor : f)
 		++ans;
-	}
 	return ans;
 }
 
@@ -263,9 +252,8 @@ int liouvilleLambda(lli n){
 lli phi(lli n){
 	lli ans = n;
 	auto f = factorize(n);
-	for(auto & factor : f){
+	for(auto & factor : f)
 		ans -= ans / factor.first;
-	}
 	return ans;
 }
 
@@ -421,20 +409,15 @@ vector<lli> discreteRoot(lli k, lli b, lli m){
 	vector<lli> x(d);
 	x[0] = powMod(g, y0.first, m);
 	lli inc = powMod(g, phi_m / d, m);
-	for(lli i = 1; i < d; i++){
+	for(lli i = 1; i < d; i++)
 		x[i] = x[i - 1] * inc % m;
-	}
 	sort(x.begin(), x.end());
 	return x;
 }
 
 lli potInFactorial(lli n, lli p){
-	lli ans = 0;
-	lli div = p;
-	while(div <= n){
-		ans += n / div;
-		div *= p;
-	}
+	lli ans = 0, div = n;
+	while(div /= p) ans += div;
 	return ans;
 }
 
@@ -442,7 +425,7 @@ vector<pair<lli, lli>> factorizeFactorial(lli n){
 	vector<pair<lli, lli>> f;
 	for(lli p : primes){
 		if(p > n) break;
-		f.push_back(make_pair(p, potInFactorial(n, p)));
+		f.emplace_back(p, potInFactorial(n, p));
 	}
 	return f;
 }
@@ -451,22 +434,18 @@ lli ncr(lli n, lli r){
 	if(r < 0 || r > n) return 0;
 	r = min(r, n - r);
 	lli ans = 1;
-	for(lli den = 1, num = n; den <= r; den++, num--){
+	for(lli den = 1, num = n; den <= r; den++, num--)
 		ans = ans * num / den;
-	}
 	return ans;
 }
 
 string decimalToBaseB(lli n, lli b){
 	string ans = "";
-	lli digito;
+	lli d;
 	do{
-		digito = n % b;
-		if(0 <= digito && digito <= 9){
-			ans = (char)(48 + digito) + ans;
-		}else if(10 <= digito && digito <= 35){
-			ans = (char)(55 + digito) + ans;
-		}
+		d = n % b;
+		if(0 <= d && d <= 9) ans = (char)(48 + d) + ans;
+		else if(10 <= d && d <= 35) ans = (char)(55 + d) + ans;
 		n /= b;
 	}while(n != 0);
 	return ans;
@@ -474,39 +453,35 @@ string decimalToBaseB(lli n, lli b){
 
 lli baseBtoDecimal(const string & n, lli b){
 	lli ans = 0;
-	for(const char & digito : n){
-		if(48 <= digito && digito <= 57){
-			ans = ans * b + (digito - 48);
-		}else if(65 <= digito && digito <= 90){
-			ans = ans * b + (digito - 55);
-		}else if(97 <= digito && digito <= 122){
-			ans = ans * b + (digito - 87);
-		}
+	for(const char & d : n){
+		if(48 <= d && d <= 57) ans = ans * b + (d - 48);
+		else if(65 <= d && d <= 90) ans = ans * b + (d - 55);
+		else if(97 <= d && d <= 122) ans = ans * b + (d - 87);
 	}
 	return ans;
 }
 
 string decimalToRoman(int n){
-	int digito, base = 0;
+	int d, b = 0;
 	string ans = "";
 	vector<vector<char>> datos = {{'I', 'V'}, {'X', 'L'}, {'C', 'D'}, {'M', '\0'}};
 	int miles = n / 1000;
 	do{
 		string tmp = "";
-		digito = n % 10;
+		d = n % 10;
 		n /= 10;
-		if(base < 3){
-			if(0 <= digito && digito <= 3){
-				tmp.append(digito, datos[base][0]);
-			}else if(digito == 4){
-				tmp += datos[base][0];
-				tmp += datos[base][1];
-			}else if(5 <= digito && digito <= 8){
-				tmp += datos[base][1];
-				tmp.append(digito - 5, datos[base][0]);
-			}else if(digito == 9){
-				tmp += datos[base][0];
-				tmp += datos[base + 1][0];
+		if(b < 3){
+			if(0 <= d && d <= 3){
+				tmp.append(d, datos[b][0]);
+			}else if(d == 4){
+				tmp += datos[b][0];
+				tmp += datos[b][1];
+			}else if(5 <= d && d <= 8){
+				tmp += datos[b][1];
+				tmp.append(d - 5, datos[b][0]);
+			}else if(d == 9){
+				tmp += datos[b][0];
+				tmp += datos[b + 1][0];
 			}
 		}else{
 			tmp.append(miles, 'M');
@@ -514,27 +489,27 @@ string decimalToRoman(int n){
 			break;
 		}
 		ans = tmp + ans;
-		base++;
+		b++;
 	}while(n != 0);
 	return ans;
 }
 
 int romanToDecimal(string n){
 	int ans = 0;
-	char actual, anterior;
+	char curr, prev;
 	bool f = false;
 	map<char, int> datos = {{'I', 1}, {'V', 5}, {'X', 10}, {'L', 50}, {'C', 100}, {'D', 500}, {'M', 1000}};
 	for(int i = n.size() - 1; i >= 0; i--){
-		actual = n[i];
-		if(i > 0) anterior = n[i - 1];
-		if(actual == 'V' && anterior == 'I') ans += 4, f = true;
-		else if(actual == 'X' && anterior == 'I') ans += 9, f = true;
-		else if(actual == 'L' && anterior == 'X') ans += 40, f = true;
-		else if(actual == 'C' && anterior == 'X') ans += 90, f = true;
-		else if(actual == 'D' && anterior == 'C') ans += 400, f = true;
-		else if(actual == 'M' && anterior == 'C') ans += 900, f = true;
+		curr = n[i];
+		if(i > 0) prev = n[i - 1];
+		if(curr == 'V' && prev == 'I') ans += 4, f = true;
+		else if(curr == 'X' && prev == 'I') ans += 9, f = true;
+		else if(curr == 'L' && prev == 'X') ans += 40, f = true;
+		else if(curr == 'C' && prev == 'X') ans += 90, f = true;
+		else if(curr == 'D' && prev == 'C') ans += 400, f = true;
+		else if(curr == 'M' && prev == 'C') ans += 900, f = true;
 		else{
-			if(!f) ans += datos[actual];
+			if(!f) ans += datos[curr];
 			f = false;
 		}
 	}
@@ -553,11 +528,8 @@ lli partitionsP(int n){
 	lli ans = 0;
 	for(int k = 1; k <= n; k++){
 		lli tmp = (n >= pos1 ? P[n - pos1] : 0) + (n >= pos2 ? P[n - pos2] : 0);
-		if(k & 1){
-			ans += tmp;
-		}else{
-			ans -= tmp;
-		}
+		if(k & 1) ans += tmp;
+		else ans -= tmp;
 		if(n < pos2) break;
 		pos1 += inc1, pos2 += inc2;
 		inc1 += 3, inc2 += 3;
@@ -570,9 +542,8 @@ lli partitionsP(int n){
 void calculateFunctionP(int n){
 	P.resize(n + 1);
 	P[0] = 1;
-	for(int i = 1; i <= n; i++){
+	for(int i = 1; i <= n; i++)
 		P[i] = partitionsP(i);
-	}
 }
 
 vector<lli> Q;
@@ -605,11 +576,8 @@ lli partitionsQ(int n){
 	lli ans = 0;
 	int limit = sqrt(n);
 	for(int k = 1; k <= limit; k++){
-		if(k & 1){
-			ans += Q[n - pos];
-		}else{
-			ans -= Q[n - pos];
-		}
+		if(k & 1) ans += Q[n - pos];
+		else ans -= Q[n - pos];
 		pos += inc;
 		inc += 2;
 	}
@@ -623,9 +591,8 @@ lli partitionsQ(int n){
 void calculateFunctionQ(int n){
 	Q.resize(n + 1);
 	Q[0] = 1;
-	for(int i = 1; i <= n; i++){
+	for(int i = 1; i <= n; i++)
 		Q[i] = partitionsQ(i);
-	}
 }
 
 //continued fraction of (p+sqrt(n))/q, where p,n,q are positive integers
@@ -634,6 +601,7 @@ void calculateFunctionQ(int n){
 pair<vector<lli>, int> ContinuedFraction(lli p, lli n, lli q){
 	vector<lli> coef;
 	lli r = sqrt(n);
+	//Skip this if you know that n is not a perfect square
 	if(r * r == n){
 		lli num = p + r;
 		lli den = q;
@@ -660,7 +628,8 @@ pair<vector<lli>, int> ContinuedFraction(lli p, lli n, lli q){
 		p = a * q - p;
 		q = (n - p * p) / q;
 		a = (r + p) / q;
-		if(pairs.count(make_pair(p, q))){ //if p=0 and q=1, we can just ask if q==1 after inserting a
+		//if p=0 and q=1, we can just ask if q==1 after inserting a
+		if(pairs.count(make_pair(p, q))){
 			period -= pairs[make_pair(p, q)];
 			break;
 		}
@@ -670,7 +639,7 @@ pair<vector<lli>, int> ContinuedFraction(lli p, lli n, lli q){
 	return make_pair(coef, period);
 }
 
-//first solution (x, y) to the equation x^2-ny^2=1
+//first solution (x, y) to the equation x^2-ny^2=1, n IS NOT a perfect aquare
 pair<lli, lli> PellEquation(lli n){
 	vector<lli> cf = ContinuedFraction(0, n, 1).first;
 	lli num = 0, den = 1;
@@ -707,7 +676,7 @@ bool isPrimeMillerRabin(lli n){
 	return true;
 }
 
-lli factorPollardRho(lli n){
+lli getFactor(lli n){
 	lli a = 1 + rand() % (n - 1);
 	lli b = 1 + rand() % (n - 1);
 	lli x = 2, y = 2, d = 1;
@@ -720,12 +689,12 @@ lli factorPollardRho(lli n){
 	return abs(d);
 }
 
-map<lli, int> fact;
+map<lli, int> fact; //don't forget to clean
 void factorizePollardRho(lli n){
 	while(n > 1 && !isPrimeMillerRabin(n)){
 		lli f;
 		do{
-			f = factorPollardRho(n);
+			f = getFactor(n);
 		}while(f == n);
 		n /= f;
 		factorizePollardRho(f);
@@ -750,29 +719,25 @@ vector<lli> allInverses(lli p){
 
 //very fast fibonacci
 inline void modula(lli & n){
-	while(n < 0) n += mod;
 	while(n >= mod) n -= mod;
 }
 
-array<lli, 2> mult(array<lli, 2> & A, array<lli, 2> & B){
-	array<lli, 2> C;
-	C[0] = A[0] * B[0] % mod;
-	lli C2 = A[1] * B[1] % mod;
-	C[1] = (A[0] + A[1]) * (B[0] + B[1]) % mod - (C[0] + C2);
-	C[0] += C2;
-	C[1] += C2;
-	modula(C[0]), modula(C[1]);
-	return C;
-}
-
 lli fibo(lli n){
-	array<lli, 2> ans = {1, 0}, tmp = {0, 1};
-	while(n){
-		if(n & 1) ans = mult(ans, tmp);
-		n >>= 1;
-		if(n) tmp = mult(tmp, tmp);
-	}
-	return ans[1];
+	array<lli, 2> F = {1, 0};
+	lli p = 1;
+	for(lli v = n; v >>= 1; p <<= 1);
+	array<lli, 4> C;
+	do{
+		int d = (n & p) != 0;
+		C[0] = C[3] = 0;
+		C[d] = F[0] * F[0] % mod;
+		C[d+1] = (F[0] * F[1] << 1) % mod;
+		C[d+2] = F[1] * F[1] % mod;
+		F[0] = C[0] + C[2] + C[3];
+		F[1] = C[1] + C[2] + (C[3] << 1);
+		modula(F[0]), modula(F[1]);
+	}while(p >>= 1);
+	return F[1];
 }
 
 //number of ordered factorizations of n
@@ -837,13 +802,10 @@ vector<int> Mu;
 void muSieve(int n){
 	Mu.resize(n + 1, -1);
 	Mu[0] = 0, Mu[1] = 1;
-	for(int i = 2; i <= n; ++i){
-		if(Mu[i]){
-			for(int j = 2*i; j <= n; j += i){
+	for(int i = 2; i <= n; ++i)
+		if(Mu[i])
+			for(int j = 2*i; j <= n; j += i)
 				Mu[j] -= Mu[i];
-			}
-		}
-	}
 }
 
 vector<int> linearPrimeSieve(int n){
@@ -867,7 +829,7 @@ vector<int> linearPrimeSieve(int n){
 //we have f(pq) = f(p)f(q) if gcd(p, q) = 1
 //and f(p^a) = g(p, a), where p is prime and a>0
 vector<int> generalSieve(int n, function<int(int, int)> g){
-	vector<int> f(n+1, 1), cnt(n+1), acum(n+1);
+	vector<int> f(n+1, 1), cnt(n+1), acum(n+1), primes;
 	vector<bool> isPrime(n+1, true);
 	for(int i = 2; i <= n; ++i){
 		if(isPrime[i]){ //case base: f(p)
@@ -929,6 +891,20 @@ vector<int> segmented_sieve(int limit){
 	return primes;
 }
 
+//number of ways to partition a set of n elements
+//the nth bell number is at Bell[n][0]
+vector<vector<int>> Bell;
+void bellSieve(int n){
+	Bell.resize(n + 1);
+	Bell[0] = {1};
+	for(int i = 1; i <= n; ++i){
+		Bell[i].resize(i + 1);
+		Bell[i][0] = Bell[i - 1][i - 1];
+		for(int j = 1; j <= i; ++j)
+			Bell[i][j] = Bell[i][j - 1] + Bell[i - 1][j - 1];
+	}
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -979,15 +955,21 @@ void info_ntt(lli e, lli l, lli r){
 }
 
 int main(){
-	srand(time(NULL));
+	/*srand(time(NULL));
 	primesSieve(1e5);
 	ncrSieve(300);
 	muSieve(300);
+	bellSieve(50);*/
 
+	/*int l = 1e7;
 	clock_t start = clock();
+	for(int i = 1; i <= l; ++i) fibo(i);
+	cout << fixed << setprecision(4) << (clock() - start) / (double)CLOCKS_PER_SEC << "\n";*/
+
+	/*clock_t start = clock();
 	vector<int> ans = segmented_sieve(1e9);
 	cout << ans.size() << "\n" << ans.back() << "\n";
-	cout << fixed << setprecision(4) << (clock() - start)/(double)CLOCKS_PER_SEC << "s\n";
+	cout << fixed << setprecision(4) << (clock() - start)/(double)CLOCKS_PER_SEC << "s\n";*/
 
 	/*auto g = [&](int p, int a){
 		return pow(p, a) - pow(p, a-1);
@@ -1053,7 +1035,7 @@ int main(){
 
 	/*lli e;
 	cin >> e;
-	info_ntt(e, 1, 50);*/
+	info_ntt(e, 1, 100);*/
 
 	/*lli p;
 	cin >> p;

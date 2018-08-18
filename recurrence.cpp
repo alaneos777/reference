@@ -15,26 +15,22 @@ lli solveRecurrence(lli *P, lli *init, int deg, lli n){
 	ans[0] = 1;
 	lli p = 1;
 	for(lli v = n; v >>= 1; p <<= 1);
-	auto mult = [&](int d){
+	do{
+		int d = (n & p) != 0;
 		fill(R, R + 2*deg, 0);
+		//if deg(mod-1)^2 overflows, just do mod in the multiplications
 		for(int i = 0; i < deg; i++)
 			for(int j = 0; j < deg; j++)
 				R[i + j + d] += ans[i] * ans[j];
-
 		for(int i = 0; i < 2*deg; ++i) R[i] %= mod;
 		for(int i = deg-1; i >= 0; i--){
 			R[i + deg] %= mod;
 			for(int j = 0; j < deg; j++)
 				R[i + j] += R[i + deg] * P[j];
 		}
-
 		for(int i = 0; i < deg; i++) R[i] %= mod;
 		copy(R, R + deg, ans);
-	};
-	while(p){
-		mult((n & p)!=0);
-		p >>= 1;
-	}
+	}while(p >>= 1);
 	lli nValue = 0;
 	for(int i = 0; i < deg; i++)
 		nValue += ans[i] * init[i];
