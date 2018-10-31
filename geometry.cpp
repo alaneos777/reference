@@ -1,18 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double eps = 1e-8;
-# define M_PI 3.14159265358979323846
-# define M_E 2.71828182845904523536
+double eps = 1e-9, inf = numeric_limits<double>::max();
+
+bool geq(double a, double b){return a-b >= -eps;}     //a >= b
+bool leq(double a, double b){return b-a >= -eps;}     //a <= b
+bool ge(double a, double b){return a-b > eps;}        //a > b
+bool le(double a, double b){return b-a > eps;}        //a < b
+bool eq(double a, double b){return abs(a-b) <= eps;}  //a == b
+bool neq(double a, double b){return abs(a-b) > eps;}  //a != b
 
 struct point{
 	double x, y;
-
 	point(): x(0), y(0){}
-
 	point(double x, double y): x(x), y(y){}
-
-	void read(){cin >> x >> y;}
 
 	point operator+(const point & p) const{return point(x + p.x, y + p.y);}
 	
@@ -62,46 +63,45 @@ struct point{
 	}
 
 	bool operator==(const point & p) const{
-		return abs(x - p.x) < eps && abs(y - p.y) < eps;
+		return eq(x, p.x) && eq(y, p.y);
 	}
 	bool operator!=(const point & p) const{
 		return !(*this == p);
 	}
 	bool operator<(const point & p) const{
-		if(abs(x - p.x) < eps) return y < p.y;
-		return x < p.x;
+		if(eq(x, p.x)) return le(y, p.y);
+		return le(x, p.x);
 	}
 	bool operator>(const point & p) const{
-		if(abs(x - p.x) < eps) return y > p.y;
-		return x > p.x;
+		if(eq(x, p.x)) return ge(y, p.y);
+		return ge(x, p.x);
 	}
 };
 
 istream &operator>>(istream &is, point & P){
-	point p;
-    is >> p.x >> p.y;
-    P = p;
-    return is;
+	is >> P.x >> P.y;
+	return is;
 }
 
 ostream &operator<<(ostream &os, const point & p) { 
-    return os << "(" << p.x << ", " << p.y << ")";
+	return os << "(" << p.x << ", " << p.y << ")";
 }
 
 int sgn(double x){
-	if(abs(x) < eps){
-		return 0;
-	}else if(x > 0){
-		return 1;
-	}else{
-		return -1;
-	}
+	if(ge(x, 0)) return 1;
+	if(le(x, 0)) return -1;
+	return 0;
 }
+
+
+
+
+
 
 
 bool pointInLine(const point & a, const point & v, const point & p){
 	//line a+tv, point p
-	return abs((p - a).cross(v)) < eps;
+	return eq((p - a).cross(v), 0);
 }
 
 bool pointInSegment(point a, point b, const point & p){
@@ -114,8 +114,8 @@ int intersectLinesInfo(const point & a1, const point & v1, const point & a2, con
 	//line a1+tv1
 	//line a2+tv2
 	double det = v1.cross(v2);
-	if(abs(det) < eps){
-		if(abs((a2 - a1).cross(v1)) < eps){
+	if(eq(det, 0)){
+		if(eq((a2 - a1).cross(v1), 0)){
 			return -1; //infinity points
 		}else{
 			return 0; //no points
@@ -136,8 +136,8 @@ int intersectLineSegmentInfo(const point & a, const point & v, const point & c, 
 	//line a+tv, segment cd
 	point v2 = d - c;
 	double det = v.cross(v2);
-	if(abs(det) < eps){
-		if(abs((c - a).cross(v)) < eps){
+	if(eq(det, 0)){
+		if(eq((c - a).cross(v), 0)){
 			return -1; //infinity points
 		}else{
 			return 0; //no point
@@ -193,13 +193,13 @@ vector<point> convexHull(vector<point> P){
 	sort(P.begin(), P.end());
 	vector<point> L, U;
 	for(int i = 0; i < P.size(); i++){
-		while(L.size() >= 2 && (L[L.size() - 2] - P[i]).cross(L[L.size() - 1] - P[i]) <= 0){
+		while(L.size() >= 2 && leq((L[L.size() - 2] - P[i]).cross(L[L.size() - 1] - P[i]), 0)){
 			L.pop_back();
 		}
 		L.push_back(P[i]);
 	}
 	for(int i = P.size() - 1; i >= 0; i--){
-		while(U.size() >= 2 && (U[U.size() - 2] - P[i]).cross(U[U.size() - 1] - P[i]) <= 0){
+		while(U.size() >= 2 && leq((U[U.size() - 2] - P[i]).cross(U[U.size() - 1] - P[i]), 0)){
 			U.pop_back();
 		}
 		U.push_back(P[i]);
@@ -311,19 +311,19 @@ struct vantage_point_tree{
 		double d = (p - t->p).length();
 		if(que.size() < k)
 			que.push({ d, t });
-		else if(que.top().first > d){
+		else if(ge(que.top().first, d)){
 			que.pop();
 			que.push({ d, t });
 		}
 		if(!t->l && !t->r)
 			return;
-		if(d < t->th){
+		if(le(d, t->th)){
 			k_nn(t->l, p, k);
-			if(t->th - d <= que.top().first)
+			if(leq(t->th - d, que.top().first))
 				k_nn(t->r, p, k);
 		}else{
 			k_nn(t->r, p, k);
-			if(d - t->th <= que.top().first)
+			if(leq(d - t->th, que.top().first))
 				k_nn(t->l, p, k);
 		}
 	}
@@ -342,10 +342,10 @@ vector<pair<int, int>> antipodalPairs(vector<point> & P){
 	vector<pair<int, int>> ans;
 	int n = P.size(), k = 1;
 	auto f = [&](int u, int v, int w){return abs((P[v%n]-P[u%n]).cross(P[w%n]-P[u%n]));};
-	while(f(n-1, 0, k+1) > f(n-1, 0, k)) ++k;
+	while(ge(f(n-1, 0, k+1), f(n-1, 0, k))) ++k;
 	for(int i = 0, j = k; i <= k && j < n; ++i){
 		ans.emplace_back(i, j);
-		while(j < n-1 && f(i, i+1, j+1) > f(i, i+1, j))
+		while(j < n-1 && ge(f(i, i+1, j+1), f(i, i+1, j)))
 			ans.emplace_back(i, ++j);
 	}
 	return ans;
@@ -355,11 +355,11 @@ pair<double, double> diameterAndWidth(vector<point> & P){
 	int n = P.size(), k = 0;
 	auto dot = [&](int a, int b){return (P[(a+1)%n]-P[a]).dot(P[(b+1)%n]-P[b]);};
 	auto cross = [&](int a, int b){return (P[(a+1)%n]-P[a]).cross(P[(b+1)%n]-P[b]);};
-	double diameter = numeric_limits<double>::min();
-	double width = numeric_limits<double>::max();
-	while(dot(0, k) > eps) k = (k+1) % n;
+	double diameter = 0;
+	double width = inf;
+	while(ge(dot(0, k), 0)) k = (k+1) % n;
 	for(int i = 0; i < n; ++i){
-		while(cross(i, k) > eps) k = (k+1) % n;
+		while(ge(cross(i, k), 0)) k = (k+1) % n;
 		//pair: (i, k)
 		diameter = max(diameter, (P[k] - P[i]).length());
 		width = min(width, distancePointLine(P[i], P[(i+1)%n] - P[i], P[k]));
@@ -371,13 +371,13 @@ pair<double, double> smallestEnclosingRectangle(vector<point> & P){
 	int n = P.size();
 	auto dot = [&](int a, int b){return (P[(a+1)%n]-P[a]).dot(P[(b+1)%n]-P[b]);};
 	auto cross = [&](int a, int b){return (P[(a+1)%n]-P[a]).cross(P[(b+1)%n]-P[b]);};
-	double perimeter = numeric_limits<double>::max(), area = perimeter;
+	double perimeter = inf, area = inf;
 	for(int i = 0, j = 0, k = 0, m = 0; i < n; ++i){
-		while(dot(i, j) > eps) j = (j+1) % n;
+		while(ge(dot(i, j), 0)) j = (j+1) % n;
 		if(!i) k = j;
-		while(cross(i, k) > eps) k = (k+1) % n;
+		while(ge(cross(i, k), 0)) k = (k+1) % n;
 		if(!i) m = k;
-		while(dot(i, m) < -eps) m = (m+1) % n;
+		while(le(dot(i, m), 0)) m = (m+1) % n;
 		//pairs: (i, k) , (j, m)
 		point v = P[(i+1)%n] - P[i];
 		double h = distancePointLine(P[i], v, P[k]);
@@ -411,7 +411,7 @@ vector<point> intersectLineCircle(const point & a, const point & v, const point 
 	double B = (a - c).dot(v);
 	double C = (a - c).dot(a - c) - r * r;
 	double D = B*B - A*C;
-	if(abs(D) < eps) return {a + v * (-B/A)}; //line tangent to circle
+	if(eq(D, 0)) return {a + v * (-B/A)}; //line tangent to circle
 	else if(D < 0) return {}; //no intersection
 	else{ //two points of intersection (chord)
 		D = sqrt(D);
@@ -435,8 +435,8 @@ vector<point> intersectionCircles(const point & c1, double r1, const point & c2,
 	double B = 2*r1*(c2.x - c1.x);
 	double C = (c1 - c2).dot(c1 - c2) + r1*r1 - r2*r2;
 	double D = A*A + B*B - C*C;
-	if(abs(D) < eps) return {c1 + point(B, A) * r1 / C};
-	else if(D < 0) return {};
+	if(eq(D, 0)) return {c1 + point(B, A) * r1 / C};
+	else if(le(D, 0)) return {};
 	else{
 		D = sqrt(D);
 		double cos1 = (B*C + A*D) / (A*A + B*B);
@@ -451,14 +451,21 @@ int circleInsideCircle(const point & c1, double r1, const point & c2, double r2)
 	//test if circle 2 is inside circle 1
 	//returns "-1" if 2 touches internally 1, "1" if 2 is inside 1, "0" if they overlap
 	double l = r1 - r2 - (c1 - c2).length();
-	return (l > eps ? 1 : (abs(l) < eps ? -1 : 0));
+	return (ge(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
 }
 
 int circleOutsideCircle(const point & c1, double r1, const point & c2, double r2){
 	//test if circle 2 is outside circle 1
 	//returns "-1" if they touch externally, "1" if 2 is outside 1, "0" if they overlap
 	double l = (c1 - c2).length() - (r1 + r2);
-	return (l > eps ? 1 : (abs(l) < eps ? -1 : 0));
+	return (ge(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
+}
+
+int pointInCircle(const point & c, double r, const point & p){
+	//test if point p is inside the circle with center c and radius r
+	//returns "0" if it's outside, "-1" if it's in the perimeter, "1" if it's inside
+	double l = (p - c).length() - r;
+	return (le(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
 }
 
 vector<vector<point>> commonExteriorTangents(const point & c1, double r1, const point & c2, double r2){
@@ -470,7 +477,7 @@ vector<vector<point>> commonExteriorTangents(const point & c1, double r1, const 
 	else if(in == -1) return {{c1 + (c2 - c1).normalize() * r1}};
 	else{
 		pair<point, point> t;
-		if(abs(r1-r2) < eps)
+		if(eq(r1, r2))
 			t = {c1 - (c2 - c1).perpendicular(), c1 + (c2 - c1).perpendicular()};
 		else
 			t = pointsOfTangency(c2, c1, r1 - r2);
@@ -506,8 +513,8 @@ vector<point> minkowskiSum(vector<point> A, vector<point> B){
 	while(pa < na && pb < nb){
 		M.push_back(A[pa] + B[pb]);
 		double x = (A[(pa + 1) % na] - A[pa]).cross(B[(pb + 1) % nb] - B[pb]);
-		if(x <= eps) pb++;
-		if(-eps <= x) pa++;
+		if(leq(x, 0)) pb++;
+		if(geq(x, 0)) pa++;
 	}
 
 	while(pa < na) M.push_back(A[pa++] + B[0]);
@@ -516,8 +523,233 @@ vector<point> minkowskiSum(vector<point> A, vector<point> B){
 	return M;
 }
 
+bool lineCutsPolygon(vector<point> & P, const point & a, const point & v){
+	//line a+tv, polygon P
+	int n = P.size();
+	for(int i = 0, first = 0; i <= n; ++i){
+		int side = sgn(v.cross(P[i%n]-a));
+		if(!side) continue;
+		if(!first) first = side;
+		else if(side != first) return true;
+	}
+	return false;
+}
+
+vector<vector<point>> cutPolygon(vector<point> & P, const point & a, const point & v){
+	//line a+tv, polygon P
+	int n = P.size();
+	if(!lineCutsPolygon(P, a, v)) return {P};
+	int idx = 0;
+	vector<vector<point>> ans(2);
+	for(int i = 0; i < n; ++i){
+		if(intersectLineSegmentInfo(a, v, P[i], P[(i+1)%n])){
+			point p = intersectLines(a, v, P[i], P[(i+1)%n] - P[i]);
+			if(P[i] == p) continue;
+			ans[idx].push_back(P[i]);
+			ans[1-idx].push_back(p);
+			ans[idx].push_back(p);
+			idx = 1-idx;
+		}else{
+			ans[idx].push_back(P[i]);
+		}
+	}
+	return ans;
+}
+
+//point in convex polygon in log(n)
+//first do preprocess: seg=process(P),
+//then for each query call pointInConvexPolygon(seg, p - P[0])
+vector<point> process(vector<point> & P){
+	int n = P.size();
+	rotate(P.begin(), min_element(P.begin(), P.end()), P.end());
+	vector<point> seg(n - 1);
+	for(int i = 0; i < n - 1; ++i)
+		seg[i] = P[i + 1] - P[0];
+	return seg;
+}
+
+bool pointInConvexPolygon(vector<point> & seg, const point & p){
+	int n = seg.size();
+	if(neq(seg[0].cross(p), 0) && sgn(seg[0].cross(p)) != sgn(seg[0].cross(seg[n - 1])))
+		return false;
+	if(neq(seg[n - 1].cross(p), 0) && sgn(seg[n - 1].cross(p)) != sgn(seg[n - 1].cross(seg[0])))
+		return false;
+	if(eq(seg[0].cross(p), 0))
+		return geq(seg[0].length(), p.length());
+	int l = 0, r = n - 1;
+	while(r - l > 1){
+		int m = l + ((r - l) >> 1);
+		if(geq(seg[m].cross(p), 0)) l = m;
+		else r = m;
+	}
+	return eq(abs(seg[l].cross(seg[l + 1])), abs((p - seg[l]).cross(p - seg[l + 1])) + abs(p.cross(seg[l])) + abs(p.cross(seg[l + 1])));
+}
+
+//Delaunay triangulation in O(n log n)
+const point inf_pt(inf, inf);
+
+struct QuadEdge{
+	point origin;
+	QuadEdge* rot = nullptr;
+	QuadEdge* onext = nullptr;
+	bool used = false;
+	QuadEdge* rev() const{return rot->rot;}
+	QuadEdge* lnext() const{return rot->rev()->onext->rot;}
+	QuadEdge* oprev() const{return rot->onext->rot;}
+	point dest() const{return rev()->origin;}
+};
+
+QuadEdge* make_edge(const point & from, const point & to){
+	QuadEdge* e1 = new QuadEdge;
+	QuadEdge* e2 = new QuadEdge;
+	QuadEdge* e3 = new QuadEdge;
+	QuadEdge* e4 = new QuadEdge;
+	e1->origin = from;
+	e2->origin = to;
+	e3->origin = e4->origin = inf_pt;
+	e1->rot = e3;
+	e2->rot = e4;
+	e3->rot = e2;
+	e4->rot = e1;
+	e1->onext = e1;
+	e2->onext = e2;
+	e3->onext = e4;
+	e4->onext = e3;
+	return e1;
+}
+
+void splice(QuadEdge* a, QuadEdge* b){
+	swap(a->onext->rot->onext, b->onext->rot->onext);
+	swap(a->onext, b->onext);
+}
+
+void delete_edge(QuadEdge* e){
+	splice(e, e->oprev());
+	splice(e->rev(), e->rev()->oprev());
+	delete e->rot;
+	delete e->rev()->rot;
+	delete e;
+	delete e->rev();
+}
+
+QuadEdge* connect(QuadEdge* a, QuadEdge* b){
+	QuadEdge* e = make_edge(a->dest(), b->origin);
+	splice(e, a->lnext());
+	splice(e->rev(), b);
+	return e;
+}
+
+bool left_of(const point & p, QuadEdge* e){
+	return ge((e->origin - p).cross(e->dest() - p), 0);
+}
+
+bool right_of(const point & p, QuadEdge* e){
+	return le((e->origin - p).cross(e->dest() - p), 0);
+}
+
+bool in_circle(const point & A, const point & B, const point & C, const point & D){
+	point c;
+	double r;
+	tie(c, r) = getCircle(A, B, C);
+	return pointInCircle(c, r, D) != 0;
+}
+
+pair<QuadEdge*, QuadEdge*> build_tr(int l, int r, vector<point> & P){
+	if(r - l + 1 == 2){
+		QuadEdge* res = make_edge(P[l], P[r]);
+		return make_pair(res, res->rev());
+	}
+	if(r - l + 1 == 3){
+		QuadEdge *a = make_edge(P[l], P[l + 1]), *b = make_edge(P[l + 1], P[r]);
+		splice(a->rev(), b);
+		int sg = sgn((P[l + 1] - P[l]).cross(P[r] - P[l]));
+		if(sg == 0)
+			return make_pair(a, b->rev());
+		QuadEdge* c = connect(b, a);
+		if(sg == 1)
+			return make_pair(a, b->rev());
+		else
+			return make_pair(c->rev(), c);
+	}
+	int mid = (l + r) / 2;
+	QuadEdge *ldo, *ldi, *rdo, *rdi;
+	tie(ldo, ldi) = build_tr(l, mid, P);
+	tie(rdi, rdo) = build_tr(mid + 1, r, P);
+	while(true){
+		if(left_of(rdi->origin, ldi)){
+			ldi = ldi->lnext();
+			continue;
+		}
+		if(right_of(ldi->origin, rdi)){
+			rdi = rdi->rev()->onext;
+			continue;
+		}
+		break;
+	}
+	QuadEdge* basel = connect(rdi->rev(), ldi);
+	auto valid = [&basel](QuadEdge* e){return right_of(e->dest(), basel);};
+	if(ldi->origin == ldo->origin)
+		ldo = basel->rev();
+	if(rdi->origin == rdo->origin)
+		rdo = basel;
+	while(true){
+		QuadEdge* lcand = basel->rev()->onext;
+		if(valid(lcand)){
+			while(in_circle(basel->dest(), basel->origin, lcand->dest(), lcand->onext->dest())){
+				QuadEdge* t = lcand->onext;
+				delete_edge(lcand);
+				lcand = t;
+			}
+		}
+		QuadEdge* rcand = basel->oprev();
+		if(valid(rcand)){
+			while(in_circle(basel->dest(), basel->origin, rcand->dest(), rcand->oprev()->dest())){
+				QuadEdge* t = rcand->oprev();
+				delete_edge(rcand);
+				rcand = t;
+			}
+		}
+		if(!valid(lcand) && !valid(rcand))
+			break;
+		if(!valid(lcand) || (valid(rcand) && in_circle(lcand->dest(), lcand->origin, rcand->origin, rcand->dest())))
+			basel = connect(rcand, basel->rev());
+		else
+			basel = connect(basel->rev(), lcand->rev());
+	}
+	return make_pair(ldo, rdo);
+}
+
+vector<tuple<point, point, point>> delaunay(vector<point> & P){
+	sort(P.begin(), P.end());
+	auto res = build_tr(0, (int)P.size() - 1, P);
+	QuadEdge* e = res.first;
+	vector<QuadEdge*> edges = {e};
+	while(le((e->dest() - e->onext->dest()).cross(e->origin - e->onext->dest()), 0))
+		e = e->onext;
+	auto add = [&P, &e, &edges](){
+		QuadEdge* curr = e;
+		do{
+			curr->used = true;
+			P.push_back(curr->origin);
+			edges.push_back(curr->rev());
+			curr = curr->lnext();
+		}while(curr != e);
+	};
+	add();
+	P.clear();
+	int kek = 0;
+	while(kek < (int)edges.size())
+		if(!(e = edges[kek++])->used)
+			add();
+	vector<tuple<point, point, point>> ans;
+	for(int i = 0; i < (int)P.size(); i += 3){
+		ans.push_back(make_tuple(P[i], P[i + 1], P[i + 2]));
+	}
+	return ans;
+}
+
 int main(){
-	vector<pair<point, point>> centers = {{point(-2, 5), point(-8, -7)}, {point(14, 4), point(18, 6)}, {point(9, 20), point(9, 28)},
+	/*vector<pair<point, point>> centers = {{point(-2, 5), point(-8, -7)}, {point(14, 4), point(18, 6)}, {point(9, 20), point(9, 28)},
 										  {point(21, 20), point(21, 29)}, {point(8, -10), point(14, -10)}, {point(24, -6), point(34, -6)},
 										  {point(34, 8), point(36, 9)}, {point(50, 20), point(56, 24.5)}};
 	vector<pair<double, double>> radii = {{7, 4}, {3, 5}, {4, 4}, {4, 5}, {3, 3}, {4, 6}, {5, 1}, {10, 2.5}};
@@ -540,6 +772,14 @@ int main(){
 			}
 			cout << "\n";
 		}
+	}*/
+	int n;
+	cin >> n;
+	vector<point> P(n);
+	for(auto & p : P) cin >> p;
+	auto triangulation = delaunay(P);
+	for(auto triangle : triangulation){
+		cout << get<0>(triangle) << " " << get<1>(triangle) << " " << get<2>(triangle) << "\n";
 	}
 	return 0;
 }

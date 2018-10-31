@@ -579,10 +579,10 @@ struct SparseTable{
 			ST[0][i] = arr[i];
 		for(int j = 1; j <= K; ++j)
 			for(int i = 0; i + (1 << j) <= N; ++i)
-				ST[j][i] = min(ST[j - 1][i], ST[j - 1][i + (1 << (j - 1))]);
+				ST[j][i] = min(ST[j - 1][i], ST[j - 1][i + (1 << (j - 1))]); //put the function accordingly
 	}
 
-	T sum(int l, int r){
+	T sum(int l, int r){ //non-idempotent functions
 		T ans = 0;
 		for(int j = K; j >= 0; --j){
 			if((1 << j) <= r - l + 1){
@@ -593,7 +593,7 @@ struct SparseTable{
 		return ans;
 	}
 
-	T minimal(int l, int r){
+	T minimal(int l, int r){ //idempotent functions
 		int j = logs[r - l + 1];
 		return min(ST[j][l], ST[j][r - (1 << j) + 1]);
 	}
@@ -603,22 +603,28 @@ struct WaveletTree{
 	int lo, hi;
 	WaveletTree *left, *right;
 	vector<int> freq;
+	vector<int> pref; //just use this if you want sums
 
-	//queries indexed in base 1, complexity O(log(max_element))
+	//queries indexed in base 1, complexity for all queries: O(log(max_element))
 	//build from [from, to) with non-negative values in range [x, y]
+	//you can use vector iterators or array pointers
 	WaveletTree(vector<int>::iterator from, vector<int>::iterator to, int x, int y): lo(x), hi(y){
-		if(lo == hi || from >= to) return;
+		if(from >= to) return;
 		int m = (lo + hi) / 2;
-		auto f = [m](int x){
-			return x <= m;
-		};
+		auto f = [m](int x){return x <= m;};
 		freq.reserve(to - from + 1);
 		freq.push_back(0);
-		for(auto it = from; it != to; ++it)
+		pref.reserve(to - from + 1);
+		pref.push_back(0);
+		for(auto it = from; it != to; ++it){
 			freq.push_back(freq.back() + f(*it));
-		auto pivot = stable_partition(from, to, f);
-		left = new WaveletTree(from, pivot, lo, m);
-		right = new WaveletTree(pivot, to, m + 1, hi);
+			pref.push_back(pref.back() + *it);
+		}
+		if(hi != lo){
+			auto pivot = stable_partition(from, to, f);
+			left = new WaveletTree(from, pivot, lo, m);
+			right = new WaveletTree(pivot, to, m + 1, hi);
+		}
 	}
 
 	//kth element in [l, r]
@@ -647,6 +653,14 @@ struct WaveletTree{
 		int m = (lo + hi) / 2;
 		if(k <= m) return left->equalTo(lb + 1, rb, k);
 		else return right->equalTo(l - lb, r - rb, k);
+	}
+
+	//sum of elements less than or equal to k in [l, r]
+	int sum(int l, int r, int k){
+		if(l > r || k < lo) return 0;
+		if(hi <= k) return pref[r] - pref[l - 1];
+		int lb = freq[l - 1], rb = freq[r];
+		return left->sum(lb + 1, rb, k) + right->sum(l - lb, r - rb, k);
 	}
 };
 
@@ -831,6 +845,8 @@ int main(){
 			cout << w.lessThanOrEqual(l, r, k) << "\n";
 		}else if(t == 2){ //equal to k
 			cout << w.equalTo(l, r, k) << "\n";
+		}else if(t == 3){ //sum of elements less than or equal to k
+			cout << w.sum(l, r, k) << "\n";
 		}
 	}
 }*/

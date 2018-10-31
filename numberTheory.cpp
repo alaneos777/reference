@@ -658,15 +658,12 @@ bool isPrimeMillerRabin(lli n){
 	if(n < 2) return false;
 	if(n == 2) return true;
 	lli d = n - 1, s = 0;
-	while(!(d & 1)){
-		d >>= 1;
-		++s;
-	}
+	for(; !(d & 1); d >>= 1, ++s);
 	for(int i = 0; i < 16; ++i){
 		lli a = 1 + rand() % (n - 1);
 		lli m = powMod(a, d, n);
 		if(m == 1 || m == n - 1) goto exit;
-		for(int k = 0; k < s - 1; ++k){
+		for(int k = 0; k < s; ++k){
 			m = m * m % n;
 			if(m == n - 1) goto exit;
 		}
@@ -680,24 +677,23 @@ lli getFactor(lli n){
 	lli a = 1 + rand() % (n - 1);
 	lli b = 1 + rand() % (n - 1);
 	lli x = 2, y = 2, d = 1;
-	while(d == 1 || d == -1){
+	while(d == 1){
 		x = x * (x + b) % n + a;
 		y = y * (y + b) % n + a;
 		y = y * (y + b) % n + a;
-		d = gcd(x - y, n);
+		d = gcd(abs(x - y), n);
 	}
-	return abs(d);
+	return d;
 }
 
-map<lli, int> fact; //don't forget to clean
-void factorizePollardRho(lli n){
+map<lli, int> fact;
+void factorizePollardRho(lli n, bool clean = true){
+	if(clean) fact.clear();
 	while(n > 1 && !isPrimeMillerRabin(n)){
-		lli f;
-		do{
-			f = getFactor(n);
-		}while(f == n);
+		lli f = n;
+		for(; f == n; f = getFactor(n));
 		n /= f;
-		factorizePollardRho(f);
+		factorizePollardRho(f, false);
 		for(auto & it : fact){
 			while(n % it.first == 0){
 				n /= it.first;
@@ -707,6 +703,10 @@ void factorizePollardRho(lli n){
 	}
 	if(n > 1) ++fact[n];
 }
+
+
+
+
 
 //find all inverses (from 1 to p-1) modulo p
 vector<lli> allInverses(lli p){
@@ -983,12 +983,12 @@ int main(){
 		cout << "mu(" << i << ") = " << Mu[i] << "\n";
 	}*/
 
-	/*lli x;
+	lli x;
 	cin >> x;
 	factorizePollardRho(x);
 	for(auto & it : fact){
 		cout << it.first << " " << it.second << "\n";
-	}*/
+	}
 
 	/*lli p, n, q;
 	cin >> p >> n >> q;
