@@ -209,6 +209,9 @@
 			\subsubsection{Números de Bell}
 			\inputminted[tabsize=2,breaklines,firstline=894,lastline=906,fontsize=\small]{c++}{numberTheory.cpp}
 			
+			\subsubsection{Prime counting function in sublinear time}
+			\inputminted[tabsize=2,breaklines,firstline=27,lastline=77,fontsize=\small]{c++}{pi.cpp}
+			
 	\newpage
 	\section{Números racionales}
 		\subsection{Estructura \texttt{fraccion}}
@@ -217,36 +220,34 @@
 	\newpage
 	\section{Álgebra lineal}
 		\subsection{Estructura \texttt{matrix}}
-		\inputminted[tabsize=2,breaklines,firstline=9,lastline=33,fontsize=\small]{c++}{matrix.cpp}
-		\inputminted[tabsize=2,breaklines,firstline=122,lastline=227,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=7,lastline=130,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Transpuesta y traza}
+		\inputminted[tabsize=2,breaklines,firstline=132,lastline=145,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Gauss Jordan}
-		\inputminted[tabsize=2,breaklines,firstline=35,lastline=73,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=147,lastline=190,fontsize=\small]{c++}{matrix.cpp}
+		
+		\subsection{Matriz escalonada por filas y reducida por filas}
+		\inputminted[tabsize=2,breaklines,firstline=192,lastline=202,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Matriz inversa}
-		\inputminted[tabsize=2,breaklines,firstline=80,lastline=86,fontsize=\small]{c++}{matrix.cpp}
-		\inputminted[tabsize=2,breaklines,firstline=260,lastline=281,fontsize=\small]{c++}{matrix.cpp}
-		
-		\subsection{Transpuesta}
-		\inputminted[tabsize=2,breaklines,firstline=250,lastline=258,fontsize=\small]{c++}{matrix.cpp}
-		
-		\subsection{Traza}
-		\inputminted[tabsize=2,breaklines,firstline=283,lastline=289,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=204,lastline=225,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Determinante}
-		\inputminted[tabsize=2,breaklines,firstline=291,lastline=307,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=227,lastline=240,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Matriz de cofactores y adjunta}
-		\inputminted[tabsize=2,breaklines,firstline=341,lastline=376,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=242,lastline=267,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Factorización $PA=LU$}
-		\inputminted[tabsize=2,breaklines,firstline=378,lastline=394,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=269,lastline=285,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Polinomio característico}
-		\inputminted[tabsize=2,breaklines,firstline=396,lastline=406,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=287,lastline=297,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Gram-Schmidt}
-		\inputminted[tabsize=2,breaklines,firstline=408,lastline=422,fontsize=\small]{c++}{matrix.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=299,lastline=315,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Recurrencias lineales}
 		\inputminted[tabsize=2,breaklines,firstline=7,lastline=38,fontsize=\small]{c++}{recurrence.cpp}
@@ -394,26 +395,20 @@
 		
 	\newpage
 	\section{Grafos}
-		\subsection{Estructura \texttt{disjointSet}}
+		\subsection{Disjoint Set}
 		\inputminted[tabsize=2,breaklines,firstline=8,lastline=37,fontsize=\small]{c++}{graph.cpp}
 		
-		\subsection{Estructura \texttt{edge}}
-		\inputminted[tabsize=2,breaklines,firstline=39,lastline=57,fontsize=\small]{c++}{graph.cpp}
-		
-		\subsection{Estructura \texttt{path}}
-		\inputminted[tabsize=2,breaklines,firstline=59,lastline=64,fontsize=\small]{c++}{graph.cpp}
-		
-		\subsection{Estructura \texttt{graph}}
-		\inputminted[tabsize=2,breaklines,firstline=66,lastline=101,fontsize=\small]{c++}{graph.cpp}
+		\subsection{Definiciones}
+		\inputminted[tabsize=2,breaklines,firstline=39,lastline=100,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{DFS genérica}
 		\inputminted[tabsize=2,breaklines,firstline=411,lastline=429,fontsize=\small]{c++}{graph.cpp}
 		
-		\subsection{Dijkstra con reconstrucción del camino más corto con menos vértices}
-		\inputminted[tabsize=2,breaklines,firstline=103,lastline=129,fontsize=\small]{c++}{graph.cpp}
+		\subsection{Dijkstra}
+		\inputminted[tabsize=2,breaklines,firstline=102,lastline=125,fontsize=\small]{c++}{graph.cpp}
 		
-		\subsection{Bellman Ford con reconstrucción del camino más corto con menos vértices}
-		\inputminted[tabsize=2,breaklines,firstline=131,lastline=165,fontsize=\small]{c++}{graph.cpp}
+		\subsection{Bellman Ford}
+		\inputminted[tabsize=2,breaklines,firstline=127,lastline=161,fontsize=\small]{c++}{graph.cpp}
 		
 		\subsection{Floyd}
 		\inputminted[tabsize=2,breaklines,firstline=167,lastline=175,fontsize=\small]{c++}{graph.cpp}
@@ -504,19 +499,19 @@
 		\inputminted[tabsize=2,breaklines,firstline=211,lastline=414,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Treap}
-		\inputminted[tabsize=2,breaklines,firstline=416,lastline=563,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=416,lastline=653,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Ordered Set C++}
-		\inputminted[tabsize=2,breaklines,firstline=667,lastline=700,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=757,lastline=790,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Splay Tree}
 		
 		
 		\subsection{Sparse table}
-		\inputminted[tabsize=2,breaklines,firstline=565,lastline=600,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=655,lastline=690,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Wavelet Tree}
-		\inputminted[tabsize=2,breaklines,firstline=602,lastline=665,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=692,lastline=755,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Red Black Tree}
 		

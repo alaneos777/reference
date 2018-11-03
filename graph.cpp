@@ -58,9 +58,9 @@ struct edge{
 
 struct path{
 	int cost = inf;
-	vi vertices;
+	deque<int> vertices;
 	int size = 1;
-	int previous = -1;
+	int prev = -1;
 };
 
 struct graph{
@@ -91,35 +91,31 @@ struct graph{
 
 	void buildPaths(vector<path> & paths){
 		for(int i = 0; i < V; i++){
-			int actual = i;
+			int u = i;
 			for(int j = 0; j < paths[i].size; j++){
-				paths[i].vertices.push_back(actual);
-				actual = paths[actual].previous;
+				paths[i].vertices.push_front(u);
+				u = paths[u].prev;
 			}
-			reverse(paths[i].vertices.begin(), paths[i].vertices.end());
 		}
 	}
 
 	vector<path> dijkstra(int start){
 		priority_queue<edge, vector<edge>, greater<edge>> cola;
-		vector<path> paths(V, path());
-		vb relaxed(V);
-		cola.push(edge(start, 0));
+		vector<path> paths(V);
+		cola.emplace(start, 0);
 		paths[start].cost = 0;
 		while(!cola.empty()){
 			int u = cola.top().dest; cola.pop();
-			relaxed[u] = true;
 			for(edge & current : adjList[u]){
 				int v = current.dest;
-				if(relaxed[v]) continue;
 				int nuevo = paths[u].cost + current.cost;
 				if(nuevo == paths[v].cost && paths[u].size + 1 < paths[v].size){
-					paths[v].previous = u;
+					paths[v].prev = u;
 					paths[v].size = paths[u].size + 1;
 				}else if(nuevo < paths[v].cost){
-					paths[v].previous = u;
+					paths[v].prev = u;
 					paths[v].size = paths[u].size + 1;
-					cola.push(edge(v, nuevo));
+					cola.emplace(v, nuevo);
 					paths[v].cost = nuevo;
 				}
 			}
@@ -147,14 +143,14 @@ struct graph{
 				int v = current.dest;
 				int nuevo = paths[u].cost + current.cost;
 				if(nuevo == paths[v].cost && paths[u].size + 1 < paths[v].size){
-					paths[v].previous = u;
+					paths[v].prev = u;
 					paths[v].size = paths[u].size + 1;
 				}else if(nuevo < paths[v].cost){
 					if(!inQueue[v]){
 						Q.push(v);
 						inQueue[v] = true;
 					}
-					paths[v].previous = u;
+					paths[v].prev = u;
 					paths[v].size = paths[u].size + 1;
 					paths[v].cost = nuevo;
 				}
@@ -163,6 +159,10 @@ struct graph{
 		buildPaths(paths);
 		return paths;
 	}
+
+
+
+
 
 	vector<vi> floyd(){
 		vector<vi> tmp = costMatrix;

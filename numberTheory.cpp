@@ -288,7 +288,7 @@ int mu(lli n){
 
 // the smallest positive integer k such that x^k = 1 mod m
 lli multiplicativeOrder(lli x, lli m){
-	if(gcd(x, m) != 1) return -1;
+	if(gcd(x, m) != 1) return 0;
 	lli order = phi(m);
 	auto f = factorize(order);
 	for(auto & factor : f){
@@ -351,7 +351,7 @@ lli findFirstGenerator(lli m){
 		}
 		if(test) return x;
 	}
-	return -1;
+	return -1; //not found
 }
 
 lli findFirstPrimitiveKthRootUnity(lli k, lli m){
@@ -369,12 +369,12 @@ lli findFirstPrimitiveKthRootUnity(lli k, lli m){
 		}
 		if(test) return x;
 	}
-	return -1;
+	return -1; //not found
 }
 
 // a^x = b mod m, a and m coprime
 pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
-	if(gcd(a, m) != 1) return make_pair(-1, 0);
+	if(gcd(a, m) != 1) return make_pair(-1, 0); //not found
 	lli order = multiplicativeOrder(a, m);
 	lli n = sqrt(order) + 1;
 	lli a_n = powMod(a, n, m);
@@ -394,7 +394,7 @@ pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
 		}
 		current = (current * a) % m;
 	}
-	return make_pair(-1, 0);
+	return make_pair(-1, 0); //not found
 }
 
 // x^k = b mod m, m has at least one generator
