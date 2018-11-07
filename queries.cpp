@@ -638,7 +638,7 @@ int sum_query(Treap* &T, int l, int r){
 	Treap *T1 = NULL, *T2 = NULL, *T3 = NULL;
 	split2(T, l, T1, T2);
 	split2(T2, r - l + 1, T2, T3);
-	int ans = T2->sum + T2->add * nodeSize(T2);
+	int ans = nodeSum(T2);
 	merge2(T, T1, T2);
 	merge2(T, T, T3);
 	return ans;
@@ -686,6 +686,41 @@ struct SparseTable{
 	T minimal(int l, int r){ //idempotent functions
 		int j = logs[r - l + 1];
 		return min(ST[j][l], ST[j][r - (1 << j) + 1]);
+	}
+};
+
+//build on O(n log n), queries in O(1) for any operation
+template<typename T>
+struct DisjointSparseTable{
+	vector<vector<T>> left, right;
+	int K, N;
+
+	DisjointSparseTable(vector<T> & arr){
+		N = arr.size();
+		K = log2(N) + 2;
+		left.assign(K + 1, vector<T>(N));
+		right.assign(K + 1, vector<T>(N));
+		for(int j = 0; (1 << j) <= N; ++j){
+			int mask = (1 << j) - 1;
+			T acum = 0; //neutral element of your operation
+			for(int i = 0; i < N; ++i){
+				acum += arr[i]; //your operation
+				left[j][i] = acum;
+				if((i & mask) == mask) acum = 0; //neutral element of your operation
+			}
+			acum = 0; //neutral element of your operation
+			for(int i = N-1; i >= 0; --i){
+				acum += arr[i]; //your operation
+				right[j][i] = acum;
+				if((i & mask) == 0) acum = 0; //neutral element of your operation
+			}
+		}
+	}
+
+	T query(int l, int r){
+		if(l == r) return left[0][l];
+		int i = 31 - __builtin_clz(l^r);
+		return left[i][r] + right[i][l]; //your operation
 	}
 };
 
@@ -927,6 +962,20 @@ int main(){
 	while(cin >> l && l != -1){
 		cin >> r;
 		cout << table.minimal(l, r) << "\n";
+	}
+	return 0;
+}*/
+
+/*int main(){
+	int n, l, r;
+	cin >> n;
+	vector<int> arr(n);
+	for(int i = 0; i < n; ++i)
+		cin >> arr[i];
+	DisjointSparseTable<int> table(arr);
+	while(cin >> l && l != -1){
+		cin >> r;
+		cout << table.query(l, r) << "\n";
 	}
 	return 0;
 }*/

@@ -905,6 +905,37 @@ void bellSieve(int n){
 	}
 }
 
+//finds x such that x^2 = a mod p
+lli sqrtMod(lli a, lli p){
+	a %= p;
+	if(a < 0) a += p;
+	if(a == 0) return 0;
+	assert(powMod(a, (p - 1) / 2, p) == 1);
+	if(p % 4 == 3) return powMod(a, (p + 1) / 4, p);
+	lli s = p - 1;
+	int r = 0;
+	while((s & 1) == 0) ++r, s >>= 1;
+	lli n = 2;
+	while(powMod(n, (p - 1) / 2, p) != p - 1) ++n;
+	lli x = powMod(a, (s + 1) / 2, p);
+	lli b = powMod(a, s, p);
+	lli g = powMod(n, s, p);
+	while(true){
+		lli t = b;
+		int m = 0;
+		for(; m < r; ++m){
+			if(t == 1) break;
+			t = t * t % p;
+		}
+		if(m == 0) return x;
+		lli gs = powMod(g, 1 << (r - m - 1), p);
+		g = gs * gs % p;
+		x = x * gs % p;
+		b = b * g % p;
+		r = m;
+	}
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -983,12 +1014,12 @@ int main(){
 		cout << "mu(" << i << ") = " << Mu[i] << "\n";
 	}*/
 
-	lli x;
+	/*lli x;
 	cin >> x;
 	factorizePollardRho(x);
 	for(auto & it : fact){
 		cout << it.first << " " << it.second << "\n";
-	}
+	}*/
 
 	/*lli p, n, q;
 	cin >> p >> n >> q;
@@ -1047,5 +1078,10 @@ int main(){
 	/*lli n;
 	cin >> n;
 	cout << unorderedFactorizations(n, n);*/
+
+	/*lli a, p;
+	cin >> a >> p;
+	lli ans = sqrtMod(a, p);
+	cout << ans << "^2 = " << ans*ans%p << " mod " << p << "\n";*/
 	return 0;
 }

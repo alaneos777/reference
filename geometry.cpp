@@ -50,8 +50,8 @@ struct point{
 	ld norm() const{
 		return x * x + y * y;
 	}
-	ld length() const{
-		return hypot(x, y);
+	long double length() const{
+		return sqrtl(x * x + y * y);
 	}
 
 	point normalize() const{
@@ -753,6 +753,39 @@ vector<tuple<point, point, point>> delaunay(vector<point> & P){
 	return ans;
 }
 
+pair<point, ld> mec2(vector<point> & S, const point & a, const point & b, int n){
+	ld hi = inf, lo = -hi;
+	for(int i = 0; i < n; ++i){
+		ld si = (b - a).cross(S[i] - a);
+		if(eq(si, 0)) continue;
+		point m = getCircle(a, b, S[i]).first;
+		ld cr = (b - a).cross(m - a);
+		if(le(si, 0)) hi = min(hi, cr);
+		else lo = max(lo, cr);
+	}
+	ld v = (ge(lo, 0) ? lo : le(hi, 0) ? hi : 0);
+	point c = (a + b) / 2 + (b - a).perpendicular() * v / (b - a).norm();
+	return {c, (a - c).norm()};
+}
+
+pair<point, ld> mec(vector<point> & S, const point & a, int n){
+	random_shuffle(S.begin(), S.begin() + n);
+	point b = S[0], c = (a + b) / 2;
+	ld r = (a - c).norm();
+	for(int i = 1; i < n; ++i){
+		if(ge((S[i] - c).norm(), r)){
+			tie(c, r) = (n == S.size() ? mec(S, S[i], i) : mec2(S, a, S[i], i));
+		}
+	}
+	return {c, r};
+}
+
+pair<point, ld> smallestEnclosingCircle(vector<point> S){
+	assert(!S.empty());
+	auto r = mec(S, S[0], S.size());
+	return {r.first, sqrt(r.second)};
+}
+
 int main(){
 	/*vector<pair<point, point>> centers = {{point(-2, 5), point(-8, -7)}, {point(14, 4), point(18, 6)}, {point(9, 20), point(9, 28)},
 										  {point(21, 20), point(21, 29)}, {point(8, -10), point(14, -10)}, {point(24, -6), point(34, -6)},
@@ -778,13 +811,19 @@ int main(){
 			cout << "\n";
 		}
 	}*/
-	int n;
+	/*int n;
 	cin >> n;
 	vector<point> P(n);
 	for(auto & p : P) cin >> p;
 	auto triangulation = delaunay(P);
 	for(auto triangle : triangulation){
 		cout << get<0>(triangle) << " " << get<1>(triangle) << " " << get<2>(triangle) << "\n";
-	}
+	}*/
+	int n;
+	cin >> n;
+	vector<point> P(n);
+	for(auto & p : P) cin >> p;
+	auto ans = smallestEnclosingCircle(P);
+	cout << ans.first << " " << ans.second << "\n";
 	return 0;
 }

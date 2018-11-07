@@ -155,6 +155,15 @@ int LevenshteinDistance(string & a, string & b){
 	return aux[m][n];
 }
 
+//count the number of 1's in the i-th bit of all
+//representations in binary of numbers in [1,n]
+lli count(lli n, int i){
+	if(n <= 0) return 0ll;
+	lli ans = ((n + 1) >> (i + 1)) << i;
+	ans += max(((n + 1) & ((1ll << (i + 1)) - 1)) - (1ll << i), 0ll);
+	return ans;
+}
+
 /*int main(){
 	int a, b, c;
 	cin >> a >> b >> c;
