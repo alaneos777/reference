@@ -14,8 +14,8 @@ void fft(vector<comp> & X, int inv){
 	int n = X.size();
 	int len, len2, i, j, k;
 	for(i = 1, j = 0; i < n - 1; ++i){
-		for (k = n >> 1; (j ^= k) < k; k >>= 1);
-		if (i < j) swap(X[i], X[j]);
+		for(k = n >> 1; (j ^= k) < k; k >>= 1);
+		if(i < j) swap(X[i], X[j]);
 	}
 	double ang;
 	comp t, u, v;
@@ -89,7 +89,7 @@ void ntt(vector<int> & X, int inv){
 	}
 }
 
-void multiplyPolynomials(vector<comp> & A, vector<comp> & B){
+void convolution(vector<comp> & A, vector<comp> & B){
 	int degree = A.size() + B.size() - 2;
 	int size = nearestPowerOfTwo(degree + 1);
 	A.resize(size);
@@ -103,7 +103,7 @@ void multiplyPolynomials(vector<comp> & A, vector<comp> & B){
 	A.resize(degree + 1);
 }
 
-void multiplyPolynomials(vector<int> & A, vector<int> & B){
+void convolution(vector<int> & A, vector<int> & B){
 	int degree = A.size() + B.size() - 2;
 	int size = nearestPowerOfTwo(degree + 1);
 	A.resize(size);
@@ -136,7 +136,7 @@ string multiplyNumbers(const string & a, const string & b){
 	for(int i = pos2, j = Y.size() - 1; i < b.size(); ++i){
 		Y[j--] = b[i] - '0';
 	}
-	multiplyPolynomials(X, Y);
+	convolution(X, Y);
 	stringstream ss;
 	if(sgn == -1) ss << "-";
 	int carry = 0;
@@ -196,7 +196,7 @@ vector<int> sqrtPolynomial(vector<int> & A){
 			TF[i] = A[i];
 		}
 		vector<int> IR = inversePolynomial(R);
-		multiplyPolynomials(TF, IR);
+		convolution(TF, IR);
 		for(int i = 0; i < c; ++i){
 			R[i] = R[i] + TF[i];
 			if(R[i] >= p) R[i] -= p;
@@ -205,6 +205,22 @@ vector<int> sqrtPolynomial(vector<int> & A){
 	}
 	R.resize(A.size());
 	return R;
+}
+
+void bluestein(vector<comp> & x, int inv){
+	int n = x.size();
+	comp w = polar(1.0, PI * inv / n), w1 = w, w2 = 1;
+	vector<comp> p(n), q(2*n-1), b(n);
+	for(int k = 0; k < n; ++k, w2 *= w1, w1 *= w*w){
+		b[k] = w2;
+		p[k] = x[k] * b[k];
+		q[n-1-k] = q[n-1+k] = (comp)1 / b[k];
+	}
+	convolution(p, q);
+	for(int k = 0; k < n; ++k){
+		if(inv == -1) x[k] = b[k] * p[n-1+k] / (comp)n;
+		else x[k] = b[k] * p[n-1+k];
+	}
 }
 
 void test_fft(){
@@ -219,7 +235,7 @@ void test_fft(){
 	double duration;
 	start = std::clock();
 
-	multiplyPolynomials(X, Y);
+	convolution(X, Y);
 
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
@@ -240,7 +256,7 @@ void test_ntt(){
 	double duration;
 	start = std::clock();
 
-	multiplyPolynomials(X, Y);
+	convolution(X, Y);
 
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
@@ -257,7 +273,7 @@ void test_random_fft(){
 		B[i] = rand() % 10;
 	}
 	clock_t start = clock();
-	multiplyPolynomials(A, B);
+	convolution(A, B);
 	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
 	cout << duration << "\n";
 }
@@ -270,7 +286,7 @@ void test_random_ntt(){
 		B[i] = rand() % 10;
 	}
 	clock_t start = clock();
-	multiplyPolynomials(A, B);
+	convolution(A, B);
 	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
 	cout << duration << "\n";
 }
@@ -306,7 +322,7 @@ int main(){
 	for(int i = 0; i < R.size(); ++i) cout << R[i] << " ";
 	cout << "\n";
 	vector<int> R_ = R;
-	multiplyPolynomials(R, R_);
+	convolution(R, R_);
 	for(int i = 0; i < R.size(); ++i) cout << R[i] << " ";
 	return 0;
 }

@@ -6,12 +6,9 @@ struct SegmentTree{
 	int N;
 	vector<T> ST;
 
-	SegmentTree(int N): N(N){
-		ST.assign(N << 1, 0);
-	}
-
 	//build from an array in O(n)
-	void build(vector<T> & arr){
+	SegmentTree(int N, vector<T> & arr): N(N){
+		ST.resize(N << 1);
 		for(int i = 0; i < N; ++i)
 			ST[N + i] = arr[i];
 		for(int i = N - 1; i > 0; --i)
@@ -23,6 +20,19 @@ struct SegmentTree{
 		ST[i += N] = value; //update the element accordingly
 		while(i >>= 1)
 			ST[i] = ST[i << 1] + ST[i << 1 | 1];
+	}
+
+	//single element update in [l, r]
+	void update(int l, int r, T value){
+		l += N, r += N;
+		for(int i = l; i <= r; ++i)
+			ST[i] = value;
+		l >>= 1, r >>= 1;
+		while(l >= 1){
+			for(int i = r; i >= l; --i)
+				ST[i] = ST[i << 1] + ST[i << 1 | 1];
+			l >>= 1, r >>= 1;
+		}
 	}
 
 	//range query, [l, r]
@@ -40,37 +50,37 @@ template<typename T>
 struct SegmentTreeDin{
 	SegmentTreeDin *left, *right;
 	int l, r;
-	T value, lazy;
+	T sum, lazy;
  
-	SegmentTreeDin(int start, int end, vector<T> & arr): left(NULL), right(NULL), l(start), r(end), value(0), lazy(0){
-		if(l == r) value = arr[l];
+	SegmentTreeDin(int start, int end, vector<T> & arr): left(NULL), right(NULL), l(start), r(end), sum(0), lazy(0){
+		if(l == r) sum = arr[l];
 		else{
 			int half = l + ((r - l) >> 1);
 			left = new SegmentTreeDin(l, half, arr);
 			right = new SegmentTreeDin(half+1, r, arr);
-			value = left->value + right->value;
+			sum = left->sum + right->sum;
 		}
 	}
  
 	void propagate(T dif){
-		value += (r - l + 1) * dif;
+		sum += (r - l + 1) * dif;
 		if(l != r){
 			left->lazy += dif;
 			right->lazy += dif;
 		}
 	}
  
-	T query(int start, int end){
+	T sum_query(int start, int end){
 		if(lazy != 0){
 			propagate(lazy);
 			lazy = 0;
 		}
 		if(end < l || r < start) return 0;
-		if(start <= l && r <= end) return value;
-		else return left->query(start, end) + right->query(start, end);
+		if(start <= l && r <= end) return sum;
+		else return left->sum_query(start, end) + right->sum_query(start, end);
 	}
  
-	void update(int start, int end, T dif){
+	void add_range(int start, int end, T dif){
 		if(lazy != 0){
 			propagate(lazy);
 			lazy = 0;
@@ -78,14 +88,117 @@ struct SegmentTreeDin{
 		if(end < l || r < start) return;
 		if(start <= l && r <= end) propagate(dif);
 		else{
-			left->update(start, end, dif);
-			right->update(start, end, dif);
-			value = left->value + right->value;
+			left->add_range(start, end, dif);
+			right->add_range(start, end, dif);
+			sum = left->sum + right->sum;
 		}
 	}
 
-	void update(int i, T value){
-		update(i, i, value);
+	void add_pos(int i, T sum){
+		add_range(i, i, sum);
+	}
+};
+
+template<typename T>
+struct SegmentTreeEst{
+	int size;
+	vector<T> sum, lazy;
+ 
+	void rec(int pos, int l, int r, vector<T> & arr){
+		if(l == r) sum[pos] = arr[l];
+		else{
+			int half = l + ((r - l) >> 1);
+			rec(2*pos+1, l, half, arr);
+			rec(2*pos+2, half+1, r, arr);
+			sum[pos] = sum[2*pos+1] + sum[2*pos+2];
+		}
+	}
+
+	SegmentTreeEst(int n, vector<T> & arr): size(n){
+		int h = ceil(log2(n));
+		sum.resize((1 << (h + 1)) - 1);
+		lazy.resize((1 << (h + 1)) - 1);
+		rec(0, 0, n - 1, arr);
+	}
+ 
+	void propagate(int pos, int l, int r, T dif){
+		sum[pos] += (r - l + 1) * dif;
+		if(l != r){
+			lazy[2*pos+1] += dif;
+			lazy[2*pos+2] += dif;
+		}
+	}
+ 
+	T sum_query_rec(int start, int end, int pos, int l, int r){
+		if(lazy[pos] != 0){
+			propagate(pos, l, r, lazy[pos]);
+			lazy[pos] = 0;
+		}
+		if(end < l || r < start) return 0;
+		if(start <= l && r <= end) return sum[pos];
+		else{
+			int half = l + ((r - l) >> 1);
+			return sum_query_rec(start, end, 2*pos+1, l, half) + sum_query_rec(start, end, 2*pos+2, half+1, r);
+		}
+	}
+
+	T sum_query(int start, int end){
+		return sum_query_rec(start, end, 0, 0, size - 1);
+	}
+ 
+	void add_range_rec(int start, int end, int pos, int l, int r, T dif){
+		if(lazy[pos] != 0){
+			propagate(pos, l, r, lazy[pos]);
+			lazy[pos] = 0;
+		}
+		if(end < l || r < start) return;
+		if(start <= l && r <= end) propagate(pos, l, r, dif);
+		else{
+			int half = l + ((r - l) >> 1);
+			add_range_rec(start, end, 2*pos+1, l, half, dif);
+			add_range_rec(start, end, 2*pos+2, half+1, r, dif);
+			sum[pos] = sum[2*pos+1] + sum[2*pos+2];
+		}
+	}
+
+	void add_range(int start, int end, T dif){
+		add_range_rec(start, end, 0, 0, size - 1, dif);
+	}
+
+	void add_pos(int i, T sum){
+		add_range(i, i, sum);
+	}
+};
+
+template<typename T>
+struct StPer{
+	StPer *left, *right;
+	int l, r;
+	T sum;
+ 
+	StPer(int start, int end): left(NULL), right(NULL), l(start), r(end), sum(0){
+		if(l != r){
+			int half = l + ((r - l) >> 1);
+			left = new StPer(l, half);
+			right = new StPer(half+1, r);
+		}
+	}
+	StPer(int start, int end, T val): left(NULL), right(NULL), l(start), r(end), sum(val){}
+	StPer(int start, int end, StPer* left, StPer* right): left(left), right(right), l(start), r(end){
+		sum = left->sum + right->sum;
+	}
+ 
+	T sum_query(int start, int end){
+		if(end < l || r < start) return 0;
+		if(start <= l && r <= end) return sum;
+		else return left->sum_query(start, end) + right->sum_query(start, end);
+	}
+ 
+	StPer* update(int pos, T val){
+		if(l == r) return new StPer(l, r, sum + val);
+		int half = l + ((r - l) >> 1);
+		if(pos <= half) return new StPer(l, r, left->update(pos, val), right);
+		return new StPer(l, r, left, right->update(pos, val));
 	}
 };
 
@@ -94,13 +207,13 @@ struct FenwickTree{
 	int N;
 	vector<T> bit;
 
-	FenwickTree(int N): N(N){
-		bit.assign(N, 0);
-	}
-
-	void build(vector<T> & arr){
-		for(int i = 0; i < arr.size(); ++i){
-			update(i, arr[i]);
+	//build from array in O(n), indexed in 0
+	FenwickTree(int N, vector<T> & arr): N(N){
+		bit.resize(N);
+		for(int i = 0; i < N; ++i){
+			bit[i] += arr[i];
+			if((i | (i + 1)) < N)
+				bit[i | (i + 1)] += bit[i];
 		}
 	}
 
@@ -209,8 +322,7 @@ struct SQRT{
 };
 
 template<typename T>
-struct AVLNode
-{
+struct AVLNode{
 	AVLNode<T> *left, *right;
 	short int height;
 	int size;
@@ -222,11 +334,6 @@ struct AVLNode
 		return (right ? right->height : 0) - (left ? left->height : 0);
 	}
 
-	inline void update(){
-		height = 1 + max(left ? left->height : 0, right ? right->height : 0);
-		size = 1 + (left ? left->size : 0) + (right ? right->size : 0);
-	}
-
 	AVLNode *maxLeftChild(){
 		AVLNode *ret = this;
 		while(ret->left) ret = ret->left;
@@ -235,31 +342,39 @@ struct AVLNode
 };
 
 template<typename T>
-struct AVLTree
-{
+struct AVLTree{
 	AVLNode<T> *root;
 
 	AVLTree(): root(NULL){}
 
 	inline int nodeSize(AVLNode<T> *& pos){return pos ? pos->size: 0;}
 
+	inline int nodeHeight(AVLNode<T> *& pos){return pos ? pos->height: 0;}
+
+	inline void update(AVLNode<T> *& pos){
+		if(!pos) return;
+		pos->height = 1 + max(nodeHeight(pos->left), nodeHeight(pos->right));
+		pos->size = 1 + nodeSize(pos->left) + nodeSize(pos->right);
+	}
+
 	int size(){return nodeSize(root);}
 
 	void leftRotate(AVLNode<T> *& x){
 		AVLNode<T> *y = x->right, *t = y->left;
 		y->left = x, x->right = t;
-		x->update(), y->update();
+		update(x), update(y);
 		x = y;
 	}
 
 	void rightRotate(AVLNode<T> *& y){
 		AVLNode<T> *x = y->left, *t = x->right;
 		x->right = y, y->left = t;
-		y->update(), x->update();
+		update(y), update(x);
 		y = x;
 	}
 
 	void updateBalance(AVLNode<T> *& pos){
+		if(!pos) return;
 		short int bal = pos->balance();
 		if(bal > 1){
 			if(pos->right->balance() < 0) rightRotate(pos->right);
@@ -273,7 +388,7 @@ struct AVLTree
 	void insert(AVLNode<T> *&pos, T & value){
 		if(pos){
 			value < pos->value ? insert(pos->left, value) : insert(pos->right, value);
-			pos->update(), updateBalance(pos);
+			update(pos), updateBalance(pos);
 		}else{
 			pos = new AVLNode<T>(value);
 		}
@@ -300,7 +415,7 @@ struct AVLTree
 				erase(pos->right, pos->value);
 			}
 		}
-		if(pos) pos->update(), updateBalance(pos);
+		update(pos), updateBalance(pos);
 	}
 
 	void insert(T value){insert(root, value);}
@@ -392,7 +507,7 @@ struct AVLTree
 		pos = new AVLNode<T>(arr[m]);
 		build(pos->left, arr, i, m - 1);
 		build(pos->right, arr, m + 1, j);
-		pos->update();
+		update(pos);
 	}
 
 	void build(vector<T> & arr){
@@ -413,244 +528,272 @@ struct AVLTree
 	}
 };
 
-struct Treap{
-	Treap *left, *right;
-	int value;
+template<typename T>
+struct TreapNode{
+	TreapNode<T> *left, *right;
+	T value;
 	int key, size;
 
 	//fields for queries
 	bool rev;
-	int sum, add;
+	T sum, add;
 
-	Treap(int value = 0): value(value), key(rand()), size(1), left(NULL), right(NULL), sum(value), add(0), rev(false){}
+	TreapNode(T value = 0): value(value), key(rand()), size(1), left(NULL), right(NULL), sum(value), add(0), rev(false){}
 };
 
-inline int nodeSize(Treap* T){return T ? T->size: 0;}
+template<typename T>
+struct Treap{
+	TreapNode<T> *root;
 
-inline int nodeSum(Treap* T){return T ? T->sum + T->add * T->size : 0;}
+	Treap(): root(NULL) {}
 
-inline void update(Treap* T){
-	if(T){
-		T->size = 1 + nodeSize(T->left) + nodeSize(T->right);
-		T->sum = T->value + nodeSum(T->left) + nodeSum(T->right);
+	inline int nodeSize(TreapNode<T>* t){return t ? t->size: 0;}
+
+	inline T nodeSum(TreapNode<T>* t){return t ? t->sum : 0;}
+
+	inline void update(TreapNode<T>* &t){
+		if(!t) return;
+		t->size = 1 + nodeSize(t->left) + nodeSize(t->right);
+		t->sum = t->value; //reset node fields
+		push(t->left), push(t->right); //push changes to child nodes
+		t->sum = t->value + nodeSum(t->left) + nodeSum(t->right); //combine(left,t,t), combine(t,right,t)
 	}
-}
 
-void merge(Treap* &T, Treap* T1, Treap* T2){
-	if(!T1) T = T2;
-	else if(!T2) T = T1;
-	else if(T1->key > T2->key)
-		merge(T1->right, T1->right, T2), T = T1;
-	else
-		merge(T2->left, T1, T2->left), T = T2;
-	update(T);
-}
+	int size(){return nodeSize(root);}
 
-void split(Treap* T, int x, Treap* &T1, Treap* &T2){
-	if(!T)
-		return void(T1 = T2 = NULL);
-	if(x < T->value)
-		split(T->left, x, T1, T->left), T2 = T;
-	else
-		split(T->right, x, T->right, T2), T1 = T;
-	update(T);
-}
-
-Treap* search(Treap* T, int x){
-	while(T){
-		if(x == T->value) break;
-		T = (x < T->value ? T->left : T->right);
+	void merge(TreapNode<T>* &t, TreapNode<T>* t1, TreapNode<T>* t2){
+		if(!t1) t = t2;
+		else if(!t2) t = t1;
+		else if(t1->key > t2->key)
+			merge(t1->right, t1->right, t2), t = t1;
+		else
+			merge(t2->left, t1, t2->left), t = t2;
+		update(t);
 	}
-	return T;
-}
 
-void insert(Treap* &T, Treap* x){
-	if(!T) T = x;
-	else if(x->key > T->key)
-		split(T, x->value, x->left, x->right), T = x;
-	else
-		insert(x->value < T->value ? T->left : T->right, x);
-	update(T);
-}
+	void split(TreapNode<T>* t, T & x, TreapNode<T>* &t1, TreapNode<T>* &t2){
+		if(!t)
+			return void(t1 = t2 = NULL);
+		if(x < t->value)
+			split(t->left, x, t1, t->left), t2 = t;
+		else
+			split(t->right, x, t->right, t2), t1 = t;
+		update(t);
+	}
 
-void insert(Treap* &T, int x){insert(T, new Treap(x));}
+	void insert(TreapNode<T>* &t, TreapNode<T>* x){
+		if(!t) t = x;
+		else if(x->key > t->key)
+			split(t, x->value, x->left, x->right), t = x;
+		else
+			insert(x->value < t->value ? t->left : t->right, x);
+		update(t);
+	}
 
-void erase(Treap* &T, int x){
-	if(!T) return;
-	if(T->value == x)
-		merge(T, T->left, T->right);
-	else
-		erase(x < T->value ? T->left : T->right, x);
-	update(T);
-}
+	TreapNode<T>* search(T & x){
+		TreapNode<T> *t = root;
+		while(t){
+			if(x == t->value) break;
+			t = (x < t->value ? t->left : t->right);
+		}
+		return t;
+	}
 
-Treap* updateVal(Treap* &T, int old, int New){
-	if(search(T, old))
-		erase(T, old), insert(T, New);
-}
+	void erase(TreapNode<T>* &t, T & x){
+		if(!t) return;
+		if(t->value == x)
+			merge(t, t->left, t->right);
+		else
+			erase(x < t->value ? t->left : t->right, x);
+		update(t);
+	}
 
-int lessThan(Treap* T, int x){
-	int ans = 0;
-	while(T){
-		if(x > T->value){
-			ans += nodeSize(T->left) + 1;
-			T = T->right;
-		}else{
-			T = T->left;
+	void insert(T & x){insert(root, new TreapNode<T>(x));}
+
+	void erase(T & x){erase(root, x);}
+
+	void updateVal(T & old, T & New){
+		if(search(old))
+			erase(old), insert(New);
+	}
+
+	T kth(int i){
+		assert(0 <= i && i < nodeSize(root));
+		TreapNode<T> *t = root;
+		while(i != nodeSize(t->left)){
+			if(i < nodeSize(t->left)){
+				t = t->left;
+			}else{
+				i -= nodeSize(t->left) + 1;
+				t = t->right;
+			}
+		}
+		return t->value;
+	}
+
+	int lessThan(T & x){
+		int ans = 0;
+		TreapNode<T> *t = root;
+		while(t){
+			if(x > t->value){
+				ans += nodeSize(t->left) + 1;
+				t = t->right;
+			}else{
+				t = t->left;
+			}
+		}
+		return ans;
+	}
+
+	//OPERATIONS FOR IMPLICIT TREAP
+	inline void push(TreapNode<T>* t){
+		if(!t) return;
+		//add in range example
+		if(t->add){
+			t->value += t->add;
+			t->sum += t->add * nodeSize(t);
+			if(t->left) t->left->add += t->add;
+			if(t->right) t->right->add += t->add;
+			t->add = 0;
+		}
+		//reverse range example
+		if(t->rev){
+			swap(t->left, t->right);
+			if(t->left) t->left->rev ^= true;
+			if(t->right) t->right->rev ^= true;
+			t->rev = false;
 		}
 	}
-	return ans;
-}
 
-int kth(Treap* T, int i){
-	assert(0 <= i && i < nodeSize(T));
-	int curr = nodeSize(T->left);
-	if(i == curr)
-		return T->value;
-	else if(i < curr)
-		return kth(T->left, i);
-	else
-		return kth(T->right, i - curr - 1);
-}
-
-//OPERATIONS FOR IMPLICIT TREAP
-inline void push(Treap* T){
-	if(T && T->add){
-		T->value += T->add;
-		if(T->left) T->left->add += T->add;
-		if(T->right) T->right->add += T->add;
-		T->add = 0;
+	void split2(TreapNode<T>* t, int i, TreapNode<T>* &t1, TreapNode<T>* &t2){
+		if(!t)
+			return void(t1 = t2 = NULL);
+		push(t);
+		int curr = nodeSize(t->left);
+		if(i <= curr)
+			split2(t->left, i, t1, t->left), t2 = t;
+		else
+			split2(t->right, i - curr - 1, t->right, t2), t1 = t;
+		update(t);
 	}
-	if(T && T->rev){
-		T->rev = false;
-		swap(T->left, T->right);
-		if(T->left) T->left->rev ^= true;
-		if(T->right) T->right->rev ^= true;
+
+	inline int aleatorio(){
+		return (rand() << 15) + rand();
 	}
-}
 
-void split2(Treap* T, int i, Treap* &T1, Treap* &T2){
-	if(!T)
-		return void(T1 = T2 = NULL);
-	push(T);
-	int curr = nodeSize(T->left);
-	if(i <= curr)
-		split2(T->left, i, T1, T->left), T2 = T;
-	else
-		split2(T->right, i - curr - 1, T->right, T2), T1 = T;
-	update(T);
-}
+	void merge2(TreapNode<T>* &t, TreapNode<T>* t1, TreapNode<T>* t2){
+		push(t1), push(t2);
+		if(!t1) t = t2;
+		else if(!t2) t = t1;
+		else if(aleatorio() % (nodeSize(t1) + nodeSize(t2)) < nodeSize(t1))
+			merge2(t1->right, t1->right, t2), t = t1;
+		else
+			merge2(t2->left, t1, t2->left), t = t2;
+		update(t);
+	}
 
-inline int random(){
-	return (rand() << 15) + rand();
-}
+	//insert the element "x" at position "i"
+	void insert_at(T & x, int i){
+		if(i > nodeSize(root)) return;
+		TreapNode<T> *t1 = NULL, *t2 = NULL;
+		split2(root, i, t1, t2);
+		merge2(root, t1, new TreapNode<T>(x));
+		merge2(root, root, t2);
+	}
 
-void merge2(Treap* &T, Treap* T1, Treap* T2){
-	push(T1), push(T2);
-	if(!T1) T = T2;
-	else if(!T2) T = T1;
-	else if(random() % (nodeSize(T1) + nodeSize(T2)) < nodeSize(T1))
-		merge2(T1->right, T1->right, T2), T = T1;
-	else
-		merge2(T2->left, T1, T2->left), T = T2;
-	update(T);
-}
+	//delete element at position "i"
+	void erase_at(int i){
+		if(i >= nodeSize(root)) return;
+		TreapNode<T> *t1 = NULL, *t2 = NULL, *t3 = NULL;
+		split2(root, i, t1, t2);
+		split2(t2, 1, t2, t3);
+		merge2(root, t1, t3);
+	}
 
-//insert the element "x" at position "i"
-void insert_at(Treap* &T, int x, int i){
-	if(i > nodeSize(T)) return;
-	Treap *T1 = NULL, *T2 = NULL;
-	split2(T, i, T1, T2);
-	merge2(T, T1, new Treap(x));
-	merge2(T, T, T2);
-}
+	void update_at(TreapNode<T>* t, T & x, int i){
+		push(t);
+		assert(0 <= i && i < nodeSize(t));
+		int curr = nodeSize(t->left);
+		if(i == curr)
+			t->value = x;
+		else if(i < curr)
+			update_at(t->left, x, i);
+		else
+			update_at(t->right, x, i - curr - 1);
+		update(t);
+	}
 
-//delete element at position "i"
-void erase_at(Treap* &T, int i){
-	if(i >= nodeSize(T)) return;
-	Treap *T1 = NULL, *T2 = NULL, *T3 = NULL;
-	split2(T, i, T1, T2);
-	split2(T2, 1, T2, T3);
-	merge2(T, T1, T3);
-}
+	T nth(TreapNode<T>* t, int i){
+		push(t);
+		assert(0 <= i && i < nodeSize(t));
+		int curr = nodeSize(t->left);
+		if(i == curr)
+			return t->value;
+		else if(i < curr)
+			return nth(t->left, i);
+		else
+			return nth(t->right, i - curr - 1);
+	}
 
-//update value of element at position "i" with "x"
-void update_at(Treap* T, int x, int i){
-	push(T);
-	assert(0 <= i && i < nodeSize(T));
-	int curr = nodeSize(T->left);
-	if(i == curr)
-		T->value = x;
-	else if(i < curr)
-		update_at(T->left, x, i);
-	else
-		update_at(T->right, x, i - curr - 1);
-	update(T);
-}
+	//update value of element at position "i" with "x"
+	void update_at(T & x, int i){update_at(root, x, i);}
 
-//ith element
-int nth(Treap* T, int i){
-	push(T);
-	assert(0 <= i && i < nodeSize(T));
-	int curr = nodeSize(T->left);
-	if(i == curr)
-		return T->value;
-	else if(i < curr)
-		return nth(T->left, i);
-	else
-		return nth(T->right, i - curr - 1);
-}
+	//ith element
+	T nth(int i){return nth(root, i);}
 
-//add "val" in [l, r]
-void add_update(Treap* &T, int val, int l, int r){
-	Treap *T1 = NULL, *T2 = NULL, *T3 = NULL;
-	split2(T, l, T1, T2);
-	split2(T2, r - l + 1, T2, T3);
-	T2->add += val;
-	merge2(T, T1, T2);
-	merge2(T, T, T3);
-}
+	//add "val" in [l, r]
+	void add_update(T & val, int l, int r){
+		TreapNode<T> *t1 = NULL, *t2 = NULL, *t3 = NULL;
+		split2(root, l, t1, t2);
+		split2(t2, r - l + 1, t2, t3);
+		t2->add += val;
+		merge2(root, t1, t2);
+		merge2(root, root, t3);
+	}
 
-//reverse [l, r]
-void reverse_update(Treap* &T, int l, int r){
-	Treap *T1 = NULL, *T2 = NULL, *T3 = NULL;
-	split2(T, l, T1, T2);
-	split2(T2, r - l + 1, T2, T3);
-	T2->rev ^= true;
-	merge2(T, T1, T2);
-	merge2(T, T, T3);
-}
+	//reverse [l, r]
+	void reverse_update(int l, int r){
+		TreapNode<T> *t1 = NULL, *t2 = NULL, *t3 = NULL;
+		split2(root, l, t1, t2);
+		split2(t2, r - l + 1, t2, t3);
+		t2->rev ^= true;
+		merge2(root, t1, t2);
+		merge2(root, root, t3);
+	}
 
-//rotate [l, r] k times to the right
-void rotate_update(Treap* &T, int k, int l, int r){
-	Treap *T1 = NULL, *T2 = NULL, *T3 = NULL, *T4 = NULL;
-	split2(T, l, T1, T2);
-	split2(T2, r - l + 1, T2, T3);
-	k %= nodeSize(T2);
-	split2(T2, nodeSize(T2) - k, T2, T4);
-	merge2(T, T1, T4);
-	merge2(T, T, T2);
-	merge2(T, T, T3);
-}
+	//rotate [l, r] k times to the right
+	void rotate_update(int k, int l, int r){
+		TreapNode<T> *t1 = NULL, *t2 = NULL, *t3 = NULL, *t4 = NULL;
+		split2(root, l, t1, t2);
+		split2(t2, r - l + 1, t2, t3);
+		k %= nodeSize(t2);
+		split2(t2, nodeSize(t2) - k, t2, t4);
+		merge2(root, t1, t4);
+		merge2(root, root, t2);
+		merge2(root, root, t3);
+	}
 
-//sum query in [l, r]
-int sum_query(Treap* &T, int l, int r){
-	Treap *T1 = NULL, *T2 = NULL, *T3 = NULL;
-	split2(T, l, T1, T2);
-	split2(T2, r - l + 1, T2, T3);
-	int ans = nodeSum(T2);
-	merge2(T, T1, T2);
-	merge2(T, T, T3);
-	return ans;
-}
+	//sum query in [l, r]
+	T sum_query(int l, int r){
+		TreapNode<T> *t1 = NULL, *t2 = NULL, *t3 = NULL;
+		split2(root, l, t1, t2);
+		split2(t2, r - l + 1, t2, t3);
+		T ans = nodeSum(t2);
+		merge2(root, t1, t2);
+		merge2(root, root, t3);
+		return ans;
+	}
 
-void inorder(Treap* T){
-	if(!T) return;
-	push(T);
-	inorder(T->left);
-	cout << T->value << " ";
-	inorder(T->right);
-}
+	void inorder(TreapNode<T>* t){
+		if(!t) return;
+		push(t);
+		inorder(t->left);
+		cout << t->value << " ";
+		inorder(t->right);
+	}
+
+	void inorder(){inorder(root);}
+};
 
 template<typename T>
 struct SparseTable{
@@ -793,11 +936,12 @@ struct WaveletTree{
 #include <ext/pb_ds/tree_policy.hpp>
 using namespace __gnu_pbds;
 
-typedef tree<int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+template<typename T>
+using ordered_set = tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
 
 int main(){
 	int t, n, m;
-	ordered_set conj;
+	ordered_set<int> conj;
 	while(cin >> t && t != -1){
 		cin >> n;
 		if(t == 0){ //insert
@@ -833,13 +977,34 @@ int main(){
 	while(cin >> t && t != -1){
 		if(t == 1){ //update single element
 			cin >> pos >> value;
-			st->update(pos, value);
+			st->add_pos(pos, value);
 		}else if(t == 2){ //query
 			cin >> l >> r;
-			cout << st->query(l, r) << "\n";
+			cout << st->sum_query(l, r) << "\n";
 		}else if(t == 3){ //update range with element
 			cin >> l >> r >> value;
-			st->update(l, r, value);
+			st->add_range(l, r, value);
+		}
+	}
+	return 0;
+}*/
+
+/*int main(){
+	int n, t, pos, value, l, r;
+	cin >> n;
+	vector<int> a(n);
+	for(int i = 0; i < n; i++) cin >> a[i];
+	SegmentTreeEst<int> *st = new SegmentTreeEst<int>(n, a);
+	while(cin >> t && t != -1){
+		if(t == 1){ //update single element
+			cin >> pos >> value;
+			st->add_pos(pos, value);
+		}else if(t == 2){ //query
+			cin >> l >> r;
+			cout << st->sum_query(l, r) << "\n";
+		}else if(t == 3){ //update range with element
+			cin >> l >> r >> value;
+			st->add_range(l, r, value);
 		}
 	}
 	return 0;
@@ -893,24 +1058,24 @@ int main(){
 /*int main(){
 	srand(time(NULL));
 	int t, n, m;
-	Treap *T = NULL;
+	Treap<int> *T = new Treap<int>();
 	while(cin >> t && t != -1){
 		cin >> n;
 		if(t == 0){ //insert
-			insert(T, n);
+			T->insert(n);
 		}else if(t == 1){ //search
-			Treap *pos = search(T, n);
+			TreapNode<int> *pos = T->search(n);
 			if(pos) cout << "Found\n";
 			else cout << "Not found\n";
 		}else if(t == 2){ //delete
-			erase(T, n);
+			T->erase(n);
 		}else if(t == 3){ //update
 			cin >> m;
-			updateVal(T, n, m);
+			T->updateVal(n, m);
 		}else if(t == 4){ //lessThan
-			cout << lessThan(T, n) << "\n";
+			cout << T->lessThan(n) << "\n";
 		}else if(t == 5){ //get nth element
-			cout << kth(T, n) << "\n";
+			cout << T->kth(n) << "\n";
 		}
 	}
 	return 0;
@@ -919,34 +1084,34 @@ int main(){
 /*int main(){
 	srand(time(NULL));
 	int t, n, i, l, r, val, k;
-	Treap *T = NULL;
+	Treap<int> *T = new Treap<int>();
 	while(cin >> t && t != -1){
 		if(t == 0){ //insert n at i
 			cin >> n >> i;
-			insert_at(T, n, i);
+			T->insert_at(n, i);
 		}else if(t == 1){ //delete at i
 			cin >> i;
-			erase_at(T, i);
+			T->erase_at(i);
 		}else if(t == 2){ //update value at i with n
 			cin >> n >> i;
-			update_at(T, n, i);
+			T->update_at(n, i);
 		}else if(t == 3){ //get nth element
 			cin >> n;
-			cout << nth(T, n) << "\n";
+			cout << T->nth(n) << "\n";
 		}else if(t == 4){ //add "val" to [l, r]
 			cin >> l >> r >> val;
-			add_update(T, val, l, r);
+			T->add_update(val, l, r);
 		}else if(t == 5){ //get sum in [l, r]
 			cin >> l >> r;
-			cout << sum_query(T, l, r) << "\n";
+			cout << T->sum_query(l, r) << "\n";
 		}else if(t == 6){ //reverse [l, r]
 			cin >> l >> r;
-			reverse_update(T, l, r);
+			T->reverse_update(l, r);
 		}else if(t == 7){ //rotate [l, r] k times to the right
 			cin >> l >> r >> k;
-			rotate_update(T, k, l, r);
+			T->rotate_update(k, l, r);
 		}else if(t == 8){ //inorder trasversal
-			inorder(T); cout << "\n";
+			T->inorder(); cout << "\n";
 		}
 	}
 	return 0;

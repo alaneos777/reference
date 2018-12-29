@@ -88,6 +88,9 @@
 			\subsubsection{Teorema chino del residuo}
 			\inputminted[tabsize=2,breaklines,firstline=108,lastline=117,fontsize=\small]{c++}{numberTheory.cpp}
 			
+			\subsubsection{Teorema chino del residuo generalizado}
+			\inputminted[tabsize=2,breaklines,firstline=950,lastline=992,fontsize=\small]{c++}{numberTheory.cpp}
+			
 			\subsubsection{Coeficiente binomial}
 			\inputminted[tabsize=2,breaklines,firstline=433,lastline=440,fontsize=\small]{c++}{numberTheory.cpp}
 			
@@ -103,6 +106,9 @@
 			
 			\subsubsection{Criba de factor primo más pequeño}
 			\inputminted[tabsize=2,breaklines,firstline=150,lastline=160,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Criba de factor primo más grande}
+			\inputminted[tabsize=2,breaklines,firstline=939,lastline=948,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Criba de factores primos}
 			\inputminted[tabsize=2,breaklines,firstline=162,lastline=170,fontsize=\small]{c++}{numberTheory.cpp}
@@ -293,9 +299,8 @@
 					\end{tabular}
 				\end{table}
 		
-		
 		\subsection{Aplicaciones}
-			\subsubsection{Multiplicación de polinomios}
+			\subsubsection{Multiplicación de polinomios (convolución lineal)}
 			\inputminted[tabsize=2,breaklines,firstline=92,lastline=118,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Multiplicación de números enteros grandes}
@@ -306,6 +311,9 @@
 			
 			\subsubsection{Raíz cuadrada de un polinomio}
 			\inputminted[tabsize=2,breaklines,firstline=186,lastline=208,fontsize=\small]{c++}{fft.cpp}
+			
+		\subsection{FFT con tamaño de vector arbitrario (algoritmo de Bluestein)}
+		\inputminted[tabsize=2,breaklines,firstline=210,lastline=224,fontsize=\small]{c++}{fft.cpp}
 			
 	\newpage
 	\section{Geometría}
@@ -489,38 +497,45 @@
 	\newpage
 	\section{Estructuras de datos}
 		\subsection{Segment Tree}
-			\subsubsection{Point updates, range queries}
-			\inputminted[tabsize=2,breaklines,firstline=4,lastline=37,fontsize=\small]{c++}{queries.cpp}
+			\subsubsection{Minimalistic: Point updates, range queries}
+			\inputminted[tabsize=2,breaklines,firstline=4,lastline=47,fontsize=\small]{c++}{queries.cpp}
 			
-			\subsubsection{Dinamic with lazy propagation}
-			\inputminted[tabsize=2,breaklines,firstline=39,lastline=90,fontsize=\small]{c++}{queries.cpp}
+			\subsubsection{Dynamic: Range updates and range queries}
+			\inputminted[tabsize=2,breaklines,firstline=49,lastline=100,fontsize=\small]{c++}{queries.cpp}
+			
+			\subsubsection{Static: Range updates and range queries}
+			\inputminted[tabsize=2,breaklines,firstline=102,lastline=171,fontsize=\small]{c++}{queries.cpp}
+			
+			\subsubsection{Persistent: Point updates, range queries}
+			\inputminted[tabsize=2,breaklines,firstline=173,lastline=203,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Fenwick Tree}
-		\inputminted[tabsize=2,breaklines,firstline=92,lastline=129,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=205,lastline=242,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{SQRT Decomposition}
-		\inputminted[tabsize=2,breaklines,firstline=131,lastline=209,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=244,lastline=322,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{AVL Tree}
-		\inputminted[tabsize=2,breaklines,firstline=211,lastline=414,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=324,lastline=529,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Treap}
-		\inputminted[tabsize=2,breaklines,firstline=416,lastline=653,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=531,lastline=796,fontsize=\small]{c++}{queries.cpp}
+		
+		\subsection{Sparse table}
+			\subsubsection{Normal}
+			\inputminted[tabsize=2,breaklines,firstline=798,lastline=833,fontsize=\small]{c++}{queries.cpp}
+		
+			\subsection{Disjoint}
+			\inputminted[tabsize=2,breaklines,firstline=835,lastline=868,fontsize=\small]{c++}{queries.cpp}
+			
+		\subsection{Wavelet Tree}
+		\inputminted[tabsize=2,breaklines,firstline=870,lastline=933,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Ordered Set C++}
-		\inputminted[tabsize=2,breaklines,firstline=792,lastline=825,fontsize=\small]{c++}{queries.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=935,lastline=969,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Splay Tree}
 		
-		
-		\subsection{Sparse table}
-		\inputminted[tabsize=2,breaklines,firstline=655,lastline=690,fontsize=\small]{c++}{queries.cpp}
-		
-		\subsection{Disjoint Sparse table}
-		\inputminted[tabsize=2,breaklines,firstline=692,lastline=725,fontsize=\small]{c++}{queries.cpp}
-		
-		\subsection{Wavelet Tree}
-		\inputminted[tabsize=2,breaklines,firstline=727,lastline=790,fontsize=\small]{c++}{queries.cpp}
 		
 		\subsection{Red Black Tree}
 		

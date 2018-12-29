@@ -20,7 +20,7 @@ lli techo(lli a, lli b){
 	}
 }
 
-lli pow(lli b, lli e){
+lli power(lli b, lli e){
 	lli ans = 1;
 	while(e){
 		if(e & 1) ans *= b;
@@ -90,7 +90,7 @@ lli modularInverse(lli a, lli m){
 	return s0;
 }
 
-lli powMod(lli b, lli e, lli m){
+lli powerMod(lli b, lli e, lli m){
 	lli ans = 1;
 	b %= m;
 	if(e < 0){
@@ -110,10 +110,10 @@ pair<lli, lli> chinese(vector<lli> & a, vector<lli> & n){
 	for(lli & ni : n) prod *= ni;
 	for(int i = 0; i < a.size(); ++i){
 		p = prod / n[i];
-		ans = (ans + (a[i] % n[i]) * modularInverse(p, n[i]) % prod * p) % prod;
+		ans = (ans + (a[i] % n[i]) * modularInverse(p, n[i]) % prod * p % prod) % prod;
 	}
 	if(ans < 0) ans += prod;
-	return make_pair(ans, prod);
+	return {ans, prod};
 }
 
 vector<lli> divisorsSum;
@@ -216,8 +216,8 @@ lli sigma(lli n, lli pot){
 		lli p = factor.first;
 		int a = factor.second;
 		if(pot){
-			lli p_pot = pow(p, pot);
-			ans *= (pow(p_pot, a + 1) - 1) / (p_pot - 1);
+			lli p_pot = power(p, pot);
+			ans *= (power(p_pot, a + 1) - 1) / (p_pot - 1);
 		}else{
 			ans *= a + 1;
 		}
@@ -265,7 +265,7 @@ lli carmichaelLambda(lli n){
 	for(auto & factor : f){
 		lli p = factor.first;
 		int a = factor.second;
-		lli tmp = pow(p, a);
+		lli tmp = power(p, a);
 		tmp -= tmp / p;
 		if(a <= 2 || p >= 3) ans = lcm(ans, tmp);
 		else ans = lcm(ans, tmp >> 1);
@@ -294,10 +294,10 @@ lli multiplicativeOrder(lli x, lli m){
 	for(auto & factor : f){
 		lli p = factor.first;
 		int a = factor.second;
-		order /= pow(p, a);
-		lli tmp = powMod(x, order, m);
+		order /= power(p, a);
+		lli tmp = powerMod(x, order, m);
 		while(tmp != 1){
-			tmp = powMod(tmp, p, m);
+			tmp = powerMod(tmp, p, m);
 			order *= p;
 		}
 	}
@@ -319,18 +319,18 @@ bool testPrimitiveRoot(lli x, lli m){
 	auto f = factorize(order);
 	for(auto & factor : f){
 		lli p = factor.first;
-		if(powMod(x, order / p, m) == 1) return false;
+		if(powerMod(x, order / p, m) == 1) return false;
 	}
 	return true;
 }
 
 //test if x^k = 1 mod m and k is the smallest for such x, i.e., x^(k/p) != 1 for every prime divisor of k
 bool testPrimitiveKthRootUnity(lli x, lli k, lli m){
-	if(powMod(x, k, m) != 1) return false;
+	if(powerMod(x, k, m) != 1) return false;
 	auto f = factorize(k);
 	for(auto & factor : f){
 		lli p = factor.first;
-		if(powMod(x, k / p, m) == 1) return false;
+		if(powerMod(x, k / p, m) == 1) return false;
 	}
 	return true;
 }
@@ -344,7 +344,7 @@ lli findFirstGenerator(lli m){
 		bool test = true;
 		for(auto & factor : f){
 			lli p = factor.first;
-			if(powMod(x, order / p, m) == 1){
+			if(powerMod(x, order / p, m) == 1){
 				test = false;
 				break;
 			}
@@ -358,11 +358,11 @@ lli findFirstPrimitiveKthRootUnity(lli k, lli m){
 	if(carmichaelLambda(m) % k != 0) return -1; //just an optimization, not required
 	auto f = factorize(k);
 	for(lli x = 1; x < m; x++){
-		if(powMod(x, k, m) != 1) continue;
+		if(powerMod(x, k, m) != 1) continue;
 		bool test = true;
 		for(auto & factor : f){
 			lli p = factor.first;
-			if(powMod(x, k / p, m) == 1){
+			if(powerMod(x, k / p, m) == 1){
 				test = false;
 				break;
 			}
@@ -377,7 +377,7 @@ pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
 	if(gcd(a, m) != 1) return make_pair(-1, 0); //not found
 	lli order = multiplicativeOrder(a, m);
 	lli n = sqrt(order) + 1;
-	lli a_n = powMod(a, n, m);
+	lli a_n = powerMod(a, n, m);
 	lli ans = 0;
 	unordered_map<lli, lli> firstHalf;
 	lli current = a_n;
@@ -401,14 +401,14 @@ pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
 vector<lli> discreteRoot(lli k, lli b, lli m){
 	if(b % m == 0) return {0};
 	lli g = findFirstGenerator(m);
-	lli power = powMod(g, k, m);
+	lli power = powerMod(g, k, m);
 	auto y0 = discreteLogarithm(power, b, m);
 	if(y0.first == -1) return {};
 	lli phi_m = phi(m);
 	lli d = gcd(k, phi_m);
 	vector<lli> x(d);
-	x[0] = powMod(g, y0.first, m);
-	lli inc = powMod(g, phi_m / d, m);
+	x[0] = powerMod(g, y0.first, m);
+	lli inc = powerMod(g, phi_m / d, m);
 	for(lli i = 1; i < d; i++)
 		x[i] = x[i - 1] * inc % m;
 	sort(x.begin(), x.end());
@@ -661,7 +661,7 @@ bool isPrimeMillerRabin(lli n){
 	for(; !(d & 1); d >>= 1, ++s);
 	for(int i = 0; i < 16; ++i){
 		lli a = 1 + rand() % (n - 1);
-		lli m = powMod(a, d, n);
+		lli m = powerMod(a, d, n);
 		if(m == 1 || m == n - 1) goto exit;
 		for(int k = 0; k < s; ++k){
 			m = m * m % n;
@@ -910,16 +910,16 @@ lli sqrtMod(lli a, lli p){
 	a %= p;
 	if(a < 0) a += p;
 	if(a == 0) return 0;
-	assert(powMod(a, (p - 1) / 2, p) == 1);
-	if(p % 4 == 3) return powMod(a, (p + 1) / 4, p);
+	assert(powerMod(a, (p - 1) / 2, p) == 1);
+	if(p % 4 == 3) return powerMod(a, (p + 1) / 4, p);
 	lli s = p - 1;
 	int r = 0;
 	while((s & 1) == 0) ++r, s >>= 1;
 	lli n = 2;
-	while(powMod(n, (p - 1) / 2, p) != p - 1) ++n;
-	lli x = powMod(a, (s + 1) / 2, p);
-	lli b = powMod(a, s, p);
-	lli g = powMod(n, s, p);
+	while(powerMod(n, (p - 1) / 2, p) != p - 1) ++n;
+	lli x = powerMod(a, (s + 1) / 2, p);
+	lli b = powerMod(a, s, p);
+	lli g = powerMod(n, s, p);
 	while(true){
 		lli t = b;
 		int m = 0;
@@ -928,12 +928,67 @@ lli sqrtMod(lli a, lli p){
 			t = t * t % p;
 		}
 		if(m == 0) return x;
-		lli gs = powMod(g, 1 << (r - m - 1), p);
+		lli gs = powerMod(g, 1 << (r - m - 1), p);
 		g = gs * gs % p;
 		x = x * gs % p;
 		b = b * g % p;
 		r = m;
 	}
+}
+
+vector<int> greatestPrime;
+void greatestPrimeSieve(int n){
+	greatestPrime.resize(n + 1, 1);
+	greatestPrime[0] = greatestPrime[1] = 0;
+	for(int i = 2; i <= n; ++i) greatestPrime[i] = i;
+	for(int i = 2; i <= n; i++)
+		if(greatestPrime[i] == i)
+			for(int j = i; j <= n; j += i)
+				greatestPrime[j] = i;
+}
+
+//generalized chinese remainder theorem
+//the modulos doesn't need to be pairwise coprime
+pair<lli, lli> crt(const vector<lli> & a, const vector<lli> & m){
+	map<lli, pair<int, lli>> congruences; //prime, <pot, ai>
+	int n = a.size();
+	for(int i = 0; i < n; ++i){
+		auto f = factorize(m[i]);
+		for(auto & par : f){
+			lli p;
+			int pot;
+			tie(p, pot) = par;
+			if(congruences.find(p) == congruences.end()){
+				congruences[p] = {pot, a[i]};
+			}else{
+				lli oldAi;
+				int oldPot;
+				tie(oldPot, oldAi) = congruences[p];
+				if((oldAi - a[i]) % power(p, min(oldPot, pot)) == 0){
+					if(pot > oldPot){
+						congruences[p] = {pot, a[i]};
+					}
+				}else{
+					return {0, 0}; //error, no solution exists
+				}
+			}
+		}
+	}
+	lli allProd = 1;
+	for(auto & c : congruences){
+		allProd *= power(c.first, c.second.first);
+	}
+	lli ans = 0;
+	for(auto & c : congruences){
+		lli pi = c.first;
+		int pot;
+		lli ai;
+		tie(pot, ai) = c.second;
+		lli mi = power(pi, pot);
+		lli prod = allProd / mi;
+		ans = (ans + (ai % mi) * modularInverse(prod, mi) % allProd * prod % allProd) % allProd;
+	}
+	return {ans, allProd};
 }
 
 ostream &operator<<(ostream &os, const __int128 & value){
@@ -1003,7 +1058,7 @@ int main(){
 	cout << fixed << setprecision(4) << (clock() - start)/(double)CLOCKS_PER_SEC << "s\n";*/
 
 	/*auto g = [&](int p, int a){
-		return pow(p, a) - pow(p, a-1);
+		return power(p, a) - power(p, a-1);
 	};
 	vector<int> pre = generalSieve(105, g);
 	for(int i = 1; i <= 105; ++i){
