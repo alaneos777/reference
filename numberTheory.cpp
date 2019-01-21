@@ -105,14 +105,14 @@ lli powerMod(lli b, lli e, lli m){
 	return ans;
 }
 
-pair<lli, lli> chinese(vector<lli> & a, vector<lli> & n){
+pair<lli, lli> chinese(vector<lli> & a, vector<lli> & m){
 	lli prod = 1, p, ans = 0;
-	for(lli & ni : n) prod *= ni;
+	for(lli & ni : m) prod *= ni;
 	for(int i = 0; i < a.size(); ++i){
-		p = prod / n[i];
-		ans = (ans + (a[i] % n[i]) * modularInverse(p, n[i]) % prod * p % prod) % prod;
+		p = prod / m[i];
+		ans += (a[i] % m[i]) * modularInverse(p, m[i]) % prod * p % prod;
+		while(ans >= prod) ans -= prod; while(ans < 0) ans += prod;
 	}
-	if(ans < 0) ans += prod;
 	return {ans, prod};
 }
 
@@ -950,45 +950,18 @@ void greatestPrimeSieve(int n){
 //generalized chinese remainder theorem
 //the modulos doesn't need to be pairwise coprime
 pair<lli, lli> crt(const vector<lli> & a, const vector<lli> & m){
-	map<lli, pair<int, lli>> congruences; //prime, <pot, ai>
-	int n = a.size();
-	for(int i = 0; i < n; ++i){
-		auto f = factorize(m[i]);
-		for(auto & par : f){
-			lli p;
-			int pot;
-			tie(p, pot) = par;
-			if(congruences.find(p) == congruences.end()){
-				congruences[p] = {pot, a[i]};
-			}else{
-				lli oldAi;
-				int oldPot;
-				tie(oldPot, oldAi) = congruences[p];
-				if((oldAi - a[i]) % power(p, min(oldPot, pot)) == 0){
-					if(pot > oldPot){
-						congruences[p] = {pot, a[i]};
-					}
-				}else{
-					return {0, 0}; //error, no solution exists
-				}
-			}
-		}
+	lli a0 = a[0] % m[0], m0 = m[0], a1, m1, s, t, d, M;
+	for(int i = 1; i < a.size(); ++i){
+		a1 = a[i] % m[i], m1 = m[i];
+		d = extendedGcd(m0, m1, s, t);
+		if((a0 - a1) % d != 0) return {0, 0}; //error, no solution
+		M = m0 * (m1 / d);
+		a0 = a0 * t % M * (m1 / d) % M + a1 * s % M * (m0 / d) % M;
+		while(a0 >= M) a0 -= M; while(a0 < 0) a0 += M;
+		m0 = M;
 	}
-	lli allProd = 1;
-	for(auto & c : congruences){
-		allProd *= power(c.first, c.second.first);
-	}
-	lli ans = 0;
-	for(auto & c : congruences){
-		lli pi = c.first;
-		int pot;
-		lli ai;
-		tie(pot, ai) = c.second;
-		lli mi = power(pi, pot);
-		lli prod = allProd / mi;
-		ans = (ans + (ai % mi) * modularInverse(prod, mi) % allProd * prod % allProd) % allProd;
-	}
-	return {ans, allProd};
+	while(a0 >= m0) a0 -= m0; while(a0 < 0) a0 += m0;
+	return {a0, m0};
 }
 
 ostream &operator<<(ostream &os, const __int128 & value){
@@ -1029,7 +1002,7 @@ istream &operator>>(istream &is, __int128 & value){
 }
 
 void info_ntt(lli e, lli l, lli r){
-	lli n = 1ll << e;
+	lli n = (lli)1 << e;
 	for(lli k = l; k <= r; ++k){
 		lli p = k * n + 1;
 		if(isPrimeMillerRabin(p)){
@@ -1041,11 +1014,11 @@ void info_ntt(lli e, lli l, lli r){
 }
 
 int main(){
-	/*srand(time(NULL));
+	srand(time(NULL));
 	primesSieve(1e5);
 	ncrSieve(300);
 	muSieve(300);
-	bellSieve(50);*/
+	bellSieve(50);
 
 	/*int l = 1e7;
 	clock_t start = clock();
@@ -1119,9 +1092,9 @@ int main(){
 		cout << "Q(" << i << ") = " << Q[i] << "\n";
 	}*/
 
-	/*lli e;
+	lli e;
 	cin >> e;
-	info_ntt(e, 1, 100);*/
+	info_ntt(e, 1, 1000);
 
 	/*lli p;
 	cin >> p;
@@ -1138,5 +1111,16 @@ int main(){
 	cin >> a >> p;
 	lli ans = sqrtMod(a, p);
 	cout << ans << "^2 = " << ans*ans%p << " mod " << p << "\n";*/
+
+	
+	/*int n;
+	cin >> n;
+	vector<lli> a(n), m(n);
+	for(int i = 0; i < n; ++i){
+		cin >> a[i] >> m[i];
+	}
+	auto answer = crt(a, m);
+	cout << "x = " << answer.first << " mod " << answer.second << "\n";*/
+	
 	return 0;
 }

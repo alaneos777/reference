@@ -89,7 +89,7 @@
 			\inputminted[tabsize=2,breaklines,firstline=108,lastline=117,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Teorema chino del residuo generalizado}
-			\inputminted[tabsize=2,breaklines,firstline=950,lastline=992,fontsize=\small]{c++}{numberTheory.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=950,lastline=965,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Coeficiente binomial}
 			\inputminted[tabsize=2,breaklines,firstline=433,lastline=440,fontsize=\small]{c++}{numberTheory.cpp}
@@ -267,14 +267,14 @@
 		
 	\newpage
 	\section{FFT}
-		\subsection{Funciones previas}
+		\subsection{Declaraciones previas}
 		\inputminted[tabsize=2,breaklines,firstline=3,lastline=11,fontsize=\small]{c++}{fft.cpp}
 		
 		\subsection{FFT con raíces de la unidad complejas}
-		\inputminted[tabsize=2,breaklines,firstline=13,lastline=44,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=13,lastline=40,fontsize=\small]{c++}{fft.cpp}
 		
-		\subsection{FFT con raíces de la unidad discretas (NTT)}
-		\inputminted[tabsize=2,breaklines,firstline=46,lastline=90,fontsize=\small]{c++}{fft.cpp}
+		\subsection{FFT con raíces de la unidad en $\mathbb{Z}/p\mathbb{Z}$ (NTT)}
+		\inputminted[tabsize=2,breaklines,firstline=42,lastline=82,fontsize=\small]{c++}{fft.cpp}
 			\subsubsection{Otros valores para escoger la raíz y el módulo}
 				\begin{table}[H]
 					\centering
@@ -298,22 +298,31 @@
 						137 & 749463956 & $2^{27}$ & $15 \times 2^{27} + 1 = 2013265921$ \\ \hline
 					\end{tabular}
 				\end{table}
+			
+		\subsection{Multiplicación de polinomios (convolución lineal)}
+		\inputminted[tabsize=2,breaklines,firstline=84,lastline=104,fontsize=\small]{c++}{fft.cpp}
 		
 		\subsection{Aplicaciones}
-			\subsubsection{Multiplicación de polinomios (convolución lineal)}
-			\inputminted[tabsize=2,breaklines,firstline=92,lastline=118,fontsize=\small]{c++}{fft.cpp}
-			
 			\subsubsection{Multiplicación de números enteros grandes}
-			\inputminted[tabsize=2,breaklines,firstline=120,lastline=156,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=106,lastline=139,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Inverso de un polinomio}
-			\inputminted[tabsize=2,breaklines,firstline=158,lastline=184,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=141,lastline=165,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Raíz cuadrada de un polinomio}
-			\inputminted[tabsize=2,breaklines,firstline=186,lastline=208,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=167,lastline=189,fontsize=\small]{c++}{fft.cpp}
 			
-		\subsection{FFT con tamaño de vector arbitrario (algoritmo de Bluestein)}
-		\inputminted[tabsize=2,breaklines,firstline=210,lastline=224,fontsize=\small]{c++}{fft.cpp}
+			\subsubsection{Cociente y residuo de dos polinomios}
+			\inputminted[tabsize=2,breaklines,firstline=191,lastline=225,fontsize=\small]{c++}{fft.cpp}
+			
+			\subsubsection{DFT con tamaño de vector arbitrario (algoritmo de Bluestein)}
+			\inputminted[tabsize=2,breaklines,firstline=227,lastline=246,fontsize=\small]{c++}{fft.cpp}
+			
+		\subsection{Convolución de dos vectores reales con solo dos FFT's}
+		\inputminted[tabsize=2,breaklines,firstline=248,lastline=267,fontsize=\small]{c++}{fft.cpp}
+			
+		\subsection{Convolución con módulo arbitrario}
+		\inputminted[tabsize=2,breaklines,firstline=269,lastline=327,fontsize=\small]{c++}{fft.cpp}
 			
 	\newpage
 	\section{Geometría}
