@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
-typedef complex<double> comp;
-typedef long long int lli;
-double PI = acos(-1.0);
+using comp = complex<double>;
+using lli = long long int;
+const double PI = acos(-1.0);
 
 int nearestPowerOfTwo(int n){
 	int ans = 1;
@@ -12,30 +12,24 @@ int nearestPowerOfTwo(int n){
 
 void fft(vector<comp> & X, int inv){
 	int n = X.size();
-	int len, len2, i, j, k;
-	for(i = 1, j = 0; i < n - 1; ++i){
-		for(k = n >> 1; (j ^= k) < k; k >>= 1);
+	for(int i = 1, j = 0; i < n - 1; ++i){
+		for(int k = n >> 1; (j ^= k) < k; k >>= 1);
 		if(i < j) swap(X[i], X[j]);
 	}
-	double ang;
-	comp t, u, v;
-	vector<comp> wlen_pw(n >> 1);
-	wlen_pw[0] = 1;
-	for(len = 2; len <= n; len <<= 1){
-		ang = inv == -1 ? -2 * PI / len : 2 * PI / len;
-		len2 = len >> 1;
-		comp wlen(cos(ang), sin(ang));
-		for(i = 1; i < len2; ++i)
-			wlen_pw[i] = wlen_pw[i - 1] * wlen;
-		for(i = 0; i < n; i += len)
-			for(j = 0; j < len2; ++j){
-				t = X[i + j + len2] * wlen_pw[j];
-				X[i + j + len2] = X[i + j] - t;
+	for(int k = 1; k < n; k <<= 1){
+		//wk is a 2k-th root of unity
+		comp wk = polar(1.0, PI / k * inv);
+		for(int i = 0; i < n; i += k << 1){
+			comp w(1);
+			for(int j = 0; j < k; ++j, w = w * wk){
+				comp t = X[i + j + k] * w;
+				X[i + j + k] = X[i + j] - t;
 				X[i + j] += t;
 			}
+		}
 	}
 	if(inv == -1)
-		for(i = 0; i < n; ++i)
+		for(int i = 0; i < n; ++i)
 			X[i] /= n;
 }
 
@@ -56,32 +50,31 @@ int root_pw = 1 << 20;
 
 void ntt(vector<int> & X, int inv){
 	int n = X.size();
-	int len, len2, wlen, i, j, k, u, v, w;
-	for(i = 1, j = 0; i < n - 1; ++i){
-		for(k = n >> 1; (j ^= k) < k; k >>= 1);
+	for(int i = 1, j = 0; i < n - 1; ++i){
+		for(int k = n >> 1; (j ^= k) < k; k >>= 1);
 		if(i < j) swap(X[i], X[j]);
 	}
-	for(len = 2; len <= n; len <<= 1){
-		len2 = len >> 1;
-		wlen = (inv == -1) ? root_1 : root;
-		for(i = len; i < root_pw; i <<= 1)
-			wlen = (lli)wlen * wlen % p;
-		for(i = 0; i < n; i += len)
-			for(j = 0, w = 1; j < len2; ++j){
-				u = X[i + j], v = (lli)X[i + j + len2] * w % p;
+	for(int k = 1; k < n; k <<= 1){
+		//wk is a 2k-th root of unity
+		int wk = (inv == -1) ? root_1 : root;
+		for(int i = k << 1; i < root_pw; i <<= 1)
+			wk = (lli)wk * wk % p;
+		for(int i = 0; i < n; i += k << 1){
+			for(int j = 0, w = 1; j < k; ++j, w = (lli)w * wk % p){
+				int u = X[i + j], v = (lli)X[i + j + k] * w % p;
 				X[i + j] = u + v < p ? u + v : u + v - p;
-				X[i + j + len2] = u - v < 0 ? u - v + p : u - v;
-				w = (lli)w * wlen % p;
+				X[i + j + k] = u - v < 0 ? u - v + p : u - v;
 			}
+		}
 	}
 	if(inv == -1){
 		int nrev = inverse(n, p);
-		for(i = 0; i < n; ++i)
+		for(int i = 0; i < n; ++i)
 			X[i] = (lli)X[i] * nrev % p;
 	}
 }
 
-void convolution(vector<comp> & A, vector<comp> & B){
+vector<comp> convolution(vector<comp> A, vector<comp> B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
 	A.resize(size), B.resize(size);
@@ -90,9 +83,10 @@ void convolution(vector<comp> & A, vector<comp> & B){
 		A[i] *= B[i];
 	fft(A, -1);
 	A.resize(sz);
+	return A;
 }
 
-void convolution(vector<int> & A, vector<int> & B){
+vector<int> convolution(vector<int> A, vector<int> B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
 	A.resize(size), B.resize(size);
@@ -101,6 +95,7 @@ void convolution(vector<int> & A, vector<int> & B){
 		A[i] = (lli)A[i] * B[i] % p;
 	ntt(A, -1);
 	A.resize(sz);
+	return A;
 }
 
 string multiplyNumbers(const string & a, const string & b){
@@ -120,7 +115,7 @@ string multiplyNumbers(const string & a, const string & b){
 		X[j--] = a[i] - '0';
 	for(int i = pos2, j = Y.size() - 1; i < b.size(); ++i)
 		Y[j--] = b[i] - '0';
-	convolution(X, Y);
+	X = convolution(X, Y);
 	stringstream ss;
 	if(sgn == -1) ss << "-";
 	int carry = 0;
@@ -156,8 +151,8 @@ vector<int> inversePolynomial(const vector<int> & A){
 		ntt(TR, -1);
 		for(int i = 0; i < c; ++i){
 			R[i] = R[i] + R[i] - TR[i];
-			while(R[i] < 0) R[i] += p;
-			while(R[i] >= p) R[i] -= p;
+			if(R[i] < 0) R[i] += p;
+			if(R[i] >= p) R[i] -= p;
 		}
 	}
 	R.resize(A.size());
@@ -177,7 +172,7 @@ vector<int> sqrtPolynomial(const vector<int> & A){
 		for(int i = 0; i < c && i < A.size(); ++i)
 			TF[i] = A[i];
 		vector<int> IR = inversePolynomial(R);
-		convolution(TF, IR);
+		TF = convolution(TF, IR);
 		for(int i = 0; i < c; ++i){
 			R[i] = R[i] + TF[i];
 			if(R[i] >= p) R[i] -= p;
@@ -188,52 +183,89 @@ vector<int> sqrtPolynomial(const vector<int> & A){
 	return R;
 }
 
-pair<vector<int>, vector<int>> divide(vector<int> & A, vector<int> & B){
-	while(!A.empty() && A.back() == 0) A.pop_back();
-	while(!B.empty() && B.back() == 0) B.pop_back();
+//returns Q(x), where A(x)=B(x)Q(x)+R(x)
+vector<int> quotient(vector<int> A, vector<int> B){
 	int n = A.size(), m = B.size();
-	if(n < m) return {A, B};
-	if(m == 1){
-		int inv = inverse(B[0], p);
-		for(int i = 0; i < n; ++i)
-			A[i] = (lli)A[i] * inv % p;
-		return {A, {0}};
+	if(n < m) return vector<int>{0};
+	reverse(A.begin(), A.end());
+	reverse(B.begin(), B.end());
+	B.resize(n-m+1);
+	A = convolution(A, inversePolynomial(B));
+	A.erase(A.begin() + n-m+1, A.end());
+	reverse(A.begin(), A.end());
+	return A;
+}
+
+//returns R(x), where A(x)=B(x)Q(x)+R(x)
+vector<int> remainder(vector<int> A, const vector<int> & B){
+	int n = A.size(), m = B.size();
+	if(n >= m){
+		vector<int> C = convolution(quotient(A, B), B);
+		A.resize(m-1);
+		for(int i = 0; i < m-1; ++i){
+			A[i] -= C[i];
+			if(A[i] < 0) A[i] += p;
+		}
 	}
-	vector<int> Q = A, Binv = B;
-	reverse(Q.begin(), Q.end());
-	reverse(Binv.begin(), Binv.end());
-	Binv.resize(n-m+1);
-	Binv = inversePolynomial(Binv);
-	Q.resize(n-m+1);
-	convolution(Q, Binv);
-	Q.resize(n-m+1);
-	reverse(Q.begin(), Q.end());
-	vector<int> R = B;
-	R.resize(m-1);
-	vector<int> q = Q;
-	Q.resize(min(n-m+1, m-1));
-	convolution(R, Q);
-	R.resize(m-1);
-	for(int i = 0; i < m-1; ++i){
-		R[i] = A[i] - R[i];
-		while(R[i] < 0) R[i] += p;
-		while(R[i] >= p) R[i] -= p;
-	}
-	while(!R.empty() && R.back() == 0) R.pop_back();
-	if(R.empty()) R.push_back(0);
-	return {q, R};
+	return A;
+}
+
+//evaluates all the points in P(x), both the size of P and points must be the same
+vector<int> multiEvaluate(const vector<int> & P, const vector<int> & points){
+	int n = points.size();
+	vector<vector<int>> prod(2*n - 1);
+	function<void(int, int, int)> pre = [&](int v, int l, int r){
+		if(l == r) prod[v] = vector<int>{(p - points[l]) % p, 1};
+		else{
+			int y = (l + r) / 2;
+			int z = v + (y - l + 1) * 2;
+			pre(v + 1, l, y);
+			pre(z, y + 1, r);
+			prod[v] = convolution(prod[v + 1], prod[z]);
+		}
+	};
+	pre(0, 0, n - 1);
+
+	function<int(const vector<int>&, int)> eval = [&](const vector<int> & poly, int x0){
+		int ans = 0;
+		for(int i = (int)poly.size()-1; i >= 0; --i){
+			ans = (lli)ans * x0 % p + poly[i];
+			if(ans >= p) ans -= p;
+		}
+		return ans;
+	};
+
+	vector<int> res(n);
+	function<void(int, int, int, vector<int>)> evaluate = [&](int v, int l, int r, vector<int> poly){
+		poly = remainder(poly, prod[v]);
+		if(poly.size() < 400){
+			for(int i = l; i <= r; ++i)
+				res[i] = eval(poly, points[i]);
+		}else{
+			if(l == r)
+				res[l] = poly[0];
+			else{
+				int y = (l + r) / 2;
+				int z = v + (y - l + 1) * 2;
+				evaluate(v + 1, l, y, poly);
+				evaluate(z, y + 1, r, poly);
+			}
+		}
+	};
+	evaluate(0, 0, n - 1, P);
+	return res;
 }
 
 //it evaluates 1, w^2, w^4, ..., w^(2n-2) on the polynomial a(x)
 //in this example we do a DFT with arbitrary size
-void bluestein(vector<comp> & a){
-	int n = a.size();
+vector<comp> bluestein(vector<comp> A){
+	int n = A.size();
 	int m = nearestPowerOfTwo(2*n-1);
 	comp w = polar(1.0, PI / n), w1 = w, w2 = 1;
 	vector<comp> p(m), q(m), b(n);
 	for(int k = 0; k < n; ++k, w2 *= w1, w1 *= w*w){
 		b[k] = w2;
-		p[k] = a[k] * b[k];
+		p[k] = A[k] * b[k];
 		q[k] = (comp)1 / b[k];
 		if(k) q[m-k] = q[k];
 	}
@@ -242,12 +274,13 @@ void bluestein(vector<comp> & a){
 		p[i] *= q[i];
 	fft(p, -1);
 	for(int k = 0; k < n; ++k)
-		a[k] = b[k] * p[k];
+		A[k] = b[k] * p[k];
+	return A;
 }
 
 //A and B are real-valued vectors
 //just do 2 fft's instead of 3
-void convolutionTrick(vector<comp> & A, vector<comp> & B){
+vector<comp> convolutionTrick(const vector<comp> & A, const vector<comp> & B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
 	vector<comp> C(size);
@@ -257,17 +290,18 @@ void convolutionTrick(vector<comp> & A, vector<comp> & B){
 		if(i < B.size()) C[i] += I*B[i];
 	}
 	fft(C, 1);
-	A.resize(size);
+	vector<comp> D(size);
 	for(int i = 0, j = 0; i < size; ++i){
 		j = (size-1) & (size-i);
-		A[i] = (conj(C[j]*C[j]) - C[i]*C[i]) * 0.25 * I;
+		D[i] = (conj(C[j]*C[j]) - C[i]*C[i]) * 0.25 * I;
 	}
-	fft(A, -1);
-	A.resize(sz);
+	fft(D, -1);
+	D.resize(sz);
+	return D;
 }
 
 //convolution with arbitrary modulo using only 4 fft's
-void convolutionMod(vector<int> & A, vector<int> & B, int mod){
+vector<int> convolutionMod(const vector<int> & A, const vector<int> & B, int mod){
 	int s = sqrt(mod);
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
@@ -289,41 +323,42 @@ void convolutionMod(vector<int> & A, vector<int> & B, int mod){
 		d[i] = f * h;
 	}
 	fft(c, -1), fft(d, -1);
-	A.resize(sz);
+	vector<int> D(sz);
 	for(int i = 0, j = 0; i < sz; ++i){
 		j = (size-1) & (size-i);
-		lli p0 = (lli)round(real(c[i])) % mod;
-		lli p1 = (lli)round(imag(c[i])) % mod;
-		lli p2 = (lli)round(real(d[i])) % mod;
-		A[i] = p0 + s*(p1 + p2*s % mod) % mod;
-		while(A[i] >= mod) A[i] -= mod;
-		while(A[i] < 0) A[i] += mod;
+		int p0 = (lli)round(real(c[i])) % mod;
+		int p1 = (lli)round(imag(c[i])) % mod;
+		int p2 = (lli)round(real(d[i])) % mod;
+		D[i] = p0 + s*(p1 + (lli)p2*s % mod) % mod;
+		if(D[i] >= mod) D[i] -= mod;
+		if(D[i] < 0) D[i] += mod;
 	}
+	return D;
 }
 
 //convolution with arbitrary modulo using CRT
 //slower but with no precision errors
-void convolutionModCRT(vector<int> & P, vector<int> & Q, int mod){
-	vector<int> A = P, B = P, C = P, D = Q, E = Q;
+vector<int> convolutionModCRT(const vector<int> & A, const vector<int> & B, int mod){
 	int a = 998244353, b = 985661441, c = 754974721;
 	p = a, root = 31, root_1 = 128805723, root_pw = 1 << 23;
-	convolution(A, D);
+	vector<int> P = convolution(A, B);
 	p = b, root = 210, root_1 = 934031556, root_pw = 1 << 22;
-	convolution(B, E);
+	vector<int> Q = convolution(A, B);
 	p = c, root = 362, root_1 = 415027540, root_pw = 1 << 24;
-	convolution(C, Q);
-	P.resize(A.size());
-	for(int i = 0; i < P.size(); ++i){
-		int x1 = A[i] % a;
+	vector<int> R = convolution(A, B);
+	vector<int> D(P.size());
+	for(int i = 0; i < D.size(); ++i){
+		int x1 = P[i] % a;
 		if(x1 < 0) x1 += a;
-		int x2 = 657107549ll * (B[i] - x1) % b;
+		int x2 = 657107549ll * (Q[i] - x1) % b;
 		if(x2 < 0) x2 += b;
-		int x3 = (416537774ll * (C[i] - x1) % c - x2) * 411804390ll % c;
+		int x3 = (416537774ll * (R[i] - x1) % c - x2) * 411804390ll % c;
 		if(x3 < 0) x3 += c;
-		P[i] = x1 + a*(x2 + (lli)x3*b % mod) % mod;
-		while(P[i] >= mod) P[i] -= mod;
-		while(P[i] < 0) P[i] += mod;
+		D[i] = x1 + a*(x2 + (lli)x3*b % mod) % mod;
+		if(D[i] >= mod) D[i] -= mod;
+		if(D[i] < 0) D[i] += mod;
 	}
+	return D;
 }
 
 void test_fft(){
@@ -338,7 +373,7 @@ void test_fft(){
 	double duration;
 	start = std::clock();
 
-	convolution(X, Y);
+	X = convolution(X, Y);
 
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
@@ -359,7 +394,7 @@ void test_ntt(){
 	double duration;
 	start = std::clock();
 
-	convolution(X, Y);
+	X = convolution(X, Y);
 
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
@@ -376,7 +411,7 @@ void test_random_fft(){
 		B[i] = rand() % 10;
 	}
 	clock_t start = clock();
-	convolution(A, B);
+	A = convolution(A, B);
 	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
 	cout << duration << "\n";
 }
@@ -389,7 +424,7 @@ void test_random_ntt(){
 		B[i] = rand() % 10;
 	}
 	clock_t start = clock();
-	convolution(A, B);
+	A = convolution(A, B);
 	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
 	cout << duration << "\n";
 }
@@ -419,15 +454,15 @@ lli powerMod(lli b, lli e, lli m){
 }
 
 int main(){
-	/*srand(time(NULL));
-	string a, b;
+	srand(time(NULL));
+	/*string a, b;
 	cin >> a >> b;
-	cout << multiplyNumbers(a, b) << "\n";
-	test_random_mult();
-	test_random_fft();
-	test_random_ntt();
-	test_fft();
-	test_ntt();*/
+	cout << multiplyNumbers(a, b) << "\n";*/
+	//test_random_mult();
+	//test_random_fft();
+	//test_random_ntt();
+	//test_fft();
+	//test_ntt();
 
 	/*int m; lli n;
 	cin >> m >> n;
@@ -465,18 +500,34 @@ int main(){
 	}*/
 
 	/*vector<int> A = {569675680, 478964123, 346798452, 146739485, 649785142}, B = {126741258, 700174685, 115649658};
-	convolutionMod(A, B, 1e9+7);
-	for(auto c : A) cout << c << " ";^*/
+	A = convolutionMod(A, B, 1e9+7);
+	for(auto c : A) cout << c << " ";*/
 
-	vector<comp> test = {comp(5,-3), comp(2,1), comp(0,7), comp(-4,9), comp(8,0)};
-	bluestein(test);
-	for(auto t : test) cout << t << " "; cout << "\n";
+	/*vector<comp> test = {comp(5,-3), comp(2,1), comp(0,7), comp(-4,9), comp(8,0)};
+	test = bluestein(bluestein(test));
+	for(auto t : test) cout << t << " "; cout << "\n";*/
 
-	/*vector<int> A = {9, 7, 2, 11, 3, 4, 5, 1}, B = {3, 7, 2, 5, 4};
-	auto ans = divide(A, B);
-	auto Q = ans.first;
+	/*vector<int> A = {9, 7, 2, 11, 3, 4, 5, 1}, B = {3, 7, 2, 5, 1};
+	auto Q = quotient(A, B);
 	for(auto q : Q) cout << q << " "; cout << "\n";
-	auto R = ans.second;
-	for(auto q : R) cout << q << " ";*/
+	auto R = remainder(A, B);
+	for(auto r : R) cout << r << " ";*/
+
+	/*int n = 60000;
+	vector<int> P(n), points(n);
+	for(int i = 0; i < n; ++i){
+		P[i] = rand() % p;
+		points[i] = rand() % p;
+	}
+	vector<int> evals = multiEvaluate(P, points);
+	vector<int> naive(n);
+	for(int i = 0; i < n; ++i){
+		for(int j = n-1; j >= 0; --j){
+			naive[i] = ((lli)naive[i] * points[i] % p + P[j]) % p;
+		}
+	}
+	for(int i = 0; i < n; ++i){
+		assert(naive[i] == evals[i]);
+	}*/
 	return 0;
 }
