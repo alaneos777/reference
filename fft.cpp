@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
-using comp = complex<double>;
 using lli = long long int;
+using comp = complex<double>;
 const double PI = acos(-1.0);
 
 int nearestPowerOfTwo(int n){
@@ -189,9 +189,9 @@ vector<int> quotient(vector<int> A, vector<int> B){
 	if(n < m) return vector<int>{0};
 	reverse(A.begin(), A.end());
 	reverse(B.begin(), B.end());
-	B.resize(n-m+1);
+	A.resize(n-m+1), B.resize(n-m+1);
 	A = convolution(A, inversePolynomial(B));
-	A.erase(A.begin() + n-m+1, A.end());
+	A.resize(n-m+1);
 	reverse(A.begin(), A.end());
 	return A;
 }

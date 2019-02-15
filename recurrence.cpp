@@ -9,16 +9,16 @@ lli mod = 1e7 + 19;
 //with initial values F(0), F(1), ..., F(d-1)
 //It finds the nth term of the recurrence, F(n)
 //The values of a[0,...,d) are in the array P[]
-lli solveRecurrence(lli *P, lli *init, int deg, lli n){
-	lli *ans = new lli[deg]();
-	lli *R = new lli[2*deg]();
+lli solveRecurrence(const vector<lli> & P, const vector<lli> & init, lli n){
+	int deg = P.size();
+	vector<lli> ans(deg), R(2*deg);
 	ans[0] = 1;
 	lli p = 1;
 	for(lli v = n; v >>= 1; p <<= 1);
 	do{
 		int d = (n & p) != 0;
-		fill(R, R + 2*deg, 0);
-		//if deg(mod-1)^2 overflows, just do mod in the multiplications
+		fill(R.begin(), R.end(), 0);
+		//only if deg(mod-1)^2 overflows, do mod in all the multiplications
 		for(int i = 0; i < deg; i++)
 			for(int j = 0; j < deg; j++)
 				R[i + j + d] += ans[i] * ans[j];
@@ -29,7 +29,7 @@ lli solveRecurrence(lli *P, lli *init, int deg, lli n){
 				R[i + j] += R[i + deg] * P[j];
 		}
 		for(int i = 0; i < deg; i++) R[i] %= mod;
-		copy(R, R + deg, ans);
+		copy(R.begin(), R.begin() + deg, ans.begin());
 	}while(p >>= 1);
 	lli nValue = 0;
 	for(int i = 0; i < deg; i++)
@@ -40,15 +40,14 @@ lli solveRecurrence(lli *P, lli *init, int deg, lli n){
 int main(){
 	int deg;
 	cin >> deg;
-	lli *P = new lli[deg];
-	lli *init = new lli[deg];
+	vector<lli> P(deg), init(deg);
 	for(int i = 0; i < deg; i++)
 		cin >> P[i];
 	for(int i = 0; i < deg; i++)
 		cin >> init[i];
 	lli n;
 	cin >> n;
-	lli F_n = solveRecurrence(P, init, deg, n);
+	lli F_n = solveRecurrence(P, init, n);
 	cout << F_n;
 	return 0;
 }

@@ -833,8 +833,8 @@ vector<int> generalSieve(int n, function<int(int, int)> g){
 	vector<bool> isPrime(n+1, true);
 	for(int i = 2; i <= n; ++i){
 		if(isPrime[i]){ //case base: f(p)
-			primes.push_back(i);
 			f[i] = g(i, 1);
+			primes.push_back(i);
 			cnt[i] = 1;
 			acum[i] = i;
 		}
@@ -894,7 +894,7 @@ vector<int> segmented_sieve(int limit){
 //number of ways to partition a set of n elements
 //the nth bell number is at Bell[n][0]
 vector<vector<int>> Bell;
-void bellSieve(int n){
+void bellNumbers(int n){
 	Bell.resize(n + 1);
 	Bell[0] = {1};
 	for(int i = 1; i <= n; ++i){
@@ -964,6 +964,29 @@ pair<lli, lli> crt(const vector<lli> & a, const vector<lli> & m){
 	return {a0, m0};
 }
 
+//s(n, k) represents the number of permutations
+//of n elements with k disjoint cycles
+vector<vector<lli>> stirling1;
+void stirlingNumber1stKind(lli n){
+	stirling1.resize(n+1, vector<lli>(n+1));
+	stirling1[0][0] = 1;
+	for(int i = 1; i <= n; ++i)
+		for(int j = 1; j <= i; ++j)
+			stirling1[i][j] = (i-1) * stirling1[i-1][j] + stirling1[i-1][j-1];
+}
+
+//S(n, k) represents the number of ways to
+//partition a set of n object into k non-empty
+//distinct subsets
+vector<vector<lli>> stirling2;
+void stirlingNumber2ndKind(lli n){
+	stirling2.resize(n+1, vector<lli>(n+1));
+	stirling2[0][0] = 1;
+	for(int i = 1; i <= n; ++i)
+		for(int j = 1; j <= i; ++j)
+			stirling2[i][j] = j * stirling2[i-1][j] + stirling2[i-1][j-1];
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -1018,7 +1041,16 @@ int main(){
 	primesSieve(1e5);
 	ncrSieve(300);
 	muSieve(300);
-	bellSieve(50);
+	bellNumbers(50);
+	stirlingNumber1stKind(50);
+	stirlingNumber2ndKind(50);
+
+	for(int i = 0; i <= 10; ++i){
+		for(int j = 0; j <= i; ++j){
+			cout << stirling1[i][j] << " ";
+		}
+		cout << "\n";
+	}
 
 	/*int l = 1e7;
 	clock_t start = clock();

@@ -6,7 +6,7 @@
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage[margin=0.8in,landscape]{geometry}
+\usepackage[margin=0.6in,landscape]{geometry}
 \usepackage{fancyhdr}
 \usepackage[inline]{enumitem}
 \usepackage{float}
@@ -60,6 +60,14 @@
 	numbers=left,
 	stringstyle=\color{orange},
 }
+\newcommand{\genstirlingI}[3]{%
+	\genfrac{[}{]}{0pt}{#1}{#2}{#3}%
+}
+\newcommand{\genstirlingII}[3]{%
+	\genfrac{\{}{\}}{0pt}{#1}{#2}{#3}%
+}
+\newcommand{\stirlingI}[2]{\genstirlingI{}{#1}{#2}}
+\newcommand{\stirlingII}[2]{\genstirlingII{}{#1}{#2}}
 
 \begin{document}
 	\tableofcontents
@@ -217,6 +225,9 @@
 			
 			\subsubsection{Números de Bell}
 			\inputminted[tabsize=2,breaklines,firstline=894,lastline=906,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Números de Stirling del segundo tipo}
+			\inputminted[tabsize=2,breaklines,firstline=967,lastline=988,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Prime counting function in sublinear time}
 			\inputminted[tabsize=2,breaklines,firstline=27,lastline=77,fontsize=\small]{c++}{pi.cpp}
@@ -597,5 +608,175 @@
 		
 		\subsection{Contar número de unos en binario en un rango}
 		\inputminted[tabsize=2,breaklines,firstline=158,lastline=165,fontsize=\small]{c++}{misc.cpp}
+		
+	\newpage
+	\section{Fórmulas y notas}
+		\begin{itemize}
+			\item \textbf{Números de Stirling del primer tipo (sin signo):} $\stirlingI{n}{k}$ representa el número de permutaciones de $n$ elementos en exactamente $k$ ciclos disjuntos.
+			\begin{align*}
+				\stirlingI{0}{0} &= 1 \\
+				\stirlingI{0}{n} &= \stirlingI{n}{0} = 0 \quad &, \quad n>0 \\
+				\stirlingI{n}{k} &= (n-1)\stirlingI{n-1}{k} + \stirlingI{n-1}{k-1} \quad &, \quad k>0 \\
+				\sum_{k=0}^{n} \stirlingI{n}{k} &= n!
+			\end{align*}
+			
+			\item \textbf{Números de Stirling del segundo tipo:} $\stirlingII{n}{k}$ representa el número de formas de particionar un conjunto de $n$ objetos distinguibles en $k$ subconjuntos no vacíos.
+			\begin{align*}
+				\stirlingII{0}{0} &= 1 \\
+				\stirlingII{0}{n} &= \stirlingII{n}{0} = 0 \quad &, \quad n>0 \\
+				\stirlingII{n}{k} &= k\stirlingII{n-1}{k} + \stirlingII{n-1}{k-1} \quad &, \quad k>0 \\
+				&= \sum_{j=0}^{k} \dfrac{j^n}{j!} \cdot \dfrac{(-1)^{k-j}}{(k-j)!}
+			\end{align*}
+			
+			\item \textbf{Números de Catalan:}
+			\begin{align*}
+				C_0 &= 1 \\
+				C_n &= \dfrac{1}{n+1}\binom{2n}{n} = \sum_{j=0}^{n-1} C_j C_{n-1-j} \\
+				\sum_{n=0}^{\infty} C_n x^n &= \dfrac{1-\sqrt{1-4x}}{2x}
+			\end{align*}
+			
+			\item \textbf{Números de Bell:}
+			\begin{align*}
+				B_n = \sum_{k=0}^{n}\stirlingII{n}{k} = \sum_{k=0}^{n-1}\binom{n-1}{k} B_k
+			\end{align*}
+			
+			\item \textbf{Números de Bernoulli:}
+			\begin{align*}
+				{B_0}^+ &= 1 \\
+				{B_n}^+ &= 1 - \sum_{k=0}^{n-1}\binom{n}{k}\dfrac{{B_k}^+}{n-k+1} \\
+				\sum_{m=0}^{\infty} \dfrac{{B_n}^+ x^n}{n!} &= \dfrac{x}{1-e^{-x}} = \dfrac{1}{\frac{1}{1!}-\frac{x}{2!}+\frac{x^2}{3!}-\frac{x^3}{4!}+\cdots}
+			\end{align*}
+			
+			\item \textbf{Fórmula de Faulhaber:}
+			\begin{align*}
+				S_p(n) &= \sum_{k=1}^{n}k^p = \dfrac{1}{p+1}\sum_{k=0}^{p} \binom{p+1}{k} {B_k}^+ n^{p+1-k}
+			\end{align*}
+			
+			\item \textbf{Función Beta:}
+			\begin{align*}
+				B(x,y) &= \dfrac{\Gamma(x)\Gamma(y)}{\Gamma(x+y)} = 2 \int_{0}^{\pi/2} \sin^{2x-1}(\theta) \cos^{2x-1}(\theta) d\theta \\
+				&= \int_{0}^{1} t^{x-1} (1-t)^{y-1} dt = \int_{0}^{\infty} \dfrac{t^{x-1}}{(1+t)^{x+y}} dt
+			\end{align*}
+			
+			\item \textbf{Funciones generadoras:}
+			\begin{align*}
+				\sum_{n=0}^{\infty} \left( \sum_{k=0}^{n}a_k \right) x^n &= \dfrac{1}{1-x}\sum_{n=0}^{\infty} a_n x^n \\
+				\sum_{n=0}^{\infty} \binom{n+k-1}{k-1}x^n &= \dfrac{1}{\left(1-x\right)^k} \\
+				\sum_{n=0}^{\infty} p_n x^n &= \dfrac{1}{\displaystyle \prod_{k=1}^{\infty}(1-x^k)} = \dfrac{1}{\displaystyle \sum_{n=-\infty}^{\infty} x^{\frac{1}{2}n(3n+1)}} \\
+				\sum_{k=0}^{\infty} \stirlingI{n}{k} x^k &= \prod_{k=0}^{n-1}(x+k)
+			\end{align*}
+			
+			\item \textbf{Números armónicos:}
+			\begin{align*}
+				H_n &= \sum_{k=1}^{n} \dfrac{1}{k} \approx \ln(n) + \gamma + \dfrac{1}{2n} - \dfrac{1}{12n^2} \\
+				\gamma &\approx 0.577215664901532860606512
+			\end{align*}
+			
+			\item \textbf{Aproximación de Stirling:}
+			\begin{align*}
+				\ln(n!) &\approx n\ln(n) - n + \dfrac{1}{2}\ln(2 \pi n) \\
+				\text{\# de dígitos de $n!$} &= 1 + \left\lfloor n\log\left(\dfrac{n}{e}\right) + \dfrac{1}{2}\log(2 \pi n) \right\rfloor \quad \text{($n \geq 30$)}
+			\end{align*}
+			
+			\item \textbf{Ternas pitagóricas:}
+			\begin{itemize}
+				\item Una terna de enteros positivos $(a,b,c)$ es pitagórica si $a^2+b^2=c^2$. Además es primitiva si $\gcd(a,b,c)=1$.
+				\item Generador de ternas primitivas:
+				\begin{align*}
+					a &= m^2-n^2 \\
+					b &= 2mn \\
+					c &= m^2+n^2
+				\end{align*}
+				donde $n \geq 1$, $m>n$, $\gcd(m,n)=1$ y $m,n$ tienen distinta paridad.
+				\item Árbol de ternas pitagóricas primitivas: al multiplicar cualquiera de estas matrices:
+				\begin{align*}
+					\begin{pmatrix}
+						1 & -2 & 2 \\
+						2 & -1 & 2 \\
+						2 & -2 & 3
+					\end{pmatrix} \quad , \quad
+					\begin{pmatrix}
+						-1 & 2 & 2 \\
+						-2 & 1 & 2 \\
+						-2 & 2 & 3
+					\end{pmatrix} \quad , \quad
+					\begin{pmatrix}
+						1 & 2 & 2 \\
+						2 & 1 & 2 \\
+						2 & 2 & 3
+					\end{pmatrix}
+				\end{align*}
+				por una terna primitiva $\mathbf{v^T}$, obtenemos otra terna primitiva diferente. En particular, si empezamos con $\mathbf{v}=(3,4,5)$, podremos generar todas las ternas primitivas.
+			\end{itemize}
+		
+			\item \textbf{Árbol de Stern–Brocot:} todos los racionales positivos se pueden representar como un árbol binario de búsqueda completo infinito con raíz $\frac{1}{1}$.
+			\begin{itemize}
+				\item Dado un racional $q=[a_0;a_1,a_2,\ldots,a_k]$ donde $a_k \neq 1$, sus hijos serán $[a_0;a_1,a_2,\ldots,a_k+1]$ y $[a_0;a_1,a_2,\ldots,a_k-1,2]$, y su padre será $[a_0;a_1,a_2,\ldots,a_k-1]$.
+				\item Para hallar el camino de la raíz $\frac{1}{1}$ a un racional $q$, se usa búsqueda binaria iniciando con $L=\frac{0}{1}$ y $R=\frac{1}{0}$. Para hallar $M$ se supone que $L=\frac{a}{b}$ y $\frac{c}{d}$, entonces $M=\frac{a+c}{b+d}$.
+			\end{itemize}
+		
+			\item \textbf{Combinatoria:}
+			\begin{itemize}
+				\item Principio de las casillas: al colocar $n$ objetos en $k$ lugares hay al menos $\lceil \frac{n}{k} \rceil$ objetos en un mismo lugar.
+				\item Número de funciones: sean $A$ y $B$ conjuntos con $m=\abs{A}$ y $n=\abs{B}$. Sea $f : A \to B$:
+				\begin{itemize}
+					\item Si $m \leq n$, entonces hay $\displaystyle m!\binom{n}{m}$ funciones inyectivas $f$.
+					\item Si $m=n$, entonces hay $n!$ funciones biyectivas $f$.
+					\item Si $m \geq n$, entonces hay $n!\stirlingII{m}{n}$ funciones suprayectivas $f$.
+				\end{itemize}
+				\item Barras y estrellas: ¿cuántas soluciones en los enteros no negativos tiene la ecuación $\displaystyle \sum_{i=1}^{k}x_i = n$? Tiene  $\displaystyle \binom{n+k-1}{k-1}$ soluciones.
+				\item ¿Cuántas soluciones en los enteros positivos tiene la ecuación $\displaystyle \sum_{i=1}^{k}x_i = n$? Tiene  $\displaystyle \binom{n-1}{k-1}$ soluciones.
+			\end{itemize}
+		
+			\item \textbf{Grafos:}
+			\begin{itemize}
+				\item Sea $d_n$ el número de grafos con $n$ vértices etiquetados: $\displaystyle d_n = 2^{\binom{n}{2}}$.
+				\item Sea $c_n$ el número de grafos conexos con $n$ vértices etiquetados. Tenemos la recurrencia: $c_1=1$ y $\displaystyle d_n = \sum_{k=1}^{n} \binom{n-1}{k-1} c_k d_{n-k}$. También se cumple, usando funciones generadoras exponenciales, que $C(x)=1+\ln(D(x))$.
+				\item Sea $t_n$ el número de torneos fuertemente conexos en $n$ nodos etiquetados. Tenemos la recurrencia $t_1=1$ y $\displaystyle d_n = \sum_{k=1}^{n} \binom{n}{k} t_k d_{n-k}$. Usando funciones generadoras exponenciales, tenemos que $T(x)=1-\dfrac{1}{D(x)}$.
+				\item Número de spanning trees en un grafo completo con $n$ vértices etiquetados: $n^{n-2}$.
+				\item Para un grafo no dirigido simple $G$ con $n$ vértices etiquetados de $1$ a $n$, sea $Q=D-A$, donde $D$ es la matriz diagonal de los grados de cada nodo de $G$ y $A$ es la matriz de adyacencia de $G$. Entonces el número de spanning trees de $G$ es igual a cualquier cofactor de $G$.
+			\end{itemize}
+			
+			\item \textbf{Teoría de números:}
+			\begin{align*}
+				(f * e)(n) &= f(n) \\
+				(\varphi * \mathbf{1})(n) &= n \\
+				(\mu * \mathbf{1})(n) &= e(n) \\
+				\varphi(n^k) &= n^{k-1}\varphi(n) \\
+				\sum_{\substack{k=1	\\ \gcd(k,n)=1}}^{n} k &= \dfrac{n \varphi(n)}{2} \quad , \quad n \geq 2 \\
+				\sum_{k=1}^{n} \text{lcm}(k,n) &= \dfrac{n}{2} + \dfrac{n}{2}\sum_{d | n} d\varphi(d) = \dfrac{n}{2} + \dfrac{n}{2} \prod_{p^a | n} \dfrac{p^{2a+1}+1}{p+1} \\
+				\sum_{k=1}^{n} \gcd(k,n) &= \sum_{d | n} d\varphi\left(\dfrac{n}{d}\right) = \prod_{p^a | n} p^{a-1}(1+(a+1)(p-1))
+			\end{align*}
+			
+			\begin{itemize}
+				\item Dada una función aritmética $f$ con $f(1) \neq 1$, existe otra función $g$ tal que $(f*g)(n)=e(n)$, dada por:
+				\begin{align*}
+					g(1) &= \dfrac{1}{f(1)} \\
+					g(n) &= -\dfrac{1}{f(1)} \sum_{d | n, d<n} f\left(\dfrac{n}{d}\right)g(d) \quad , \quad n > 1
+				\end{align*}
+				
+				\item Sean $\displaystyle h(n) = \sum_{k=1}^{n} f\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right) g(k)$, $\displaystyle G(n)=\sum_{k=1}^{n}g(k)$ y $m=\left\lfloor \sqrt{n} \right\rfloor$, entonces:
+				\begin{align*}
+					h(n) &= \sum_{k=1}^{\lfloor n/m \rfloor}f\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right) g(k) + \sum_{k=1}^{m-1} \left( G\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right) - G\left(\left\lfloor \dfrac{n}{k+1} \right\rfloor\right) \right)f(k)
+				\end{align*}
+				
+				\item Sean $\displaystyle F(n)=\sum_{k=1}^{n}f(k)$, $\displaystyle G(n)=\sum_{k=1}^{n}g(k)$, $\displaystyle h(n)=(f * g)(n)=\sum_{d | n}f(d)g\left(\dfrac{n}{d}\right)$ y $\displaystyle H(n)=\sum_{k=1}^{n}h(k)$, entonces:
+				\begin{align*}
+					H(n) &= \sum_{k=1}^{n}f(k)G\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right)
+				\end{align*}
+				
+				\item Sean $\displaystyle \Phi_p(n) = \sum_{k=1}^{n}k^p\varphi(k)$ y $\displaystyle M_p(n) = \sum_{k=1}^{n}k^p\mu(k)$. Aplicando lo anterior, podemos calcular $\Phi_p(n)$ y $M_p(n)$ con complejidad $O(n^{2/3})$ si precalculamos con fuerza bruta los primeros $\lfloor n^{2/3} \rfloor$ valores, y para los demás, usamos las siguientes recurrencias (DP con \texttt{map}):
+				{\small
+				\begin{align*}
+					\Phi_p(n) &= S_{p+1}(n) - \sum_{k=2}^{\lfloor n/m \rfloor} k^p \Phi_p\left(\left\lfloor \dfrac{n}{k}  \right\rfloor\right) - \sum_{k=1}^{m-1} \left( S_p\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right) - S_p\left(\left\lfloor \dfrac{n}{k+1} \right\rfloor\right) \right)\Phi_p(k) \\
+					M_p(n) &= 1 - \sum_{k=2}^{\lfloor n/m \rfloor} k^p M_p\left(\left\lfloor \dfrac{n}{k}  \right\rfloor\right) - \sum_{k=1}^{m-1} \left( S_p\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right) - S_p\left(\left\lfloor \dfrac{n}{k+1} \right\rfloor\right) \right)M_p(k)
+				\end{align*}
+				}
+				
+				\item En general, 
+			\end{itemize}
+			
+			\item \textbf{Primos:} $10^2+1$, $10^3+9$, $10^4+7$, $10^5+3$, $10^6+3$, $10^7+19$, $10^8+7$, $10^9+7$, $10^{10}+19$, $10^{11}+3$, $10^{12}+39$, $10^{13}+37$, $10^{14}+31$, $10^{15}+37$, $10^{16}+61$, $10^{17}+3$, $10^{18}+3$
+		\end{itemize}
 
 \end{document}
