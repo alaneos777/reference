@@ -16,13 +16,13 @@ void fft(vector<comp> & X, int inv){
 		for(int k = n >> 1; (j ^= k) < k; k >>= 1);
 		if(i < j) swap(X[i], X[j]);
 	}
+	vector<comp> wp(n>>1);
 	for(int k = 1; k < n; k <<= 1){
-		//wk is a 2k-th root of unity
-		comp wk = polar(1.0, PI / k * inv);
+		for(int j = 0; j < k; ++j)
+			wp[j] = polar(1.0, PI * j / k * inv);
 		for(int i = 0; i < n; i += k << 1){
-			comp w(1);
-			for(int j = 0; j < k; ++j, w = w * wk){
-				comp t = X[i + j + k] * w;
+			for(int j = 0; j < k; ++j){
+				comp t = X[i + j + k] * wp[j];
 				X[i + j + k] = X[i + j] - t;
 				X[i + j] += t;
 			}
@@ -43,34 +43,42 @@ int inverse(int a, int n){
 	return s0;
 }
 
-int p = 7340033;
-int root = 5;
-int root_1 = inverse(root, p);
-int root_pw = 1 << 20;
+lli powerMod(lli b, lli e, lli m){
+	lli ans = 1;
+	e %= m-1;
+	if(e < 0) e += m-1;
+	while(e){
+		if(e & 1) ans = ans * b % m;
+		e >>= 1;
+		b = b * b % m;
+	}
+	return ans;
+}
 
+template<int prime, int gen>
 void ntt(vector<int> & X, int inv){
 	int n = X.size();
 	for(int i = 1, j = 0; i < n - 1; ++i){
 		for(int k = n >> 1; (j ^= k) < k; k >>= 1);
 		if(i < j) swap(X[i], X[j]);
 	}
+	vector<lli> wp(n>>1, 1);
 	for(int k = 1; k < n; k <<= 1){
-		//wk is a 2k-th root of unity
-		int wk = (inv == -1) ? root_1 : root;
-		for(int i = k << 1; i < root_pw; i <<= 1)
-			wk = (lli)wk * wk % p;
+		lli wk = powerMod(gen, inv * (prime - 1) / (k<<1), prime);
+		for(int j = 1; j < k; ++j)
+			wp[j] = wp[j - 1] * wk % prime;
 		for(int i = 0; i < n; i += k << 1){
-			for(int j = 0, w = 1; j < k; ++j, w = (lli)w * wk % p){
-				int u = X[i + j], v = (lli)X[i + j + k] * w % p;
-				X[i + j] = u + v < p ? u + v : u + v - p;
-				X[i + j + k] = u - v < 0 ? u - v + p : u - v;
+			for(int j = 0; j < k; ++j){
+				int u = X[i + j], v = X[i + j + k] * wp[j] % prime;
+				X[i + j] = u + v < prime ? u + v : u + v - prime;
+				X[i + j + k] = u - v < 0 ? u - v + prime : u - v;
 			}
 		}
 	}
 	if(inv == -1){
-		int nrev = inverse(n, p);
+		lli nrev = inverse(n, prime);
 		for(int i = 0; i < n; ++i)
-			X[i] = (lli)X[i] * nrev % p;
+			X[i] = X[i] * nrev % prime;
 	}
 }
 
@@ -86,17 +94,20 @@ vector<comp> convolution(vector<comp> A, vector<comp> B){
 	return A;
 }
 
+template<int prime, int gen>
 vector<int> convolution(vector<int> A, vector<int> B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
 	A.resize(size), B.resize(size);
-	ntt(A, 1), ntt(B, 1);
+	ntt<prime, gen>(A, 1), ntt<prime, gen>(B, 1);
 	for(int i = 0; i < size; i++)
-		A[i] = (lli)A[i] * B[i] % p;
-	ntt(A, -1);
+		A[i] = (lli)A[i] * B[i] % prime;
+	ntt<prime, gen>(A, -1);
 	A.resize(sz);
 	return A;
 }
+
+const int p = 7340033, g = 3; //default values for NTT
 
 string multiplyNumbers(const string & a, const string & b){
 	int sgn = 1;
@@ -115,7 +126,7 @@ string multiplyNumbers(const string & a, const string & b){
 		X[j--] = a[i] - '0';
 	for(int i = pos2, j = Y.size() - 1; i < b.size(); ++i)
 		Y[j--] = b[i] - '0';
-	X = convolution(X, Y);
+	X = convolution<p, g>(X, Y);
 	stringstream ss;
 	if(sgn == -1) ss << "-";
 	int carry = 0;
@@ -144,11 +155,11 @@ vector<int> inversePolynomial(const vector<int> & A){
 		vector<int> TF(TR.size());
 		for(int i = 0; i < c && i < A.size(); ++i)
 			TF[i] = A[i];
-		ntt(TR, 1);
-		ntt(TF, 1);
+		ntt<p, g>(TR, 1);
+		ntt<p, g>(TF, 1);
 		for(int i = 0; i < TR.size(); ++i)
 			TR[i] = (lli)TR[i] * TR[i] % p * TF[i] % p;
-		ntt(TR, -1);
+		ntt<p, g>(TR, -1);
 		for(int i = 0; i < c; ++i){
 			R[i] = R[i] + R[i] - TR[i];
 			if(R[i] < 0) R[i] += p;
@@ -172,7 +183,7 @@ vector<int> sqrtPolynomial(const vector<int> & A){
 		for(int i = 0; i < c && i < A.size(); ++i)
 			TF[i] = A[i];
 		vector<int> IR = inversePolynomial(R);
-		TF = convolution(TF, IR);
+		TF = convolution<p, g>(TF, IR);
 		for(int i = 0; i < c; ++i){
 			R[i] = R[i] + TF[i];
 			if(R[i] >= p) R[i] -= p;
@@ -183,6 +194,50 @@ vector<int> sqrtPolynomial(const vector<int> & A){
 	return R;
 }
 
+vector<int> derivative(vector<int> A){
+	for(int i = 0; i < A.size(); ++i)
+		A[i] = (lli)A[i] * i % p;
+	if(!A.empty()) A.erase(A.begin());
+	return A;
+}
+
+vector<int> integral(vector<int> A){
+	for(int i = 0; i < A.size(); ++i)
+		A[i] = (lli)A[i] * (inverse(i+1, p)) % p;
+	A.insert(A.begin(), 0);
+	return A;
+}
+
+vector<int> logarithm(vector<int> A){
+	assert(A[0] == 1);
+	int n = A.size();
+	A = convolution<p, g>(derivative(A), inversePolynomial(A));
+	A.resize(n);
+	A = integral(A);
+	A.resize(n);
+	return A;
+}
+
+vector<int> exponential(const vector<int> & A){
+	assert(A[0] == 0);
+	//E(x) = E(x)(1-ln(E(x))+A(x))
+	vector<int> E(1, 1);
+	while(E.size() < A.size()){
+		int c = 2*E.size();
+		E.resize(c);
+		vector<int> S = logarithm(E);
+		for(int i = 0; i < c && i < A.size(); ++i){
+			S[i] = A[i] - S[i];
+			if(S[i] < 0) S[i] += p;
+		}
+		S[0] = 1;
+		E = convolution<p, g>(E, S);
+		E.resize(c);
+	}
+	E.resize(A.size());
+	return E;
+}
+
 //returns Q(x), where A(x)=B(x)Q(x)+R(x)
 vector<int> quotient(vector<int> A, vector<int> B){
 	int n = A.size(), m = B.size();
@@ -190,7 +245,7 @@ vector<int> quotient(vector<int> A, vector<int> B){
 	reverse(A.begin(), A.end());
 	reverse(B.begin(), B.end());
 	A.resize(n-m+1), B.resize(n-m+1);
-	A = convolution(A, inversePolynomial(B));
+	A = convolution<p, g>(A, inversePolynomial(B));
 	A.resize(n-m+1);
 	reverse(A.begin(), A.end());
 	return A;
@@ -200,7 +255,7 @@ vector<int> quotient(vector<int> A, vector<int> B){
 vector<int> remainder(vector<int> A, const vector<int> & B){
 	int n = A.size(), m = B.size();
 	if(n >= m){
-		vector<int> C = convolution(quotient(A, B), B);
+		vector<int> C = convolution<p, g>(quotient(A, B), B);
 		A.resize(m-1);
 		for(int i = 0; i < m-1; ++i){
 			A[i] -= C[i];
@@ -221,7 +276,7 @@ vector<int> multiEvaluate(const vector<int> & P, const vector<int> & points){
 			int z = v + (y - l + 1) * 2;
 			pre(v + 1, l, y);
 			pre(z, y + 1, r);
-			prod[v] = convolution(prod[v + 1], prod[z]);
+			prod[v] = convolution<p, g>(prod[v + 1], prod[z]);
 		}
 	};
 	pre(0, 0, n - 1);
@@ -338,21 +393,19 @@ vector<int> convolutionMod(const vector<int> & A, const vector<int> & B, int mod
 
 //convolution with arbitrary modulo using CRT
 //slower but with no precision errors
+const int a = 998244353, b = 985661441, c = 754974721;
+const lli a_b = inverse(a, b), a_c = inverse(a, c), b_c = inverse(b, c);
 vector<int> convolutionModCRT(const vector<int> & A, const vector<int> & B, int mod){
-	int a = 998244353, b = 985661441, c = 754974721;
-	p = a, root = 31, root_1 = 128805723, root_pw = 1 << 23;
-	vector<int> P = convolution(A, B);
-	p = b, root = 210, root_1 = 934031556, root_pw = 1 << 22;
-	vector<int> Q = convolution(A, B);
-	p = c, root = 362, root_1 = 415027540, root_pw = 1 << 24;
-	vector<int> R = convolution(A, B);
+	vector<int> P = convolution<a, 3>(A, B);
+	vector<int> Q = convolution<b, 3>(A, B);
+	vector<int> R = convolution<c, 11>(A, B);
 	vector<int> D(P.size());
 	for(int i = 0; i < D.size(); ++i){
 		int x1 = P[i] % a;
 		if(x1 < 0) x1 += a;
-		int x2 = 657107549ll * (Q[i] - x1) % b;
+		int x2 = a_b * (Q[i] - x1) % b;
 		if(x2 < 0) x2 += b;
-		int x3 = (416537774ll * (R[i] - x1) % c - x2) * 411804390ll % c;
+		int x3 = (a_c * (R[i] - x1) % c - x2) * b_c % c;
 		if(x3 < 0) x3 += c;
 		D[i] = x1 + a*(x2 + (lli)x3*b % mod) % mod;
 		if(D[i] >= mod) D[i] -= mod;
@@ -394,7 +447,7 @@ void test_ntt(){
 	double duration;
 	start = std::clock();
 
-	X = convolution(X, Y);
+	X = convolution<p, g>(X, Y);
 
 	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
@@ -424,7 +477,7 @@ void test_random_ntt(){
 		B[i] = rand() % 10;
 	}
 	clock_t start = clock();
-	A = convolution(A, B);
+	A = convolution<p, g>(A, B);
 	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
 	cout << duration << "\n";
 }
@@ -442,17 +495,6 @@ void test_random_mult(){
 	cout << duration << "\n";
 }
 
-lli powerMod(lli b, lli e, lli m){
-	b %= m;
-	lli ans = 1;
-	while(e){
-		if(e & 1) ans = (ans * b) % m;
-		e >>= 1;
-		b = (b * b) % m;
-	}
-	return ans;
-}
-
 int main(){
 	srand(time(NULL));
 	/*string a, b;
@@ -460,9 +502,9 @@ int main(){
 	cout << multiplyNumbers(a, b) << "\n";*/
 	//test_random_mult();
 	//test_random_fft();
-	//test_random_ntt();
+	test_random_ntt();
 	//test_fft();
-	//test_ntt();
+	test_ntt();
 
 	/*int m; lli n;
 	cin >> m >> n;
@@ -499,9 +541,9 @@ int main(){
 		cout << catalan[i] << " ";
 	}*/
 
-	/*vector<int> A = {569675680, 478964123, 346798452, 146739485, 649785142}, B = {126741258, 700174685, 115649658};
-	A = convolutionMod(A, B, 1e9+7);
-	for(auto c : A) cout << c << " ";*/
+	vector<int> A = {569675680, 478964123, 346798452, 146739485, 649785142}, B = {126741258, 700174685, 115649658};
+	A = convolutionModCRT(A, B, 1e9+7);
+	for(auto c : A) cout << c << " ";
 
 	/*vector<comp> test = {comp(5,-3), comp(2,1), comp(0,7), comp(-4,9), comp(8,0)};
 	test = bluestein(bluestein(test));
@@ -528,6 +570,38 @@ int main(){
 	}
 	for(int i = 0; i < n; ++i){
 		assert(naive[i] == evals[i]);
+	}*/
+
+	/*int M = 100;
+	vector<int> fact(M+1, 1), invfact(M+1, 1);
+	for(int i = 1; i <= M; ++i){
+		fact[i] = (lli)i * fact[i-1] % p;
+		invfact[i] = inverse(fact[i], p);
+	}*/
+	
+	/*vector<int> C(M+1, 1);
+	for(int i = 2; i <= M; ++i){
+		C[i] = powerMod(2, (lli)i * (i-1)/2, p) * invfact[i] % p;
+	}
+	vector<int> D = logarithm(C);
+	D[0]++;
+	for(int i = 1; i <= M; ++i){
+		D[i] = (lli)D[i] * fact[i] % p;
+	}
+	for(int i = 1; i <= M; ++i){
+		cout << i << " " << D[i] << "\n";
+	}*/
+
+	/*vector<int> B(M+1);
+	B[1] = 1;
+	B = exponential(B);
+	B[0]--;
+	B = exponential(B);
+	for(int i = 1; i <= M; ++i){
+		B[i] = (lli)B[i] * fact[i] % p;
+	}
+	for(int i = 1; i <= M; ++i){
+		cout << i << " " << B[i] << "\n";
 	}*/
 	return 0;
 }

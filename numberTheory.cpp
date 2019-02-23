@@ -987,6 +987,19 @@ void stirlingNumber2ndKind(lli n){
 			stirling2[i][j] = j * stirling2[i-1][j] + stirling2[i-1][j-1];
 }
 
+//euler(n, k) represents the number of permutations
+//of 1,...,n with exactly k numbers greater than
+//the previous number
+vector<vector<lli>> euler;
+void eulerianNumbers(lli n){
+	euler.resize(n+1, vector<lli>(n+1));
+	for(int i = 1; i <= n; ++i){
+		euler[i][0] = 1;
+		for(int j = 1; j < i; ++j)
+			euler[i][j] = (i-j) * euler[i-1][j-1] + (j+1) * euler[i-1][j];
+	}
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -1044,10 +1057,11 @@ int main(){
 	bellNumbers(50);
 	stirlingNumber1stKind(50);
 	stirlingNumber2ndKind(50);
+	eulerianNumbers(50);
 
 	for(int i = 0; i <= 10; ++i){
 		for(int j = 0; j <= i; ++j){
-			cout << stirling1[i][j] << " ";
+			cout << euler[i][j] << " ";
 		}
 		cout << "\n";
 	}

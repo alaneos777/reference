@@ -66,8 +66,12 @@
 \newcommand{\genstirlingII}[3]{%
 	\genfrac{\{}{\}}{0pt}{#1}{#2}{#3}%
 }
+\newcommand{\genEuler}[3]{%
+	\genfrac{<}{>}{0pt}{#1}{#2}{#3}%
+}
 \newcommand{\stirlingI}[2]{\genstirlingI{}{#1}{#2}}
 \newcommand{\stirlingII}[2]{\genstirlingII{}{#1}{#2}}
+\newcommand{\euler}[2]{\genEuler{}{#1}{#2}}
 
 \begin{document}
 	\tableofcontents
@@ -226,8 +230,11 @@
 			\subsubsection{Números de Bell}
 			\inputminted[tabsize=2,breaklines,firstline=894,lastline=906,fontsize=\small]{c++}{numberTheory.cpp}
 			
-			\subsubsection{Números de Stirling del segundo tipo}
+			\subsubsection{Números de Stirling}
 			\inputminted[tabsize=2,breaklines,firstline=967,lastline=988,fontsize=\small]{c++}{numberTheory.cpp}
+			
+			\subsubsection{Números de Euler}
+			\inputminted[tabsize=2,breaklines,firstline=990,lastline=1001,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Prime counting function in sublinear time}
 			\inputminted[tabsize=2,breaklines,firstline=27,lastline=77,fontsize=\small]{c++}{pi.cpp}
@@ -284,59 +291,60 @@
 		\subsection{FFT con raíces de la unidad complejas}
 		\inputminted[tabsize=2,breaklines,firstline=13,lastline=34,fontsize=\small]{c++}{fft.cpp}
 		
-		\subsection{FFT con raíces de la unidad en $\mathbb{Z}/p\mathbb{Z}$ (NTT)}
-		\inputminted[tabsize=2,breaklines,firstline=36,lastline=75,fontsize=\small]{c++}{fft.cpp}
-			\subsubsection{Otros valores para escoger la raíz y el módulo}
+		\subsection{FFT con raíces de la unidad en $\mathbb{Z}_p$ (NTT)}
+		\inputminted[tabsize=2,breaklines,firstline=36,lastline=83,fontsize=\small]{c++}{fft.cpp}
+			\subsubsection{Valores para escoger el generador y el módulo}
 				\begin{table}[H]
 					\centering
-					\begin{tabular}{|p{2cm}|p{1.7cm}|p{2cm}|p{4.5cm}|}
+					\begin{tabular}{|p{2.3cm}|p{2.7cm}|p{4.5cm}|}
 						\hline
-						Raíz $n$-ésima de la unidad ($\omega$) & $\omega^{-1}$ & Tamaño máximo del arreglo ($n$) & Módulo $p$ \\ \hline
-						15 & 30584 & $2^{14}$ & $4 \times 2^{14} + 1 = 65537$ \\ \hline
-						9 & 7282 & $2^{15}$ & $2 \times 2^{15} + 1 = 65537$ \\ \hline
-						3 & 21846 & $2^{16}$ & $1 \times 2^{16} + 1 = 65537$ \\ \hline
-						8 & 688129 & $2^{17}$ & $6 \times 2^{17} + 1 = 786433$ \\ \hline
-						5 & 471860 & $2^{18}$ & $3 \times 2^{18} + 1 = 786433$ \\ \hline
-						12 & 3364182 & $2^{19}$ & $11 \times 2^{19} + 1 = 5767169$ \\ \hline
-						\textbf{5} & \textbf{4404020} & $\mathbf{2^{20}}$ & $7 \times 2^{20} + 1 = \textbf{7340033}$ \\ \hline
-						38 & 21247462 & $2^{21}$ & $11 \times 2^{21} + 1 = 23068673$ \\ \hline
-						21 & 49932191 & $2^{22}$ & $25 \times 2^{22} + 1 = 104857601$ \\ \hline
-						4 & 125829121 & $2^{23}$ & $20 \times 2^{23} + 1 = 167772161$ \\ \hline
-						\textbf{31} & \textbf{128805723} & $\mathbf{2^{23}}$ & $119 \times 2^{23} + 1 = \textbf{998244353}$ \\ \hline
-						2 & 83886081 & $2^{24}$ & $10 \times 2^{24} + 1 = 167772161$ \\ \hline
-						17 & 29606852 & $2^{25}$ & $5 \times 2^{25} + 1 = 167772161$ \\ \hline
-						30 & 15658735 & $2^{26}$ & $7 \times 2^{26} + 1 = 469762049$ \\ \hline
-						137 & 749463956 & $2^{27}$ & $15 \times 2^{27} + 1 = 2013265921$ \\ \hline
+						Generador ($g$) & Tamaño máximo del arreglo ($n$) & Módulo $p$ \\ \hline
+						3 & $2^{16}$ & $1 \times 2^{16} + 1 = 65537$ \\ \hline
+						10 & $2^{18}$ & $3 \times 2^{18} + 1 = 786433$ \\ \hline
+						3 & $2^{19}$ & $11 \times 2^{19} + 1 = 5767169$ \\ \hline
+						\textbf{3} & $\mathbf{2^{20}}$ & $7 \times 2^{20} + 1 = \textbf{7340033}$ \\ \hline
+						3 & $2^{21}$ & $11 \times 2^{21} + 1 = 23068673$ \\ \hline
+						3 & $2^{22}$ & $25 \times 2^{22} + 1 = 104857601$ \\ \hline
+						3 & $2^{22}$ & $235 \times 2^{22} + 1 = 985661441$ \\ \hline
+						26 & $2^{23}$ & $105 \times 2^{23} + 1 = 880803841$ \\ \hline
+						\textbf{3} & $\mathbf{2^{23}}$ & $119 \times 2^{23} + 1 = \textbf{998244353}$ \\ \hline
+						11 & $2^{24}$ & $45 \times 2^{24} + 1 = 754974721$ \\ \hline
+						3 & $2^{25}$ & $5 \times 2^{25} + 1 = 167772161$ \\ \hline
+						3 & $2^{26}$ & $7 \times 2^{26} + 1 = 469762049$ \\ \hline
+						31 & $2^{27}$ & $15 \times 2^{27} + 1 = 2013265921$ \\ \hline
 					\end{tabular}
 				\end{table}
 			
 		\subsection{Multiplicación de polinomios (convolución lineal)}
-		\inputminted[tabsize=2,breaklines,firstline=77,lastline=99,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=85,lastline=110,fontsize=\small]{c++}{fft.cpp}
 		
 		\subsection{Aplicaciones}
 			\subsubsection{Multiplicación de números enteros grandes}
-			\inputminted[tabsize=2,breaklines,firstline=101,lastline=134,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=112,lastline=145,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Recíproco de un polinomio}
-			\inputminted[tabsize=2,breaklines,firstline=136,lastline=160,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=147,lastline=171,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Raíz cuadrada de un polinomio}
-			\inputminted[tabsize=2,breaklines,firstline=162,lastline=184,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=173,lastline=195,fontsize=\small]{c++}{fft.cpp}
+			
+			\subsubsection{Logaritmo y exponencial de un polinomio}
+			\inputminted[tabsize=2,breaklines,firstline=197,lastline=239,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Cociente y residuo de dos polinomios}
-			\inputminted[tabsize=2,breaklines,firstline=186,lastline=211,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=241,lastline=266,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Multievaluación rápida}
-			\inputminted[tabsize=2,breaklines,firstline=213,lastline=257,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=268,lastline=312,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{DFT con tamaño de vector arbitrario (algoritmo de Bluestein)}
-			\inputminted[tabsize=2,breaklines,firstline=259,lastline=279,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=314,lastline=334,fontsize=\small]{c++}{fft.cpp}
 			
 		\subsection{Convolución de dos vectores reales con solo dos FFT's}
-		\inputminted[tabsize=2,breaklines,firstline=281,lastline=301,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=336,lastline=356,fontsize=\small]{c++}{fft.cpp}
 			
 		\subsection{Convolución con módulo arbitrario}
-		\inputminted[tabsize=2,breaklines,firstline=303,lastline=362,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=358,lastline=415,fontsize=\small]{c++}{fft.cpp}
 			
 	\newpage
 	\section{Geometría}
@@ -612,12 +620,13 @@
 	\newpage
 	\section{Fórmulas y notas}
 		\begin{itemize}
-			\item \textbf{Números de Stirling del primer tipo (sin signo):} $\stirlingI{n}{k}$ representa el número de permutaciones de $n$ elementos en exactamente $k$ ciclos disjuntos.
+			\item \textbf{Números de Stirling del primer tipo:} $\stirlingI{n}{k}$ representa el número de permutaciones de $n$ elementos en exactamente $k$ ciclos disjuntos.
 			\begin{align*}
 				\stirlingI{0}{0} &= 1 \\
 				\stirlingI{0}{n} &= \stirlingI{n}{0} = 0 \quad &, \quad n>0 \\
 				\stirlingI{n}{k} &= (n-1)\stirlingI{n-1}{k} + \stirlingI{n-1}{k-1} \quad &, \quad k>0 \\
-				\sum_{k=0}^{n} \stirlingI{n}{k} &= n!
+				\sum_{k=0}^{n} \stirlingI{n}{k} &= n! \\
+				\sum_{k=0}^{\infty} \stirlingI{n}{k} x^k &= \prod_{k=0}^{n-1}(x+k)
 			\end{align*}
 			
 			\item \textbf{Números de Stirling del segundo tipo:} $\stirlingII{n}{k}$ representa el número de formas de particionar un conjunto de $n$ objetos distinguibles en $k$ subconjuntos no vacíos.
@@ -626,6 +635,14 @@
 				\stirlingII{0}{n} &= \stirlingII{n}{0} = 0 \quad &, \quad n>0 \\
 				\stirlingII{n}{k} &= k\stirlingII{n-1}{k} + \stirlingII{n-1}{k-1} \quad &, \quad k>0 \\
 				&= \sum_{j=0}^{k} \dfrac{j^n}{j!} \cdot \dfrac{(-1)^{k-j}}{(k-j)!}
+			\end{align*}
+			
+			\item \textbf{Números de Euler:} $\euler{n}{k}$ representa el número de permutaciones de $1$ a $n$ en donde exactamente $k$ números son mayores que el número anterior, es decir, cuántas permutaciones tienen $k$ ``ascensos''.
+			\begin{align*}
+				\euler{1}{0} &= 1 \\
+				\euler{n}{k} &= (n-k)\euler{n-1}{k-1} + (k+1)\euler{n-1}{k} \quad &, \quad n \geq 2 \\
+				&= \sum_{j=0}^{k} (-1)^j \binom{n+1}{j} (k+1-j)^n \\
+				\sum_{k=0}^{n-1} \euler{n}{k} &= n!
 			\end{align*}
 			
 			\item \textbf{Números de Catalan:}
@@ -637,7 +654,8 @@
 			
 			\item \textbf{Números de Bell:}
 			\begin{align*}
-				B_n = \sum_{k=0}^{n}\stirlingII{n}{k} = \sum_{k=0}^{n-1}\binom{n-1}{k} B_k
+				B_n &= \sum_{k=0}^{n}\stirlingII{n}{k} = \sum_{k=0}^{n-1}\binom{n-1}{k} B_k \\
+				\sum_{k=0}^{\infty} \dfrac{B_n}{n!}x^n &= e^{e^x-1}
 			\end{align*}
 			
 			\item \textbf{Números de Bernoulli:}
@@ -663,7 +681,7 @@
 				\sum_{n=0}^{\infty} \left( \sum_{k=0}^{n}a_k \right) x^n &= \dfrac{1}{1-x}\sum_{n=0}^{\infty} a_n x^n \\
 				\sum_{n=0}^{\infty} \binom{n+k-1}{k-1}x^n &= \dfrac{1}{\left(1-x\right)^k} \\
 				\sum_{n=0}^{\infty} p_n x^n &= \dfrac{1}{\displaystyle \prod_{k=1}^{\infty}(1-x^k)} = \dfrac{1}{\displaystyle \sum_{n=-\infty}^{\infty} x^{\frac{1}{2}n(3n+1)}} \\
-				\sum_{k=0}^{\infty} \stirlingI{n}{k} x^k &= \prod_{k=0}^{n-1}(x+k)
+				\sum_{n=0}^{\infty} n^k x^n &= \dfrac{\displaystyle \sum_{i=0}^{k-1} \euler{k}{i} x^{i+1}}{(1-x)^{k+1}} \quad , \quad k \geq 1
 			\end{align*}
 			
 			\item \textbf{Números armónicos:}
@@ -726,6 +744,8 @@
 				\end{itemize}
 				\item Barras y estrellas: ¿cuántas soluciones en los enteros no negativos tiene la ecuación $\displaystyle \sum_{i=1}^{k}x_i = n$? Tiene  $\displaystyle \binom{n+k-1}{k-1}$ soluciones.
 				\item ¿Cuántas soluciones en los enteros positivos tiene la ecuación $\displaystyle \sum_{i=1}^{k}x_i = n$? Tiene  $\displaystyle \binom{n-1}{k-1}$ soluciones.
+				\item Desordenamientos: $a_0=1$, $a_1=0$, $a_n=(n-1)(a_{n-1}+a_{n-2})=na_{n-1}+(-1)^n$.
+				\item Sea $f(x)$ una función. Sea $g_n(x)=x g_{n-1}'(x)$ con $g_0(x)=f(x)$. Entonces $g_n(x)=\sum_{k=0}^{n} \stirlingII{n}{k} x^k f^{(k)}(x)$.
 			\end{itemize}
 		
 			\item \textbf{Grafos:}
@@ -749,7 +769,21 @@
 			\end{align*}
 			
 			\begin{itemize}
-				\item Dada una función aritmética $f$ con $f(1) \neq 1$, existe otra función $g$ tal que $(f*g)(n)=e(n)$, dada por:
+				\item Teorema de Lucas:
+				\begin{align*}
+					\binom{m}{n} &\equiv \prod_{i=0}^{k} \binom{m_i}{k_i} \pmod{p} \\
+					m = \sum_{i=0}^{k} m_i p^i \quad &, \quad n = \sum_{i=0}^{k} n_i p^i \\
+					0 \leq m_i &, n_i < p
+				\end{align*}
+				
+				\item Sean $a,b,c \in \mathbb{Z}$ con $a \neq 0$ y $b \neq 0$. La ecuación $ax+by=c$ tiene como soluciones:
+				\begin{align*}
+					x &= \dfrac{x_0 c - bk}{d} \\
+					y &= \dfrac{y_0 c + ak}{d} 
+				\end{align*}
+				para toda $k \in \mathbb{Z}$ si y solo si $d | c$, donde $ax_0+by_0=\gcd(a,b)=d$ (Euclides extendido). Si $a$ y $b$ tienen el mismo signo, hay exactamente $\max\left( \left\lfloor\dfrac{x_0 c}{\abs{b}}\right\rfloor + \left\lfloor\dfrac{y_0 c}{\abs{a}}\right\rfloor + 1, 0 \right)$ soluciones no negativas. Si tienen el signo distinto, hay infinitas soluciones no negativas.
+				
+				\item Dada una función aritmética $f$ con $f(1) \neq 1$, existe otra función aritmética $g$ tal que $(f*g)(n)=e(n)$, dada por:
 				\begin{align*}
 					g(1) &= \dfrac{1}{f(1)} \\
 					g(n) &= -\dfrac{1}{f(1)} \sum_{d | n, d<n} f\left(\dfrac{n}{d}\right)g(d) \quad , \quad n > 1
@@ -777,6 +811,12 @@
 			\end{itemize}
 			
 			\item \textbf{Primos:} $10^2+1$, $10^3+9$, $10^4+7$, $10^5+3$, $10^6+3$, $10^7+19$, $10^8+7$, $10^9+7$, $10^{10}+19$, $10^{11}+3$, $10^{12}+39$, $10^{13}+37$, $10^{14}+31$, $10^{15}+37$, $10^{16}+61$, $10^{17}+3$, $10^{18}+3$
+			
+			\item \textbf{Números primos de Mersenne:} números primos de la forma $M_p=2^p-1$ con $p$ primo. Todos los números perfectos pares son de la forma $2^{p-1}M_p$ y viceversa.
+			
+			Los primeros 47 valores de $p$ son: 2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281, 3217, 4253, 4423, 9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503, 132049, 216091, 756839, 859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917, 20996011, 24036583, 25964951, 30402457, 32582657, 37156667, 42643801, 43112609.
+			
+			\item \textbf{Números primos de Fermat:} números primos de la forma $F_p=2^{2^p}+1$, solo se conocen cinco: 3, 5, 17, 257, 65537. Un polígono de $n$ lados es construible si y solo si $n$ es el producto de algunas potencias de dos y distintos primos de Fermat.
 		\end{itemize}
 
 \end{document}
