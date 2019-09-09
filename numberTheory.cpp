@@ -1000,6 +1000,27 @@ void eulerianNumbers(lli n){
 	}
 }
 
+//finds sum(floor(p*i/q), 1<=i<=n)
+lli floorsSum(lli p, lli q, lli n){
+    lli t = gcd(p, q);
+    p /= t, q /= t;
+    lli s = 0, z = 1;
+    while(q && n){
+        t = p/q;
+        s += z*t*n*(n+1)/2;
+        p -= q*t;
+        t = n/q;
+        s += z*p*t*(n+1) - z*t*(p*q*t + p + q - 1)/2;
+        n -= q*t;
+        t = n*p/q;
+        s += z*t*n;
+        n = t;
+        swap(p, q);
+        z = -z;
+    }
+    return s;
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -1059,12 +1080,18 @@ int main(){
 	stirlingNumber2ndKind(50);
 	eulerianNumbers(50);
 
-	for(int i = 0; i <= 10; ++i){
+	/*lli sum = 0, p, q, n;
+	cin >> p >> q >> n;
+	for(lli i = 1; i <= n; ++i) sum += p*i/q;
+	assert(sum == floorsSum(p, q, n));
+	cout << sum << "\n";*/
+
+	/*for(int i = 0; i <= 10; ++i){
 		for(int j = 0; j <= i; ++j){
 			cout << euler[i][j] << " ";
 		}
 		cout << "\n";
-	}
+	}*/
 
 	/*int l = 1e7;
 	clock_t start = clock();

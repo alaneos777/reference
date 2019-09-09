@@ -2,7 +2,7 @@
 using namespace std;
 typedef long long int lli;
 
-lli mod = 1e7 + 19;
+const lli mod = 1e7 + 19;
 
 //Solves a linear homogeneous recurrence relation of degree "deg" of the form
 //F(n) = a(d-1)*F(n-1) + a(d-2)*F(n-2) + ... + a(1)*F(n-(d-1)) + a(0)*F(n-d)
