@@ -164,6 +164,21 @@ lli count(lli n, int i){
 	return ans;
 }
 
+//Random number generation in C++11
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+//Generate a random integer in [a, b], you can also use long long int
+int aleatorio_int(int a, int b){
+	uniform_int_distribution<int> dist(a, b);
+	return dist(rng);
+}
+
+//Generate a random double in [a, b], you can also use long double
+double aleatorio_double(double a, double b){
+	uniform_real_distribution<double> dist(a, b);
+	return dist(rng);
+}
+
 /*int main(){
 	int a, b, c;
 	cin >> a >> b >> c;
@@ -173,6 +188,12 @@ lli count(lli n, int i){
 }*/
 
 int main(){
+	for(int i = 1; i <= 10; ++i){
+		cout << aleatorio_int(1, 1000) << "\n";
+	}
+	for(int i = 1; i <= 10; ++i){
+		cout << fixed << setprecision(10) << aleatorio_double(1, 1000) << "\n";
+	}
 	string a, b;
 	cin >> a >> b;
 	cout << LevenshteinDistance(a, b) << "\n";

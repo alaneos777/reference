@@ -372,29 +372,29 @@ lli findFirstPrimitiveKthRootUnity(lli k, lli m){
 	return -1; //not found
 }
 
-// a^x = b mod m, a and m coprime
+// Solves for x in the equation a^x = b mod m
 pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
-	if(gcd(a, m) != 1) return make_pair(-1, 0); //not found
-	lli order = multiplicativeOrder(a, m);
+	lli m1 = m, pw = 1, d, x, y, nonRep = 0;
+	for(; (d = gcd(a, m1)) > 1; ++nonRep, m1 /= d, pw = pw * a % m){
+		if(pw == b) return {nonRep, 0}; //aperiodic solution found
+	}
+	d = extendedGcd(pw, m, x, y);
+	if(b % d > 0) return {-1, 0}; //solution not found
+	b = x * (b / d) % m;
+	if(b < 0) b += m;
+	lli order = multiplicativeOrder(a, m1);
 	lli n = sqrt(order) + 1;
-	lli a_n = powerMod(a, n, m);
-	lli ans = 0;
+	lli a_n = powerMod(a, n, m1);
 	unordered_map<lli, lli> firstHalf;
-	lli current = a_n;
-	for(lli p = 1; p <= n; p++){
-		firstHalf[current] = p;
-		current = (current * a_n) % m;
+	pw = a_n;
+	for(lli p = 1; p <= n; ++p, pw = pw * a_n % m1){
+		firstHalf[pw] = p;
 	}
-	current = b % m;
-	for(lli q = 0; q <= n; q++){
-		if(firstHalf.count(current)){
-			lli p = firstHalf[current];
-			lli x = n * p - q;
-			return make_pair(x % order, order);
-		}
-		current = (current * a) % m;
+	pw = b % m1;
+	for(lli q = 0; q <= n; ++q, pw = pw * a % m1){
+		if(firstHalf.count(pw)) return {nonRep + (n * firstHalf[pw] - q) % order, order}; //periodic solution found
 	}
-	return make_pair(-1, 0); //not found
+	return {-1, 0}; //solution not found
 }
 
 // x^k = b mod m, m has at least one generator
@@ -612,7 +612,7 @@ pair<vector<lli>, int> ContinuedFraction(lli p, lli n, lli q){
 			num = den;
 			den = residue;
 		}
-		return make_pair(coef, 0);
+		return {coef, 0};
 	}
 	if((n - p * p) % q != 0){
 		n *= q * q;
@@ -629,14 +629,14 @@ pair<vector<lli>, int> ContinuedFraction(lli p, lli n, lli q){
 		q = (n - p * p) / q;
 		a = (r + p) / q;
 		//if p=0 and q=1, we can just ask if q==1 after inserting a
-		if(pairs.count(make_pair(p, q))){
-			period -= pairs[make_pair(p, q)];
+		if(pairs.count({p, q})){
+			period -= pairs[{p, q}];
 			break;
 		}
 		coef.push_back(a);
-		pairs[make_pair(p, q)] = period++;
+		pairs[{p, q}] = period++;
 	}
-	return make_pair(coef, period);
+	return {coef, period};
 }
 
 //first solution (x, y) to the equation x^2-ny^2=1, n IS NOT a perfect aquare
@@ -651,7 +651,7 @@ pair<lli, lli> PellEquation(lli n){
 		den = num + cf[pos] * den;
 		num = tmp;
 	}
-	return make_pair(den, num);
+	return {den, num};
 }
 
 bool isPrimeMillerRabin(lli n){
@@ -1021,6 +1021,19 @@ lli floorsSum(lli p, lli q, lli n){
     return s;
 }
 
+//Finds (n!/p^m) mod p, where m is the largest power of p
+//that divides n!, p must be prime
+lli factmod(lli n, lli p){
+	lli ans = 1;
+	while(n > 1){
+		ans = ans * ((n/p) % 2 ? p-1 : 1) % p;
+		for(lli i = 2; i <= n%p; ++i)
+			ans = ans * i % p;
+		n /= p;
+	}
+	return ans;
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -1143,6 +1156,10 @@ int main(){
 	cin >> k >> m;
 	cout << (long long int)findFirstPrimitiveKthRootUnity(k, m);*/
 
+	for(lli n = 1; n <= 20; ++n){
+		cout << factmod(n, 7) << " ";
+	}
+
 	/*lli a, b, m;
 	cin >> a >> b >> m;
 	pair<lli, lli> ans = discreteLogarithm(a, b, m);
@@ -1165,9 +1182,9 @@ int main(){
 		cout << "Q(" << i << ") = " << Q[i] << "\n";
 	}*/
 
-	lli e;
+	/*lli e;
 	cin >> e;
-	info_ntt(e, 1, 1000);
+	info_ntt(e, 1, 1000);*/
 
 	/*lli p;
 	cin >> p;

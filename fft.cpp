@@ -414,6 +414,39 @@ vector<int> convolutionModCRT(const vector<int> & A, const vector<int> & B, int 
 	return D;
 }
 
+//Fast Walsh-Hadamard transform, works with any modulo p
+//op: 0(OR), 1(AND), 2(XOR), A.size() must be power of 2
+void fwt(vector<int> & A, int op, int inv){
+	int n = A.size();
+	for(int k = 1; k < n; k <<= 1)
+		for(int i = 0; i < n; i += k << 1)
+			for(int j = 0; j < k; ++j){
+				int u = A[i + j], v = A[i + j + k];
+				int sum = u + v < p ? u + v : u + v - p;
+				int rest = u - v < 0 ? u - v + p : u - v;
+				if(inv == -1){
+					if(op == 0)
+						A[i + j + k] = rest ? p - rest : 0;
+					else if(op == 1)
+						A[i + j] = rest;
+					else if(op == 2)
+						A[i + j] = sum, A[i + j + k] = rest;
+				}else{
+					if(op == 0)
+						A[i + j + k] = sum;
+					else if(op == 1)
+						A[i + j] = sum;
+					else if(op == 2)
+						A[i + j] = sum, A[i + j + k] = rest;
+				}
+			}
+	if(inv == -1 && op == 2){
+		lli nrev = inverse(n, p);
+		for(int i = 0; i < n; ++i)
+			A[i] = A[i] * nrev % p;
+	}
+}
+
 void test_fft(){
 	int degX, degY;	
 	cin >> degX >> degY;
@@ -502,9 +535,9 @@ int main(){
 	cout << multiplyNumbers(a, b) << "\n";*/
 	//test_random_mult();
 	//test_random_fft();
-	test_random_ntt();
+	//test_random_ntt();
 	//test_fft();
-	test_ntt();
+	//test_ntt();
 
 	/*int m; lli n;
 	cin >> m >> n;
@@ -541,9 +574,9 @@ int main(){
 		cout << catalan[i] << " ";
 	}*/
 
-	vector<int> A = {569675680, 478964123, 346798452, 146739485, 649785142}, B = {126741258, 700174685, 115649658};
+	/*vector<int> A = {569675680, 478964123, 346798452, 146739485, 649785142}, B = {126741258, 700174685, 115649658};
 	A = convolutionModCRT(A, B, 1e9+7);
-	for(auto c : A) cout << c << " ";
+	for(auto c : A) cout << c << " ";*/
 
 	/*vector<comp> test = {comp(5,-3), comp(2,1), comp(0,7), comp(-4,9), comp(8,0)};
 	test = bluestein(bluestein(test));

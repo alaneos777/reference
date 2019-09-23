@@ -154,6 +154,9 @@
 			\subsubsection{Factorización de un factorial}
 			\inputminted[tabsize=2,breaklines,firstline=424,lastline=431,fontsize=\small]{c++}{numberTheory.cpp}
 			
+			\subsubsection{Factorial módulo $p$}
+			\inputminted[tabsize=2,breaklines,firstline=1024,lastline=1035,fontsize=\small]{c++}{numberTheory.cpp}
+			
 			\subsubsection{Factorización usando Pollard-Rho}
 			\inputminted[tabsize=2,breaklines,firstline=657,lastline=705,fontsize=\small]{c++}{numberTheory.cpp}
 		
@@ -280,7 +283,10 @@
 		\inputminted[tabsize=2,breaklines,firstline=299,lastline=315,fontsize=\small]{c++}{matrix.cpp}
 		
 		\subsection{Recurrencias lineales}
-		\inputminted[tabsize=2,breaklines,firstline=7,lastline=38,fontsize=\small]{c++}{recurrence.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=7,lastline=33,fontsize=\small]{c++}{recurrence.cpp}
+		
+		\subsection{Berlekamp-Massey}
+		\inputminted[tabsize=2,breaklines,firstline=46,lastline=81,fontsize=\small]{c++}{recurrence.cpp}
 		
 		\subsection{Simplex}
 		\inputminted[tabsize=2,breaklines,fontsize=\small]{c++}{simplex.cpp}
@@ -348,6 +354,9 @@
 			
 		\subsection{Convolución con módulo arbitrario}
 		\inputminted[tabsize=2,breaklines,firstline=358,lastline=415,fontsize=\small]{c++}{fft.cpp}
+		
+		\subsection{Transformada rápida de Walsh–Hadamard}
+		\inputminted[tabsize=2,breaklines,firstline=417,lastline=448,fontsize=\small]{c++}{fft.cpp}
 			
 	\newpage
 	\section{Geometría}
@@ -528,6 +537,9 @@
 		\subsection{Flujo máximo de costo mínimo}
 		\inputminted[tabsize=2,breaklines,firstline=110,lastline=145,fontsize=\small]{c++}{flow.cpp}
 		
+		\subsection{Hungariano}
+		\inputminted[tabsize=2,breaklines,firstline=148,lastline=190,fontsize=\small]{c++}{flow.cpp}
+		
 	\newpage
 	\section{Estructuras de datos}
 		\subsection{Segment Tree}
@@ -559,7 +571,7 @@
 			\subsubsection{Normal}
 			\inputminted[tabsize=2,breaklines,firstline=798,lastline=833,fontsize=\small]{c++}{queries.cpp}
 		
-			\subsection{Disjoint}
+			\subsubsection{Disjoint}
 			\inputminted[tabsize=2,breaklines,firstline=835,lastline=868,fontsize=\small]{c++}{queries.cpp}
 			
 		\subsection{Wavelet Tree}
@@ -619,6 +631,9 @@
 		
 		\subsection{Contar número de unos en binario en un rango}
 		\inputminted[tabsize=2,breaklines,firstline=158,lastline=165,fontsize=\small]{c++}{misc.cpp}
+		
+		\subsection{Números aleatorios en C++11}
+		\inputminted[tabsize=2,breaklines,firstline=167,lastline=180,fontsize=\small]{c++}{misc.cpp}
 		
 	\newpage
 	\section{Fórmulas y notas}
@@ -681,6 +696,13 @@
 				B(x,y) &= \dfrac{\Gamma(x)\Gamma(y)}{\Gamma(x+y)} = 2 \int_{0}^{\pi/2} \sin^{2x-1}(\theta) \cos^{2x-1}(\theta) d\theta \\
 				&= \int_{0}^{1} t^{x-1} (1-t)^{y-1} dt = \int_{0}^{\infty} \dfrac{t^{x-1}}{(1+t)^{x+y}} dt
 			\end{align*}
+			
+		\subsection{Función zeta de Riemann}
+			La siguiente fórmula converge rápido para valores pequeños de $n$ ($n \approx 20$):
+			\begin{align*}
+				\zeta(s) &\approx \dfrac{1}{d_0 (1 - 2^{1-s})} \sum_{k=1}^{n} \dfrac{(-1)^{k-1} d_k}{k^s} \\
+				d_k &= \sum_{j=k}^{n} \dfrac{4^j}{n+j} \binom{n+j}{2j}
+			\end{align*}
 		
 		\subsection{Funciones generadoras}
 			\begin{align*}
@@ -737,7 +759,7 @@
 			Todos los racionales positivos se pueden representar como un árbol binario de búsqueda completo infinito con raíz $\frac{1}{1}$.
 			\begin{itemize}
 				\item Dado un racional $q=[a_0;a_1,a_2,\ldots,a_k]$ donde $a_k \neq 1$, sus hijos serán $[a_0;a_1,a_2,\ldots,a_k+1]$ y $[a_0;a_1,a_2,\ldots,a_k-1,2]$, y su padre será $[a_0;a_1,a_2,\ldots,a_k-1]$.
-				\item Para hallar el camino de la raíz $\frac{1}{1}$ a un racional $q$, se usa búsqueda binaria iniciando con $L=\frac{0}{1}$ y $R=\frac{1}{0}$. Para hallar $M$ se supone que $L=\frac{a}{b}$ y $\frac{c}{d}$, entonces $M=\frac{a+c}{b+d}$.
+				\item Para hallar el camino de la raíz $\frac{1}{1}$ a un racional $q$, se usa búsqueda binaria iniciando con $L=\frac{0}{1}$ y $R=\frac{1}{0}$. Para hallar $M$ se supone que $L=\frac{a}{b}$ y $R=\frac{c}{d}$, entonces $M=\frac{a+c}{b+d}$.
 			\end{itemize}
 	
 		\subsection{Combinatoria}
@@ -783,6 +805,7 @@
 			\end{align*}
 		
 			\begin{itemize}
+				\item Suma de dos cuadrados: sea $\chi_4(n)$ una función multiplicativa igual a 1 si $n \equiv 1 \mod 4$, $-1$ si $n \equiv 3 \mod 4$ y cero en otro caso. Entonces, el número de soluciones enteras $(a,b)$ de la ecuación $a^2+b^2=n$ es $4(\chi_4 * 1)(n) = 4 \displaystyle \sum_{d | n} \chi_4(d)$.
 				\item Teorema de Lucas:
 				\begin{align*}
 					\binom{m}{n} &\equiv \prod_{i=0}^{k} \binom{m_i}{k_i} \pmod{p} \\
@@ -797,7 +820,7 @@
 				\end{align*}
 				para toda $k \in \mathbb{Z}$ si y solo si $d | c$, donde $ax_0+by_0=\gcd(a,b)=d$ (Euclides extendido). Si $a$ y $b$ tienen el mismo signo, hay exactamente $\max\left( \left\lfloor\dfrac{x_0 c}{\abs{b}}\right\rfloor + \left\lfloor\dfrac{y_0 c}{\abs{a}}\right\rfloor + 1, 0 \right)$ soluciones no negativas. Si tienen el signo distinto, hay infinitas soluciones no negativas.
 				
-				\item Dada una función aritmética $f$ con $f(1) \neq 1$, existe otra función aritmética $g$ tal que $(f*g)(n)=e(n)$, dada por:
+				\item Dada una función aritmética $f$ con $f(1) \neq 0$, existe otra función aritmética $g$ tal que $(f*g)(n)=e(n)$, dada por:
 				\begin{align*}
 					g(1) &= \dfrac{1}{f(1)} \\
 					g(n) &= -\dfrac{1}{f(1)} \sum_{d | n, d<n} f\left(\dfrac{n}{d}\right)g(d) \quad , \quad n > 1
@@ -822,9 +845,11 @@
 				}
 				
 				\item En general, si queremos hallar $F(n)$ y existe una función mágica $g(n)$ tal que $G(n)$ y $H(n)$ se puedan calcular en $O(1)$, entonces:
+				{\small
 				\begin{align*}
 					F(n) &= \dfrac{1}{g(1)} \left[ H(n) - \sum_{k=2}^{\lfloor n/m \rfloor} g(k)F\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right) - \sum_{k=1}^{m-1} \left( G\left(\left\lfloor \dfrac{n}{k} \right\rfloor\right) - G\left(\left\lfloor \dfrac{n}{k+1} \right\rfloor\right) \right)F(k) \right]
 				\end{align*}
+				}
 			\end{itemize}
 			
 		\subsection{Primos}
