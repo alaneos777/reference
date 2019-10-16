@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-typedef __int128 lli;
+using lli = __int128_t;
 
 lli piso(lli a, lli b){
 	if((a >= 0 && b > 0) || (a < 0 && b < 0)){
@@ -654,28 +654,32 @@ pair<lli, lli> PellEquation(lli n){
 	return {den, num};
 }
 
-bool isPrimeMillerRabin(lli n){
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+lli aleatorio(lli a, lli b){
+	std::uniform_int_distribution<lli> dist(a, b);
+	return dist(rng);
+}
+
+bool isPrimeMillerRabin(lli n, int reps = 16){
 	if(n < 2) return false;
-	if(n == 2) return true;
+	if(n <= 3) return true;
+	if(!(n & 1)) return false;
 	lli d = n - 1, s = 0;
 	for(; !(d & 1); d >>= 1, ++s);
-	for(int i = 0; i < 16; ++i){
-		lli a = 1 + rand() % (n - 1);
-		lli m = powerMod(a, d, n);
-		if(m == 1 || m == n - 1) goto exit;
-		for(int k = 0; k < s; ++k){
+	for(int i = 0, k; i < reps; ++i){
+		lli m = powerMod(aleatorio(2, n - 2), d, n);
+		if(m == 1 || m == n - 1) continue;
+		for(k = 0; k < s; ++k){
 			m = m * m % n;
-			if(m == n - 1) goto exit;
+			if(m == n - 1) break;
 		}
-		return false;
-		exit:;
+		if(k == s) return false;
 	}
 	return true;
 }
 
 lli getFactor(lli n){
-	lli a = 1 + rand() % (n - 1);
-	lli b = 1 + rand() % (n - 1);
+	lli a = aleatorio(1, n - 1), b = aleatorio(1, n - 1);
 	lli x = 2, y = 2, d = 1;
 	while(d == 1){
 		x = x * (x + b) % n + a;
@@ -703,10 +707,6 @@ void factorizePollardRho(lli n, bool clean = true){
 	}
 	if(n > 1) ++fact[n];
 }
-
-
-
-
 
 //find all inverses (from 1 to p-1) modulo p
 vector<lli> allInverses(lli p){
@@ -1021,17 +1021,29 @@ lli floorsSum(lli p, lli q, lli n){
     return s;
 }
 
-//Finds (n!/p^m) mod p, where m is the largest power of p
+//Finds (n!/p^m) mod p^s, where m is the largest power of p
 //that divides n!, p must be prime
-lli factmod(lli n, lli p){
+lli factmod(lli n, lli p, int s){
 	lli ans = 1;
+	lli ps = power(p, s);
 	while(n > 1){
-		ans = ans * ((n/p) % 2 ? p-1 : 1) % p;
-		for(lli i = 2; i <= n%p; ++i)
-			ans = ans * i % p;
+		lli q = n / ps, r = n % ps;
+		ans = ans * (q % 2 == 1 && !(p == 2 && s >= 3) ? ps-1 : 1) % ps;
+		for(lli i = 2; i <= r; ++i){
+			if(i % p == 0) continue;
+			ans = ans * i % ps;
+		}
 		n /= p;
 	}
 	return ans;
+}
+
+uint64_t mul_mod(uint64_t a, uint64_t b, uint64_t m){
+	if(a >= m) a %= m;
+	if(b >= m) b %= m;
+	uint64_t c = (long double)a * b / m;
+	int64_t r = (int64_t)(a * b - c * m) % (int64_t)m;
+	return r < 0 ? r + m : r;
 }
 
 ostream &operator<<(ostream &os, const __int128 & value){
@@ -1156,9 +1168,9 @@ int main(){
 	cin >> k >> m;
 	cout << (long long int)findFirstPrimitiveKthRootUnity(k, m);*/
 
-	for(lli n = 1; n <= 20; ++n){
-		cout << factmod(n, 7) << " ";
-	}
+	/*for(lli n = 1; n <= 100; ++n){
+		cout << n << " " << factmod(n, 7, 2) << "\n";
+	}*/
 
 	/*lli a, b, m;
 	cin >> a >> b >> m;
