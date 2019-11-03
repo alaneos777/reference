@@ -246,6 +246,9 @@
 			\subsubsection{Suma de la función piso}
 			\inputminted[tabsize=2,breaklines,firstline=1003,lastline=1022,fontsize=\small]{c++}{numberTheory.cpp}
 			
+			\subsubsection{Periodo de Pisano}
+			\inputminted[tabsize=2,breaklines,firstline=1049,lastline=1076,fontsize=\small]{c++}{numberTheory.cpp}
+			
 	\newpage
 	\section{Números racionales}
 		\subsection{Estructura \texttt{fraccion}}
@@ -390,8 +393,9 @@
 			\subsubsection{Puntos de tangencia de punto exterior}
 			\inputminted[tabsize=2,breaklines,firstline=401,lastline=406,fontsize=\small]{c++}{geometry.cpp}
 			
-			\subsubsection{Intersección línea-círculo}
+			\subsubsection{Intersección línea-círculo y segmento-círculo}
 			\inputminted[tabsize=2,breaklines,firstline=408,lastline=422,fontsize=\small]{c++}{geometry.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=789,lastline=795,fontsize=\small]{c++}{geometry.cpp}
 			
 			\subsubsection{Centro y radio a través de tres puntos}
 			\inputminted[tabsize=2,breaklines,firstline=424,lastline=429,fontsize=\small]{c++}{geometry.cpp}
@@ -404,6 +408,9 @@
 			
 			\subsubsection{Tangentes}
 			\inputminted[tabsize=2,breaklines,firstline=471,lastline=501,fontsize=\small]{c++}{geometry.cpp}
+			
+			\subsubsection{Intersección polígono-círculo}
+			\inputminted[tabsize=2,breaklines,firstline=797,lastline=832,fontsize=\small]{c++}{geometry.cpp}
 			
 			\subsubsection{Smallest enclosing circle}
 			\inputminted[tabsize=2,breaklines,firstline=756,lastline=787,fontsize=\small]{c++}{geometry.cpp}
@@ -712,6 +719,7 @@
 				\sum_{n=0}^{\infty} p_n x^n &= \dfrac{1}{\displaystyle \prod_{k=1}^{\infty}(1-x^k)} = \dfrac{1}{\displaystyle \sum_{n=-\infty}^{\infty} x^{\frac{1}{2}n(3n+1)}} \\
 				\sum_{n=0}^{\infty} n^k x^n &= \dfrac{\displaystyle \sum_{i=0}^{k-1} \euler{k}{i} x^{i+1}}{(1-x)^{k+1}} \quad , \quad k \geq 1
 			\end{align*}
+			Sean $a_1, a_2, \ldots, a_n$ números complejos. Sean $p_m = \displaystyle \sum_{i=1}^{n} a_i^m$ y $s_m$ el $m$-ésimo polinomio elemental simétrico de $a_1, a_2, \ldots, a_n$. Entonces se cumple que $xS'(x) + P(x)S(x) = 0$, donde $P(x)=\displaystyle \sum_{m=1}^{\infty} p_m x_m$ y $S(x)=\displaystyle \prod_{i=1}^{n}(1-a_ix) = \sum_{m=0}^{n}(-1)^m s_m x^m$.
 		
 		\subsection{Números armónicos}
 			\begin{align*}
@@ -792,6 +800,13 @@
 				\item Número de spanning trees en un grafo completo con $n$ vértices etiquetados: $n^{n-2}$.
 				\item Número de bosques etiquetados con $n$ vértices y $k$ componentes conexas: $kn^{n-k-1}$.
 				\item Para un grafo no dirigido simple $G$ con $n$ vértices etiquetados de $1$ a $n$, sea $Q=D-A$, donde $D$ es la matriz diagonal de los grados de cada nodo de $G$ y $A$ es la matriz de adyacencia de $G$. Entonces el número de spanning trees de $G$ es igual a cualquier cofactor de $Q$.
+				\item Sea $G$ un grafo. Se define al polinomio $P_G(x)$ como el polinomio cromático de $G$, en donde $P_G(k)$ nos dice cuántas $k$-coloraciones de los vértices admite $G$. Ejemplos comunes:
+				\begin{itemize}
+					\item Grafo completo de $n$ nodos: $P(x)=x(x-1)(x-2) \ldots (x-(n-1))$
+					\item Grafo vacío de $n$ nodos: $P(x)=x^n$
+					\item Árbol de $n$ nodos: $P(x)=x(x-1)^{n-1}$
+					\item Ciclo de $n$ nodos: $P(x)=(x-1)^n + (-1)^n(x-1)$
+				\end{itemize}
 			\end{itemize}
 		
 		\subsection{Teoría de números}
@@ -806,6 +821,12 @@
 			\end{align*}
 		
 			\begin{itemize}
+				\item Lifting the exponent: sea $p$ un primo, $x,y$ enteros y $n$ un entero positivo tal que $p \mid x-y$ pero $p \nmid x$ ni $p \nmid y$. Entonces:
+				\begin{itemize}
+					\item Si $p$ es impar: $v_p(x^n-y^n) = v_p(x-y) + v_p(n)$
+					\item Si $p=2$ y $n$ es par: $v_p(x^n-y^n) = v_p(x-y) + v_p(n) + v_p(x+y) - 1$
+				\end{itemize}
+				donde $v_p(n)$ es el exponente de $p$ en la factorización en primos de $n$.
 				\item Suma de dos cuadrados: sea $\chi_4(n)$ una función multiplicativa igual a 1 si $n \equiv 1 \mod 4$, $-1$ si $n \equiv 3 \mod 4$ y cero en otro caso. Entonces, el número de soluciones enteras $(a,b)$ de la ecuación $a^2+b^2=n$ es $4(\chi_4 * 1)(n) = 4 \displaystyle \sum_{d | n} \chi_4(d)$.
 				\item Teorema de Lucas:
 				\begin{align*}

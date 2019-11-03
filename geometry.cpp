@@ -234,7 +234,7 @@ int pointInPolygon(vector<point> & P, const point & p){
 }
 
 bool comp1(const point & a, const point & b){
-	return a.y < b.y;
+	return le(a.y, b.y);
 }
 pair<point, point> closestPairOfPoints(vector<point> P){
 	sort(P.begin(), P.end(), comp1);
@@ -243,14 +243,14 @@ pair<point, point> closestPairOfPoints(vector<point> P){
 	point p, q;
 	int pos = 0;
 	for(int i = 0; i < P.size(); ++i){
-		while(pos < i && abs(P[i].y - P[pos].y) >= ans){
+		while(pos < i && geq(P[i].y - P[pos].y, ans)){
 			S.erase(P[pos++]);
 		}
 		auto lower = S.lower_bound({P[i].x - ans - eps, -inf});
 		auto upper = S.upper_bound({P[i].x + ans + eps, -inf});
 		for(auto it = lower; it != upper; ++it){
 			ld d = (P[i] - *it).length();
-			if(d < ans){
+			if(le(d, ans)){
 				ans = d;
 				p = P[i];
 				q = *it;
@@ -412,11 +412,11 @@ vector<point> intersectLineCircle(const point & a, const point & v, const point 
 	ld C = (a - c).dot(a - c) - r * r;
 	ld D = B*B - A*C;
 	if(eq(D, 0)) return {a + v * (-B/A)}; //line tangent to circle
-	else if(D < 0) return {}; //no intersection
+	else if(le(D, 0)) return {}; //no intersection
 	else{ //two points of intersection (chord)
 		D = sqrt(D);
-		ld t1 = (-B + D) / A;
-		ld t2 = (-B - D) / A;
+		ld t1 = (-B - D) / A;
+		ld t2 = (-B + D) / A;
 		return {a + v * t1, a + v * t2};
 	}
 }
@@ -470,8 +470,8 @@ int pointInCircle(const point & c, ld r, const point & p){
 
 vector<vector<point>> commonExteriorTangents(const point & c1, ld r1, const point & c2, ld r2){
 	//returns a vector of segments or a single point
-	if(r1 < r2) return commonExteriorTangents(c2, r2, c1, r1);
-	if(c1 == c2 && abs(r1-r2) < 0) return {};
+	if(le(r1, r2)) return commonExteriorTangents(c2, r2, c1, r1);
+	if(c1 == c2 && eq(r1, r2)) return {};
 	int in = circleInsideCircle(c1, r1, c2, r2);
 	if(in == 1) return {};
 	else if(in == -1) return {{c1 + (c2 - c1).normalize() * r1}};
@@ -488,7 +488,7 @@ vector<vector<point>> commonExteriorTangents(const point & c1, ld r1, const poin
 }
 
 vector<vector<point>> commonInteriorTangents(const point & c1, ld r1, const point & c2, ld r2){
-	if(c1 == c2 && abs(r1-r2) < 0) return {};
+	if(c1 == c2 && eq(r1, r2)) return {};
 	int out = circleOutsideCircle(c1, r1, c2, r2);
 	if(out == 0) return {};
 	else if(out == -1) return {{c1 + (c2 - c1).normalize() * r1}};
@@ -784,6 +784,51 @@ pair<point, ld> smallestEnclosingCircle(vector<point> S){
 	assert(!S.empty());
 	auto r = mec(S, S[0], S.size());
 	return {r.first, sqrt(r.second)};
+}
+
+vector<point> intersectSegmentCircle(const point & a, const point & b, const point & c, ld r){
+	vector<point> P = intersectLineCircle(a, b - a, c, r), ans;
+	for(const point & p : P){
+		if(pointInSegment(a, b, p)) ans.push_back(p);
+	}
+	return ans;
+}
+
+ld signed_angle(const point & a, const point & b){
+	return sgn(a.cross(b)) * acosl(a.dot(b) / (a.length() * b.length()));
+}
+
+ld intersectPolygonCircle(const vector<point> & P, const point & c, ld r){
+	//Gets the area of the intersection of the polygon with the circle
+	int n = P.size();
+	ld ans = 0;
+	for(int i = 0; i < n; ++i){
+		point p = P[i], q = P[(i+1)%n];
+		bool p_inside = (pointInCircle(c, r, p) != 0);
+		bool q_inside = (pointInCircle(c, r, q) != 0);
+		if(p_inside && q_inside){
+			ans += (p - c).cross(q - c);
+		}else if(p_inside && !q_inside){
+			point s1 = intersectSegmentCircle(p, q, c, r)[0];
+			point s2 = intersectSegmentCircle(c, q, c, r)[0];
+			ans += (p - c).cross(s1 - c) + r*r * signed_angle(s1 - c, s2 - c);
+		}else if(!p_inside && q_inside){
+			point s1 = intersectSegmentCircle(c, p, c, r)[0];
+			point s2 = intersectSegmentCircle(p, q, c, r)[0];
+			ans += (s2 - c).cross(q - c) + r*r * signed_angle(s1 - c, s2 - c);
+		}else{
+			auto info = intersectSegmentCircle(p, q, c, r);
+			if(info.size() <= 1){
+				ans += r*r * signed_angle(p - c, q - c);
+			}else{
+				point s2 = info[0], s3 = info[1];
+				point s1 = intersectSegmentCircle(c, p, c, r)[0];
+				point s4 = intersectSegmentCircle(c, q, c, r)[0];
+				ans += (s2 - c).cross(s3 - c) + r*r * (signed_angle(s1 - c, s2 - c) + signed_angle(s3 - c, s4 - c));
+			}
+		}
+	}
+	return abs(ans)/2;
 }
 
 int main(){

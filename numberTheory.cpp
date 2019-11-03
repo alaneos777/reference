@@ -654,22 +654,17 @@ pair<lli, lli> PellEquation(lli n){
 	return {den, num};
 }
 
-mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-lli aleatorio(lli a, lli b){
-	std::uniform_int_distribution<lli> dist(a, b);
-	return dist(rng);
-}
-
-bool isPrimeMillerRabin(lli n, int reps = 16){
+bool isPrimeMillerRabin(lli n){
 	if(n < 2) return false;
-	if(n <= 3) return true;
-	if(!(n & 1)) return false;
+	if(!(n & 1)) return n == 2;
 	lli d = n - 1, s = 0;
 	for(; !(d & 1); d >>= 1, ++s);
-	for(int i = 0, k; i < reps; ++i){
-		lli m = powerMod(aleatorio(2, n - 2), d, n);
+	for(int a : {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}){
+		if(n == a) return true;
+		lli m = powerMod(a, d, n);
 		if(m == 1 || m == n - 1) continue;
-		for(k = 0; k < s; ++k){
+		int k = 0;
+		for(; k < s; ++k){
 			m = m * m % n;
 			if(m == n - 1) break;
 		}
@@ -678,6 +673,11 @@ bool isPrimeMillerRabin(lli n, int reps = 16){
 	return true;
 }
 
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+lli aleatorio(lli a, lli b){
+	std::uniform_int_distribution<lli> dist(a, b);
+	return dist(rng);
+}
 lli getFactor(lli n){
 	lli a = aleatorio(1, n - 1), b = aleatorio(1, n - 1);
 	lli x = 2, y = 2, d = 1;
@@ -718,11 +718,11 @@ vector<lli> allInverses(lli p){
 }
 
 //very fast fibonacci
-inline void modula(lli & n){
+inline void modula(lli & n, lli mod){
 	while(n >= mod) n -= mod;
 }
 
-lli fibo(lli n){
+lli fibo(lli n, lli mod){
 	array<lli, 2> F = {1, 0};
 	lli p = 1;
 	for(lli v = n; v >>= 1; p <<= 1);
@@ -735,7 +735,7 @@ lli fibo(lli n){
 		C[d+2] = F[1] * F[1] % mod;
 		F[0] = C[0] + C[2] + C[3];
 		F[1] = C[1] + C[2] + (C[3] << 1);
-		modula(F[0]), modula(F[1]);
+		modula(F[0], mod), modula(F[1], mod);
 	}while(p >>= 1);
 	return F[1];
 }
@@ -1046,6 +1046,35 @@ uint64_t mul_mod(uint64_t a, uint64_t b, uint64_t m){
 	return r < 0 ? r + m : r;
 }
 
+lli pisano_prime(lli p){
+	if(p == 2) return 3;
+	if(p == 5) return 20;
+	lli order = 0;
+	if(p%10 == 1 || p%10 == 9) order = p - 1;
+	else order = 2*p + 2;
+	auto fact = factorize(order);
+	for(auto par : fact){
+		lli q; int a;
+		tie(q, a) = par;
+		order /= power(q, a);
+		while(!(fibo(order, p) == 0 && fibo(order+1, p) == 1)){
+			order *= q;
+		}
+	}
+	return order;
+}
+
+lli pisano(lli mod){
+	lli ans = 1;
+	auto fact = factorize(mod);
+	for(auto par : fact){
+		lli p; int a;
+		tie(p, a) = par;
+		ans = lcm(ans, power(p, a-1) * pisano_prime(p));
+	}
+	return ans;
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -1120,7 +1149,7 @@ int main(){
 
 	/*int l = 1e7;
 	clock_t start = clock();
-	for(int i = 1; i <= l; ++i) fibo(i);
+	for(int i = 1; i <= l; ++i) fibo(i, mod);
 	cout << fixed << setprecision(4) << (clock() - start) / (double)CLOCKS_PER_SEC << "\n";*/
 
 	/*clock_t start = clock();
@@ -1142,10 +1171,15 @@ int main(){
 
 	/*lli x;
 	cin >> x;
+	cout << isPrimeMillerRabin(x) << "\n";
 	factorizePollardRho(x);
 	for(auto & it : fact){
 		cout << it.first << " " << it.second << "\n";
 	}*/
+
+	for(lli i = 1; i <= 10000; ++i){
+		cout << i << " " << pisano(i) << "\n";
+	}
 
 	/*lli p, n, q;
 	cin >> p >> n >> q;
