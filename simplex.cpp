@@ -12,7 +12,7 @@ const double eps = 1e-9, oo = numeric_limits<double>::infinity();
 typedef vector<double> vec;
 typedef vector<vec> mat;
 
-pair<vec, double> simplexMethodPD(mat &A, vec &b, vec &c, bool mini = true){
+pair<vec, double> simplexMethodPD(const mat &A, const vec &b, const vec &c, bool mini = true){
 	int n = c.size(), m = b.size();
 	mat T(m + 1, vec(n + m + 1));
 	vector<int> base(n + m), row(m);

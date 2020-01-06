@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-typedef long double ld;
+using ld = long double;
 ld eps = 1e-9, inf = numeric_limits<ld>::max();
 
 bool geq(ld a, ld b){return a-b >= -eps;}     //a >= b
@@ -16,61 +16,29 @@ struct point{
 	point(ld x, ld y): x(x), y(y){}
 
 	point operator+(const point & p) const{return point(x + p.x, y + p.y);}
-	
 	point operator-(const point & p) const{return point(x - p.x, y - p.y);}
-	
 	point operator*(const ld & k) const{return point(x * k, y * k);}
-
 	point operator/(const ld & k) const{return point(x / k, y / k);}
 
 	point operator+=(const point & p){*this = *this + p; return *this;}
-
 	point operator-=(const point & p){*this = *this - p; return *this;}
-
 	point operator*=(const ld & p){*this = *this * p; return *this;}
-
 	point operator/=(const ld & p){*this = *this / p; return *this;}
 
-	point rotate(const ld angle) const{
+	point rotate(const ld & angle) const{
 		return point(x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle));
 	}
-	point rotate(const ld angle, const point & p){
-		return p + ((*this) - p).rotate(angle);
-	}
-	point perpendicular() const{
-		return point(-y, x);
-	}
+	point perp() const{return point(-y, x);}
 
-	ld dot(const point & p) const{
-		return x * p.x + y * p.y;
-	}
-	ld cross(const point & p) const{
-		return x * p.y - y * p.x;
-	}
-	ld norm() const{
-		return x * x + y * y;
-	}
-	long double length() const{
-		return sqrtl(x * x + y * y);
-	}
+	ld dot(const point & p) const{return x * p.x + y * p.y;}
+	ld cross(const point & p) const{return x * p.y - y * p.x;}
+	ld norm() const{return x * x + y * y;}
+	long double length() const{return sqrtl(x * x + y * y);}
 
-	point normalize() const{
-		return (*this) / length();
-	}
+	point unit() const{return (*this) / length();}
 
-	point projection(const point & p) const{
-		return (*this) * p.dot(*this) / dot(*this);
-	}
-	point normal(const point & p) const{
-		return p - projection(p);
-	}
-
-	bool operator==(const point & p) const{
-		return eq(x, p.x) && eq(y, p.y);
-	}
-	bool operator!=(const point & p) const{
-		return !(*this == p);
-	}
+	bool operator==(const point & p) const{return eq(x, p.x) && eq(y, p.y);}
+	bool operator!=(const point & p) const{return !(*this == p);}
 	bool operator<(const point & p) const{
 		if(eq(x, p.x)) return le(y, p.y);
 		return le(x, p.x);
@@ -81,14 +49,9 @@ struct point{
 	}
 };
 
-istream &operator>>(istream &is, point & P){
-	is >> P.x >> P.y;
-	return is;
-}
+istream &operator>>(istream &is, point & p){return is >> p.x >> p.y;}
 
-ostream &operator<<(ostream &os, const point & p) { 
-	return os << "(" << p.x << ", " << p.y << ")";
-}
+ostream &operator<<(ostream &os, const point & p) { return os << "(" << p.x << ", " << p.y << ")";}
 
 int sgn(ld x){
 	if(ge(x, 0)) return 1;
@@ -96,23 +59,18 @@ int sgn(ld x){
 	return 0;
 }
 
-
-
-
 bool pointInLine(const point & a, const point & v, const point & p){
 	//line a+tv, point p
 	return eq((p - a).cross(v), 0);
 }
 
-bool pointInSegment(point a, point b, const point & p){
+bool pointInSegment(const point & a, const point & b, const point & p){
 	//segment ab, point p
-	if(a > b) swap(a, b);
-	return pointInLine(a, b - a, p) && !(p < a || p > b);
+	return pointInLine(a, b - a, p) && leq((a - p).dot(b - p), 0);
 }
 
 int intersectLinesInfo(const point & a1, const point & v1, const point & a2, const point & v2){
-	//line a1+tv1
-	//line a2+tv2
+	//lines a1+tv1 and a2+tv2
 	ld det = v1.cross(v2);
 	if(eq(det, 0)){
 		if(eq((a2 - a1).cross(v1), 0)){
@@ -220,17 +178,312 @@ bool pointInPerimeter(vector<point> & P, const point & p){
 	return false;
 }
 
+bool crossesRay(const point & a, const point & b, const point & p){
+	return ge((geq(b.y, p.y) - geq(a.y, p.y)) * (a - p).cross(b - p), 0);
+}
+
 int pointInPolygon(vector<point> & P, const point & p){
 	if(pointInPerimeter(P, p)){
 		return -1; //point in the perimeter
 	}
-	point bottomLeft = (*min_element(P.begin(), P.end())) - point(M_E, M_PI);
 	int n = P.size();
 	int rays = 0;
 	for(int i = 0; i < n; i++){
-		rays += (intersectSegmentsInfo(p, bottomLeft, P[i], P[(i + 1) % n]) == 1 ? 1 : 0);
+		rays += crossesRay(P[i], P[(i + 1) % n], p);
 	}
 	return rays & 1; //0: point outside, 1: point inside
+}
+
+//point in convex polygon in log(n)
+//first do preprocess: seg=process(P),
+//then for each query call pointInConvexPolygon(seg, p - P[0])
+vector<point> process(vector<point> & P){
+	int n = P.size();
+	rotate(P.begin(), min_element(P.begin(), P.end()), P.end());
+	vector<point> seg(n - 1);
+	for(int i = 0; i < n - 1; ++i)
+		seg[i] = P[i + 1] - P[0];
+	return seg;
+}
+
+bool pointInConvexPolygon(const vector<point> & seg, const point & p){
+	int n = seg.size();
+	if(neq(seg[0].cross(p), 0) && sgn(seg[0].cross(p)) != sgn(seg[0].cross(seg[n - 1])))
+		return false;
+	if(neq(seg[n - 1].cross(p), 0) && sgn(seg[n - 1].cross(p)) != sgn(seg[n - 1].cross(seg[0])))
+		return false;
+	if(eq(seg[0].cross(p), 0))
+		return geq(seg[0].length(), p.length());
+	int l = 0, r = n - 1;
+	while(r - l > 1){
+		int m = l + ((r - l) >> 1);
+		if(geq(seg[m].cross(p), 0)) l = m;
+		else r = m;
+	}
+	return eq(abs(seg[l].cross(seg[l + 1])), abs((p - seg[l]).cross(p - seg[l + 1])) + abs(p.cross(seg[l])) + abs(p.cross(seg[l + 1])));
+}
+
+bool lineCutsPolygon(const vector<point> & P, const point & a, const point & v){
+	//line a+tv, polygon P
+	int n = P.size();
+	for(int i = 0, first = 0; i <= n; ++i){
+		int side = sgn(v.cross(P[i%n]-a));
+		if(!side) continue;
+		if(!first) first = side;
+		else if(side != first) return true;
+	}
+	return false;
+}
+
+vector<vector<point>> cutPolygon(const vector<point> & P, const point & a, const point & v){
+	//line a+tv, polygon P
+	int n = P.size();
+	if(!lineCutsPolygon(P, a, v)) return {P};
+	int idx = 0;
+	vector<vector<point>> ans(2);
+	for(int i = 0; i < n; ++i){
+		if(intersectLineSegmentInfo(a, v, P[i], P[(i+1)%n])){
+			point p = intersectLines(a, v, P[i], P[(i+1)%n] - P[i]);
+			if(P[i] == p) continue;
+			ans[idx].push_back(P[i]);
+			ans[1-idx].push_back(p);
+			ans[idx].push_back(p);
+			idx = 1-idx;
+		}else{
+			ans[idx].push_back(P[i]);
+		}
+	}
+	return ans;
+}
+
+point centroid(vector<point> & P){
+	point num;
+	ld den = 0;
+	int n = P.size();
+	for(int i = 0; i < n; ++i){
+		ld cross = P[i].cross(P[(i + 1) % n]);
+		num += (P[i] + P[(i + 1) % n]) * cross;
+		den += cross;
+	}
+	return num / (3 * den);
+}
+
+vector<pair<int, int>> antipodalPairs(vector<point> & P){
+	vector<pair<int, int>> ans;
+	int n = P.size(), k = 1;
+	auto f = [&](int u, int v, int w){return abs((P[v%n]-P[u%n]).cross(P[w%n]-P[u%n]));};
+	while(ge(f(n-1, 0, k+1), f(n-1, 0, k))) ++k;
+	for(int i = 0, j = k; i <= k && j < n; ++i){
+		ans.emplace_back(i, j);
+		while(j < n-1 && ge(f(i, i+1, j+1), f(i, i+1, j)))
+			ans.emplace_back(i, ++j);
+	}
+	return ans;
+}
+
+pair<ld, ld> diameterAndWidth(vector<point> & P){
+	int n = P.size(), k = 0;
+	auto dot = [&](int a, int b){return (P[(a+1)%n]-P[a]).dot(P[(b+1)%n]-P[b]);};
+	auto cross = [&](int a, int b){return (P[(a+1)%n]-P[a]).cross(P[(b+1)%n]-P[b]);};
+	ld diameter = 0;
+	ld width = inf;
+	while(ge(dot(0, k), 0)) k = (k+1) % n;
+	for(int i = 0; i < n; ++i){
+		while(ge(cross(i, k), 0)) k = (k+1) % n;
+		//pair: (i, k)
+		diameter = max(diameter, (P[k] - P[i]).length());
+		width = min(width, distancePointLine(P[i], P[(i+1)%n] - P[i], P[k]));
+	}
+	return make_pair(diameter, width);
+}
+
+pair<ld, ld> smallestEnclosingRectangle(vector<point> & P){
+	int n = P.size();
+	auto dot = [&](int a, int b){return (P[(a+1)%n]-P[a]).dot(P[(b+1)%n]-P[b]);};
+	auto cross = [&](int a, int b){return (P[(a+1)%n]-P[a]).cross(P[(b+1)%n]-P[b]);};
+	ld perimeter = inf, area = inf;
+	for(int i = 0, j = 0, k = 0, m = 0; i < n; ++i){
+		while(ge(dot(i, j), 0)) j = (j+1) % n;
+		if(!i) k = j;
+		while(ge(cross(i, k), 0)) k = (k+1) % n;
+		if(!i) m = k;
+		while(le(dot(i, m), 0)) m = (m+1) % n;
+		//pairs: (i, k) , (j, m)
+		point v = P[(i+1)%n] - P[i];
+		ld h = distancePointLine(P[i], v, P[k]);
+		ld w = distancePointLine(P[j], v.perp(), P[m]);
+		perimeter = min(perimeter, 2 * (h + w));
+		area = min(area, h * w);
+	}
+	return make_pair(area, perimeter);
+}
+
+ld distancePointCircle(const point & c, ld r, const point & p){
+	//point p, circle with center c and radius r
+	return max((ld)0, (p - c).length() - r);
+}
+
+point projectionPointCircle(const point & c, ld r, const point & p){
+	//point p (outside the circle), circle with center c and radius r
+	return c + (p - c).unit() * r;
+}
+
+pair<point, point> pointsOfTangency(const point & c, ld r, const point & p){
+	//point p (outside the circle), circle with center c and radius r
+	point v = (p - c).unit() * r;
+	ld d2 = (p - c).norm(), d = sqrt(d2);
+	point v1 = v * (r / d), v2 = v.perp() * (sqrt(d2 - r*r) / d);
+	return {c + v1 - v2, c + v1 + v2};
+}
+
+vector<point> intersectLineCircle(const point & a, const point & v, const point & c, ld r){
+	//line a+tv, circle with center c and radius r
+	ld h2 = r*r - v.cross(c - a) * v.cross(c - a) / v.norm();
+	point p = a + v * v.dot(c - a) / v.norm();
+	if(eq(h2, 0)) return {p}; //line tangent to circle
+	else if(le(h2, 0)) return {}; //no intersection
+	else{
+		point u = v.unit() * sqrt(h2);
+		return {p - u, p + u}; //two points of intersection (chord)
+	}
+}
+
+vector<point> intersectSegmentCircle(const point & a, const point & b, const point & c, ld r){
+	//segment ab, circle with center c and radius r
+	vector<point> P = intersectLineCircle(a, b - a, c, r), ans;
+	for(const point & p : P){
+		if(pointInSegment(a, b, p)) ans.push_back(p);
+	}
+	return ans;
+}
+
+pair<point, ld> getCircle(const point & m, const point & n, const point & p){
+	//find circle that passes through points p, q, r
+	point c = intersectLines((n + m) / 2, (n - m).perp(), (p + n) / 2, (p - n).perp());
+	ld r = (c - m).length();
+	return {c, r};
+}
+
+vector<point> intersectionCircles(const point & c1, ld r1, const point & c2, ld r2){
+	//circle 1 with center c1 and radius r1
+	//circle 2 with center c2 and radius r2
+	point d = c2 - c1;
+	ld d2 = d.norm();
+	if(eq(d2, 0)) return {}; //concentric circles
+	ld pd = (d2 + r1*r1 - r2*r2) / 2;
+	ld h2 = r1*r1 - pd*pd/d2;
+	point p = c1 + d*pd/d2;
+	if(eq(h2, 0)) return {p}; //circles touch at one point
+	else if(le(h2, 0)) return {}; //circles don't intersect
+	else{
+		point u = d.perp() * sqrt(h2/d2);
+		return {p - u, p + u};
+	}
+}
+
+int circleInsideCircle(const point & c1, ld r1, const point & c2, ld r2){
+	//test if circle 2 is inside circle 1
+	//returns "-1" if 2 touches internally 1, "1" if 2 is inside 1, "0" if they overlap
+	ld l = r1 - r2 - (c1 - c2).length();
+	return (ge(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
+}
+
+int circleOutsideCircle(const point & c1, ld r1, const point & c2, ld r2){
+	//test if circle 2 is outside circle 1
+	//returns "-1" if they touch externally, "1" if 2 is outside 1, "0" if they overlap
+	ld l = (c1 - c2).length() - (r1 + r2);
+	return (ge(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
+}
+
+int pointInCircle(const point & c, ld r, const point & p){
+	//test if point p is inside the circle with center c and radius r
+	//returns "0" if it's outside, "-1" if it's in the perimeter, "1" if it's inside
+	ld l = (p - c).length() - r;
+	return (le(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
+}
+
+vector<vector<point>> tangents(const point & c1, ld r1, const point & c2, ld r2, bool inner){
+	//returns a vector of segments or a single point
+	if(inner) r2 = -r2;
+	point d = c2 - c1;
+	ld dr = r1 - r2, d2 = d.norm(), h2 = d2 - dr*dr;
+	if(eq(d2, 0) || le(h2, 0)) return {};
+	point v = d*dr/d2;
+	if(eq(h2, 0)) return {{c1 + v*r1}};
+	else{
+		point u = d.perp()*sqrt(h2)/d2;
+		return {{c1 + (v - u)*r1, c2 + (v - u)*r2}, {c1 + (v + u)*r1, c2 + (v + u)*r2}};
+	}
+}
+
+ld signed_angle(const point & a, const point & b){
+	return sgn(a.cross(b)) * acosl(a.dot(b) / (a.length() * b.length()));
+}
+
+ld intersectPolygonCircle(const vector<point> & P, const point & c, ld r){
+	//Gets the area of the intersection of the polygon with the circle
+	int n = P.size();
+	ld ans = 0;
+	for(int i = 0; i < n; ++i){
+		point p = P[i], q = P[(i+1)%n];
+		bool p_inside = (pointInCircle(c, r, p) != 0);
+		bool q_inside = (pointInCircle(c, r, q) != 0);
+		if(p_inside && q_inside){
+			ans += (p - c).cross(q - c);
+		}else if(p_inside && !q_inside){
+			point s1 = intersectSegmentCircle(p, q, c, r)[0];
+			point s2 = intersectSegmentCircle(c, q, c, r)[0];
+			ans += (p - c).cross(s1 - c) + r*r * signed_angle(s1 - c, s2 - c);
+		}else if(!p_inside && q_inside){
+			point s1 = intersectSegmentCircle(c, p, c, r)[0];
+			point s2 = intersectSegmentCircle(p, q, c, r)[0];
+			ans += (s2 - c).cross(q - c) + r*r * signed_angle(s1 - c, s2 - c);
+		}else{
+			auto info = intersectSegmentCircle(p, q, c, r);
+			if(info.size() <= 1){
+				ans += r*r * signed_angle(p - c, q - c);
+			}else{
+				point s2 = info[0], s3 = info[1];
+				point s1 = intersectSegmentCircle(c, p, c, r)[0];
+				point s4 = intersectSegmentCircle(c, q, c, r)[0];
+				ans += (s2 - c).cross(s3 - c) + r*r * (signed_angle(s1 - c, s2 - c) + signed_angle(s3 - c, s4 - c));
+			}
+		}
+	}
+	return abs(ans)/2;
+}
+
+pair<point, ld> mec2(vector<point> & S, const point & a, const point & b, int n){
+	ld hi = inf, lo = -hi;
+	for(int i = 0; i < n; ++i){
+		ld si = (b - a).cross(S[i] - a);
+		if(eq(si, 0)) continue;
+		point m = getCircle(a, b, S[i]).first;
+		ld cr = (b - a).cross(m - a);
+		if(le(si, 0)) hi = min(hi, cr);
+		else lo = max(lo, cr);
+	}
+	ld v = (ge(lo, 0) ? lo : le(hi, 0) ? hi : 0);
+	point c = (a + b) / 2 + (b - a).perp() * v / (b - a).norm();
+	return {c, (a - c).norm()};
+}
+
+pair<point, ld> mec(vector<point> & S, const point & a, int n){
+	random_shuffle(S.begin(), S.begin() + n);
+	point b = S[0], c = (a + b) / 2;
+	ld r = (a - c).norm();
+	for(int i = 1; i < n; ++i){
+		if(ge((S[i] - c).norm(), r)){
+			tie(c, r) = (n == S.size() ? mec(S, S[i], i) : mec2(S, a, S[i], i));
+		}
+	}
+	return {c, r};
+}
+
+pair<point, ld> smallestEnclosingCircle(vector<point> S){
+	assert(!S.empty());
+	auto r = mec(S, S[0], S.size());
+	return {r.first, sqrt(r.second)};
 }
 
 bool comp1(const point & a, const point & b){
@@ -259,18 +512,6 @@ pair<point, point> closestPairOfPoints(vector<point> P){
 		S.insert(P[i]);
 	}
 	return {p, q};
-}
-
-point centroid(vector<point> & P){
-	point num;
-	ld den = 0;
-	int n = P.size();
-	for(int i = 0; i < n; ++i){
-		ld cross = P[i].cross(P[(i + 1) % n]);
-		num += (P[i] + P[(i + 1) % n]) * cross;
-		den += cross;
-	}
-	return num / (3 * den);
 }
 
 struct vantage_point_tree{
@@ -338,168 +579,6 @@ struct vantage_point_tree{
 	}
 };
 
-vector<pair<int, int>> antipodalPairs(vector<point> & P){
-	vector<pair<int, int>> ans;
-	int n = P.size(), k = 1;
-	auto f = [&](int u, int v, int w){return abs((P[v%n]-P[u%n]).cross(P[w%n]-P[u%n]));};
-	while(ge(f(n-1, 0, k+1), f(n-1, 0, k))) ++k;
-	for(int i = 0, j = k; i <= k && j < n; ++i){
-		ans.emplace_back(i, j);
-		while(j < n-1 && ge(f(i, i+1, j+1), f(i, i+1, j)))
-			ans.emplace_back(i, ++j);
-	}
-	return ans;
-}
-
-pair<ld, ld> diameterAndWidth(vector<point> & P){
-	int n = P.size(), k = 0;
-	auto dot = [&](int a, int b){return (P[(a+1)%n]-P[a]).dot(P[(b+1)%n]-P[b]);};
-	auto cross = [&](int a, int b){return (P[(a+1)%n]-P[a]).cross(P[(b+1)%n]-P[b]);};
-	ld diameter = 0;
-	ld width = inf;
-	while(ge(dot(0, k), 0)) k = (k+1) % n;
-	for(int i = 0; i < n; ++i){
-		while(ge(cross(i, k), 0)) k = (k+1) % n;
-		//pair: (i, k)
-		diameter = max(diameter, (P[k] - P[i]).length());
-		width = min(width, distancePointLine(P[i], P[(i+1)%n] - P[i], P[k]));
-	}
-	return make_pair(diameter, width);
-}
-
-pair<ld, ld> smallestEnclosingRectangle(vector<point> & P){
-	int n = P.size();
-	auto dot = [&](int a, int b){return (P[(a+1)%n]-P[a]).dot(P[(b+1)%n]-P[b]);};
-	auto cross = [&](int a, int b){return (P[(a+1)%n]-P[a]).cross(P[(b+1)%n]-P[b]);};
-	ld perimeter = inf, area = inf;
-	for(int i = 0, j = 0, k = 0, m = 0; i < n; ++i){
-		while(ge(dot(i, j), 0)) j = (j+1) % n;
-		if(!i) k = j;
-		while(ge(cross(i, k), 0)) k = (k+1) % n;
-		if(!i) m = k;
-		while(le(dot(i, m), 0)) m = (m+1) % n;
-		//pairs: (i, k) , (j, m)
-		point v = P[(i+1)%n] - P[i];
-		ld h = distancePointLine(P[i], v, P[k]);
-		ld w = distancePointLine(P[j], v.perpendicular(), P[m]);
-		perimeter = min(perimeter, 2 * (h + w));
-		area = min(area, h * w);
-	}
-	return make_pair(area, perimeter);
-}
-
-ld distancePointCircle(const point & p, const point & c, ld r){
-	//point p, center c, radius r
-	return max((ld)0, (p - c).length() - r);
-}
-
-point projectionPointCircle(const point & p, const point & c, ld r){
-	//point p (outside the circle), center c, radius r
-	return c + (p - c) / (p - c).length() * r;
-}
-
-pair<point, point> pointsOfTangency(const point & p, const point & c, ld r){
-	//point p (outside the circle), center c, radius r
-	point v = (p - c).normalize() * r;
-	ld theta = acos(r / (p - c).length());
-	return {c + v.rotate(-theta), c + v.rotate(theta)};
-}
-
-vector<point> intersectLineCircle(const point & a, const point & v, const point & c, ld r){
-	//line a+tv, center c, radius r
-	ld A = v.dot(v);
-	ld B = (a - c).dot(v);
-	ld C = (a - c).dot(a - c) - r * r;
-	ld D = B*B - A*C;
-	if(eq(D, 0)) return {a + v * (-B/A)}; //line tangent to circle
-	else if(le(D, 0)) return {}; //no intersection
-	else{ //two points of intersection (chord)
-		D = sqrt(D);
-		ld t1 = (-B - D) / A;
-		ld t2 = (-B + D) / A;
-		return {a + v * t1, a + v * t2};
-	}
-}
-
-pair<point, ld> getCircle(const point & m, const point & n, const point & p){
-	//find circle that passes through points p, q, r
-	point c = intersectLines((n + m) / 2, (n - m).perpendicular(), (p + n) / 2, (p - n).perpendicular());
-	ld r = (c - m).length();
-	return {c, r};
-}
-
-vector<point> intersectionCircles(const point & c1, ld r1, const point & c2, ld r2){
-	//circle 1 with center c1 and radius r1
-	//circle 2 with center c2 and radius r2
-	ld A = 2*r1*(c2.y - c1.y);
-	ld B = 2*r1*(c2.x - c1.x);
-	ld C = (c1 - c2).dot(c1 - c2) + r1*r1 - r2*r2;
-	ld D = A*A + B*B - C*C;
-	if(eq(D, 0)) return {c1 + point(B, A) * r1 / C};
-	else if(le(D, 0)) return {};
-	else{
-		D = sqrt(D);
-		ld cos1 = (B*C + A*D) / (A*A + B*B);
-		ld sin1 = (A*C - B*D) / (A*A + B*B);
-		ld cos2 = (B*C - A*D) / (A*A + B*B);
-		ld sin2 = (A*C + B*D) / (A*A + B*B);
-		return {c1 + point(cos1, sin1) * r1, c1 + point(cos2, sin2) * r1};
-	}
-}
-
-int circleInsideCircle(const point & c1, ld r1, const point & c2, ld r2){
-	//test if circle 2 is inside circle 1
-	//returns "-1" if 2 touches internally 1, "1" if 2 is inside 1, "0" if they overlap
-	ld l = r1 - r2 - (c1 - c2).length();
-	return (ge(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
-}
-
-int circleOutsideCircle(const point & c1, ld r1, const point & c2, ld r2){
-	//test if circle 2 is outside circle 1
-	//returns "-1" if they touch externally, "1" if 2 is outside 1, "0" if they overlap
-	ld l = (c1 - c2).length() - (r1 + r2);
-	return (ge(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
-}
-
-int pointInCircle(const point & c, ld r, const point & p){
-	//test if point p is inside the circle with center c and radius r
-	//returns "0" if it's outside, "-1" if it's in the perimeter, "1" if it's inside
-	ld l = (p - c).length() - r;
-	return (le(l, 0) ? 1 : (eq(l, 0) ? -1 : 0));
-}
-
-vector<vector<point>> commonExteriorTangents(const point & c1, ld r1, const point & c2, ld r2){
-	//returns a vector of segments or a single point
-	if(le(r1, r2)) return commonExteriorTangents(c2, r2, c1, r1);
-	if(c1 == c2 && eq(r1, r2)) return {};
-	int in = circleInsideCircle(c1, r1, c2, r2);
-	if(in == 1) return {};
-	else if(in == -1) return {{c1 + (c2 - c1).normalize() * r1}};
-	else{
-		pair<point, point> t;
-		if(eq(r1, r2))
-			t = {c1 - (c2 - c1).perpendicular(), c1 + (c2 - c1).perpendicular()};
-		else
-			t = pointsOfTangency(c2, c1, r1 - r2);
-		t.first = (t.first - c1).normalize();
-		t.second = (t.second - c1).normalize();
-		return {{c1 + t.first * r1, c2 + t.first * r2}, {c1 + t.second * r1, c2 + t.second * r2}};
-	}
-}
-
-vector<vector<point>> commonInteriorTangents(const point & c1, ld r1, const point & c2, ld r2){
-	if(c1 == c2 && eq(r1, r2)) return {};
-	int out = circleOutsideCircle(c1, r1, c2, r2);
-	if(out == 0) return {};
-	else if(out == -1) return {{c1 + (c2 - c1).normalize() * r1}};
-	else{
-		auto t = pointsOfTangency(c2, c1, r1 + r2);
-		t.first = (t.first - c1).normalize();
-		t.second = (t.second - c1).normalize();
-		return {{c1 + t.first * r1, c2 - t.first * r2}, {c1 + t.second * r1, c2 - t.second * r2}};
-	}
-}
-
 vector<point> minkowskiSum(vector<point> A, vector<point> B){
 	int na = (int)A.size(), nb = (int)B.size();
 	if(A.empty() || B.empty()) return {};
@@ -521,68 +600,6 @@ vector<point> minkowskiSum(vector<point> A, vector<point> B){
 	while(pb < nb) M.push_back(B[pb++] + A[0]);
 
 	return M;
-}
-
-bool lineCutsPolygon(vector<point> & P, const point & a, const point & v){
-	//line a+tv, polygon P
-	int n = P.size();
-	for(int i = 0, first = 0; i <= n; ++i){
-		int side = sgn(v.cross(P[i%n]-a));
-		if(!side) continue;
-		if(!first) first = side;
-		else if(side != first) return true;
-	}
-	return false;
-}
-
-vector<vector<point>> cutPolygon(vector<point> & P, const point & a, const point & v){
-	//line a+tv, polygon P
-	int n = P.size();
-	if(!lineCutsPolygon(P, a, v)) return {P};
-	int idx = 0;
-	vector<vector<point>> ans(2);
-	for(int i = 0; i < n; ++i){
-		if(intersectLineSegmentInfo(a, v, P[i], P[(i+1)%n])){
-			point p = intersectLines(a, v, P[i], P[(i+1)%n] - P[i]);
-			if(P[i] == p) continue;
-			ans[idx].push_back(P[i]);
-			ans[1-idx].push_back(p);
-			ans[idx].push_back(p);
-			idx = 1-idx;
-		}else{
-			ans[idx].push_back(P[i]);
-		}
-	}
-	return ans;
-}
-
-//point in convex polygon in log(n)
-//first do preprocess: seg=process(P),
-//then for each query call pointInConvexPolygon(seg, p - P[0])
-vector<point> process(vector<point> & P){
-	int n = P.size();
-	rotate(P.begin(), min_element(P.begin(), P.end()), P.end());
-	vector<point> seg(n - 1);
-	for(int i = 0; i < n - 1; ++i)
-		seg[i] = P[i + 1] - P[0];
-	return seg;
-}
-
-bool pointInConvexPolygon(vector<point> & seg, const point & p){
-	int n = seg.size();
-	if(neq(seg[0].cross(p), 0) && sgn(seg[0].cross(p)) != sgn(seg[0].cross(seg[n - 1])))
-		return false;
-	if(neq(seg[n - 1].cross(p), 0) && sgn(seg[n - 1].cross(p)) != sgn(seg[n - 1].cross(seg[0])))
-		return false;
-	if(eq(seg[0].cross(p), 0))
-		return geq(seg[0].length(), p.length());
-	int l = 0, r = n - 1;
-	while(r - l > 1){
-		int m = l + ((r - l) >> 1);
-		if(geq(seg[m].cross(p), 0)) l = m;
-		else r = m;
-	}
-	return eq(abs(seg[l].cross(seg[l + 1])), abs((p - seg[l]).cross(p - seg[l + 1])) + abs(p.cross(seg[l])) + abs(p.cross(seg[l + 1])));
 }
 
 //Delaunay triangulation in O(n log n)
@@ -753,93 +770,15 @@ vector<tuple<point, point, point>> delaunay(vector<point> & P){
 	return ans;
 }
 
-pair<point, ld> mec2(vector<point> & S, const point & a, const point & b, int n){
-	ld hi = inf, lo = -hi;
-	for(int i = 0; i < n; ++i){
-		ld si = (b - a).cross(S[i] - a);
-		if(eq(si, 0)) continue;
-		point m = getCircle(a, b, S[i]).first;
-		ld cr = (b - a).cross(m - a);
-		if(le(si, 0)) hi = min(hi, cr);
-		else lo = max(lo, cr);
-	}
-	ld v = (ge(lo, 0) ? lo : le(hi, 0) ? hi : 0);
-	point c = (a + b) / 2 + (b - a).perpendicular() * v / (b - a).norm();
-	return {c, (a - c).norm()};
-}
-
-pair<point, ld> mec(vector<point> & S, const point & a, int n){
-	random_shuffle(S.begin(), S.begin() + n);
-	point b = S[0], c = (a + b) / 2;
-	ld r = (a - c).norm();
-	for(int i = 1; i < n; ++i){
-		if(ge((S[i] - c).norm(), r)){
-			tie(c, r) = (n == S.size() ? mec(S, S[i], i) : mec2(S, a, S[i], i));
-		}
-	}
-	return {c, r};
-}
-
-pair<point, ld> smallestEnclosingCircle(vector<point> S){
-	assert(!S.empty());
-	auto r = mec(S, S[0], S.size());
-	return {r.first, sqrt(r.second)};
-}
-
-vector<point> intersectSegmentCircle(const point & a, const point & b, const point & c, ld r){
-	vector<point> P = intersectLineCircle(a, b - a, c, r), ans;
-	for(const point & p : P){
-		if(pointInSegment(a, b, p)) ans.push_back(p);
-	}
-	return ans;
-}
-
-ld signed_angle(const point & a, const point & b){
-	return sgn(a.cross(b)) * acosl(a.dot(b) / (a.length() * b.length()));
-}
-
-ld intersectPolygonCircle(const vector<point> & P, const point & c, ld r){
-	//Gets the area of the intersection of the polygon with the circle
-	int n = P.size();
-	ld ans = 0;
-	for(int i = 0; i < n; ++i){
-		point p = P[i], q = P[(i+1)%n];
-		bool p_inside = (pointInCircle(c, r, p) != 0);
-		bool q_inside = (pointInCircle(c, r, q) != 0);
-		if(p_inside && q_inside){
-			ans += (p - c).cross(q - c);
-		}else if(p_inside && !q_inside){
-			point s1 = intersectSegmentCircle(p, q, c, r)[0];
-			point s2 = intersectSegmentCircle(c, q, c, r)[0];
-			ans += (p - c).cross(s1 - c) + r*r * signed_angle(s1 - c, s2 - c);
-		}else if(!p_inside && q_inside){
-			point s1 = intersectSegmentCircle(c, p, c, r)[0];
-			point s2 = intersectSegmentCircle(p, q, c, r)[0];
-			ans += (s2 - c).cross(q - c) + r*r * signed_angle(s1 - c, s2 - c);
-		}else{
-			auto info = intersectSegmentCircle(p, q, c, r);
-			if(info.size() <= 1){
-				ans += r*r * signed_angle(p - c, q - c);
-			}else{
-				point s2 = info[0], s3 = info[1];
-				point s1 = intersectSegmentCircle(c, p, c, r)[0];
-				point s4 = intersectSegmentCircle(c, q, c, r)[0];
-				ans += (s2 - c).cross(s3 - c) + r*r * (signed_angle(s1 - c, s2 - c) + signed_angle(s3 - c, s4 - c));
-			}
-		}
-	}
-	return abs(ans)/2;
-}
-
 int main(){
-	/*vector<pair<point, point>> centers = {{point(-2, 5), point(-8, -7)}, {point(14, 4), point(18, 6)}, {point(9, 20), point(9, 28)},
+	vector<pair<point, point>> centers = {{point(-2, 5), point(-8, -7)}, {point(14, 4), point(18, 6)}, {point(9, 20), point(9, 28)},
 										  {point(21, 20), point(21, 29)}, {point(8, -10), point(14, -10)}, {point(24, -6), point(34, -6)},
 										  {point(34, 8), point(36, 9)}, {point(50, 20), point(56, 24.5)}};
 	vector<pair<ld, ld>> radii = {{7, 4}, {3, 5}, {4, 4}, {4, 5}, {3, 3}, {4, 6}, {5, 1}, {10, 2.5}};
 	int n = centers.size();
 	for(int i = 0; i < n; ++i){
 		cout << "\n" << centers[i].first << " " << radii[i].first << " " << centers[i].second << " " << radii[i].second << "\n";
-		auto extLines = commonExteriorTangents(centers[i].first, radii[i].first, centers[i].second, radii[i].second);
+		auto extLines = tangents(centers[i].first, radii[i].first, centers[i].second, radii[i].second, false);
 		cout << "Exterior tangents:\n";
 		for(auto par : extLines){
 			for(auto p : par){
@@ -847,7 +786,7 @@ int main(){
 			}
 			cout << "\n";
 		}
-		auto intLines = commonInteriorTangents(centers[i].first, radii[i].first, centers[i].second, radii[i].second);
+		auto intLines = tangents(centers[i].first, radii[i].first, centers[i].second, radii[i].second, true);
 		cout << "Interior tangents:\n";
 		for(auto par : intLines){
 			for(auto p : par){
@@ -855,7 +794,7 @@ int main(){
 			}
 			cout << "\n";
 		}
-	}*/
+	}
 	/*int n;
 	cin >> n;
 	vector<point> P(n);
@@ -864,11 +803,11 @@ int main(){
 	for(auto triangle : triangulation){
 		cout << get<0>(triangle) << " " << get<1>(triangle) << " " << get<2>(triangle) << "\n";
 	}*/
-	int n;
+	/*int n;
 	cin >> n;
 	vector<point> P(n);
 	for(auto & p : P) cin >> p;
 	auto ans = smallestEnclosingCircle(P);
-	cout << ans.first << " " << ans.second << "\n";
+	cout << ans.first << " " << ans.second << "\n";*/
 	return 0;
 }

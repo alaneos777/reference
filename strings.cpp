@@ -195,6 +195,63 @@ struct Trie{
 	}
 };
 
+struct state{
+	int len, link;
+	vector<int> child;
+	state(int len = 0, int link = -1): len(len), link(link), child(M, -1){}
+	state(int len, int link, const vector<int> & child): len(len), link(link), child(child){}
+};
+
+struct SuffixAutomaton{
+	vector<state> st;
+	int last = 0;
+
+	SuffixAutomaton(){
+		st.emplace_back();
+	}
+
+	void extend(char c){
+		int curr = st.size();
+		st.emplace_back(st[last].len + 1);
+		int p = last;
+		while(p != -1 && st[p].child[c-'A'] == -1){
+			st[p].child[c-'A'] = curr;
+			p = st[p].link;
+		}
+		if(p == -1){
+			st[curr].link = 0;
+		}else{
+			int q = st[p].child[c-'A'];
+			if(st[p].len + 1 == st[q].len){
+				st[curr].link = q;
+			}else{
+				int clone = st.size();
+				st.emplace_back(st[p].len + 1, st[q].link, st[q].child);
+				while(p != -1 && st[p].child[c-'A'] == q){
+					st[p].child[c-'A'] = clone;
+					p = st[p].link;
+				}
+				st[q].link = st[curr].link = clone;
+			}
+		}
+		last = curr;
+	}
+};
+
+vector<int> z_function(const string & s){
+    int n = s.size();
+    vector<int> z(n);
+    for(int i = 1, l = 0, r = 0; i < n; ++i){
+        if(i <= r)
+            z[i] = min(r - i + 1, z[i - l]);
+        while(i + z[i] < n && s[z[i]] == s[i + z[i]])
+            ++z[i];
+        if(i + z[i] - 1 > r)
+            l = i, r = i + z[i] - 1;
+    }
+    return z;
+}
+
 /*int main(){
 	AhoCorasick ac;
 	int patterns;
