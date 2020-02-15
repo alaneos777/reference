@@ -179,6 +179,12 @@ double aleatorio_double(double a, double b){
 	return dist(rng);
 }
 
+//Let S be an ordered vector. Returns the cardinality of the set {x∈S : a <= x <= b}
+template<typename T>
+int count(const vector<T> & S, T a, T b){
+	return upper_bound(S.begin(), S.end(), b) - lower_bound(S.begin(), S.end(), a);
+}
+
 /*int main(){
 	int a, b, c;
 	cin >> a >> b >> c;

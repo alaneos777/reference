@@ -1,5 +1,5 @@
 \documentclass[11pt]{article}
-\usepackage[utf8]{inputenc}
+\usepackage[utf8x]{inputenc}
 \usepackage[spanish]{babel}
 \decimalpoint
 \usepackage{amsmath}
@@ -249,6 +249,9 @@
 			\subsubsection{Periodo de Pisano}
 			\inputminted[tabsize=2,breaklines,firstline=1049,lastline=1076,fontsize=\small]{c++}{numberTheory.cpp}
 			
+			\subsubsection{Polinomio ciclotómico}
+			\inputminted[tabsize=2,breaklines,firstline=1078,lastline=1096,fontsize=\small]{c++}{numberTheory.cpp}
+			
 	\newpage
 	\section{Números racionales}
 		\subsection{Estructura \texttt{fraccion}}
@@ -305,7 +308,7 @@
 		\inputminted[tabsize=2,breaklines,firstline=13,lastline=34,fontsize=\small]{c++}{fft.cpp}
 		
 		\subsection{FFT con raíces de la unidad en $\mathbb{Z}_p$ (NTT)}
-		\inputminted[tabsize=2,breaklines,firstline=36,lastline=83,fontsize=\small]{c++}{fft.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=46,lastline=83,fontsize=\small]{c++}{fft.cpp}
 			\subsubsection{Valores para escoger el generador y el módulo}
 				\begin{table}[H]
 					\centering
@@ -336,10 +339,10 @@
 			\inputminted[tabsize=2,breaklines,firstline=112,lastline=145,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Recíproco de un polinomio}
-			\inputminted[tabsize=2,breaklines,firstline=147,lastline=171,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=147,lastline=168,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Raíz cuadrada de un polinomio}
-			\inputminted[tabsize=2,breaklines,firstline=173,lastline=195,fontsize=\small]{c++}{fft.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=173,lastline=194,fontsize=\small]{c++}{fft.cpp}
 			
 			\subsubsection{Logaritmo y exponencial de un polinomio}
 			\inputminted[tabsize=2,breaklines,firstline=197,lastline=239,fontsize=\small]{c++}{fft.cpp}
@@ -397,7 +400,7 @@
 			\inputminted[tabsize=2,breaklines,firstline=197,lastline=224,fontsize=\small]{c++}{geometry.cpp}
 			
 			\subsubsection{Cortar un polígono con una recta}
-			\inputminted[tabsize=2,breaklines,firstline=226,lastline=257,fontsize=\small]{c++}{geometry.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=226,lastline=242,fontsize=\small]{c++}{geometry.cpp}
 			
 			\subsubsection{Centroide de un polígono}
 			\inputminted[tabsize=2,breaklines,firstline=259,lastline=269,fontsize=\small]{c++}{geometry.cpp}
@@ -543,7 +546,7 @@
 		\inputminted[tabsize=2,breaklines,firstline=110,lastline=145,fontsize=\small]{c++}{flow.cpp}
 		
 		\subsection{Hungariano}
-		\inputminted[tabsize=2,breaklines,firstline=148,lastline=190,fontsize=\small]{c++}{flow.cpp}
+		\inputminted[tabsize=2,breaklines,firstline=148,lastline=202,fontsize=\small]{c++}{flow.cpp}
 		
 	\newpage
 	\section{Estructuras de datos}
@@ -637,6 +640,9 @@
 		\subsection{Números aleatorios en C++11}
 		\inputminted[tabsize=2,breaklines,firstline=167,lastline=180,fontsize=\small]{c++}{misc.cpp}
 		
+		\subsection{Lower and upper bound}
+		\inputminted[tabsize=2,breaklines,firstline=182,lastline=186,fontsize=\small]{c++}{misc.cpp}
+		
 	\newpage
 	\section{Fórmulas y notas}
 		\subsection{Números de Stirling del primer tipo}
@@ -711,9 +717,10 @@
 				\sum_{n=0}^{\infty} \left( \sum_{k=0}^{n}a_k \right) x^n &= \dfrac{1}{1-x}\sum_{n=0}^{\infty} a_n x^n \\
 				\sum_{n=0}^{\infty} \binom{n+k-1}{k-1}x^n &= \dfrac{1}{\left(1-x\right)^k} \\
 				\sum_{n=0}^{\infty} p_n x^n &= \dfrac{1}{\displaystyle \prod_{k=1}^{\infty}(1-x^k)} = \dfrac{1}{\displaystyle \sum_{n=-\infty}^{\infty} x^{\frac{1}{2}n(3n+1)}} \\
+				\sum_{p=0}^{\infty} \dfrac{S_p(n)}{p!} x^p &= \dfrac{e^{x(n+1)}-e^x}{e^x-1} \\
 				\sum_{n=0}^{\infty} n^k x^n &= \dfrac{\displaystyle \sum_{i=0}^{k-1} \euler{k}{i} x^{i+1}}{(1-x)^{k+1}} \quad , \quad k \geq 1
 			\end{align*}
-			Sean $a_1, a_2, \ldots, a_n$ números complejos. Sean $p_m = \displaystyle \sum_{i=1}^{n} a_i^m$ y $s_m$ el $m$-ésimo polinomio elemental simétrico de $a_1, a_2, \ldots, a_n$. Entonces se cumple que $xS'(x) + P(x)S(x) = 0$, donde $P(x)=\displaystyle \sum_{m=1}^{\infty} p_m x_m$ y $S(x)=\displaystyle \prod_{i=1}^{n}(1-a_ix) = \sum_{m=0}^{n}(-1)^m s_m x^m$.
+			Sean $a_1, a_2, \ldots, a_n$ números complejos. Sean $p_m = \displaystyle \sum_{i=1}^{n} a_i^m$ y $s_m$ el $m$-ésimo polinomio elemental simétrico de $a_1, a_2, \ldots, a_n$. Entonces se cumple que $xS'(x) + P(x)S(x) = 0$, donde $P(x)=\displaystyle \sum_{m=1}^{\infty} p_m x^m$ y $S(x)=\displaystyle \prod_{i=1}^{n}(1-a_ix) = \sum_{m=0}^{n}(-1)^m s_m x^m$.
 		
 		\subsection{Números armónicos}
 			\begin{align*}

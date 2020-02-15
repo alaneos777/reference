@@ -2,7 +2,7 @@
 using namespace std;
 using ld = long double;
 ld eps = 1e-9, inf = numeric_limits<ld>::max();
-
+// For use with integers, just set eps=0 and everything remains the same
 bool geq(ld a, ld b){return a-b >= -eps;}     //a >= b
 bool leq(ld a, ld b){return b-a >= -eps;}     //a <= b
 bool ge(ld a, ld b){return a-b > eps;}        //a > b
@@ -33,30 +33,30 @@ struct point{
 	ld dot(const point & p) const{return x * p.x + y * p.y;}
 	ld cross(const point & p) const{return x * p.y - y * p.x;}
 	ld norm() const{return x * x + y * y;}
-	long double length() const{return sqrtl(x * x + y * y);}
-
+	ld length() const{return sqrtl(x * x + y * y);}
 	point unit() const{return (*this) / length();}
 
 	bool operator==(const point & p) const{return eq(x, p.x) && eq(y, p.y);}
 	bool operator!=(const point & p) const{return !(*this == p);}
-	bool operator<(const point & p) const{
-		if(eq(x, p.x)) return le(y, p.y);
-		return le(x, p.x);
-	}
-	bool operator>(const point & p) const{
-		if(eq(x, p.x)) return ge(y, p.y);
-		return ge(x, p.x);
-	}
+	bool operator<(const point & p) const{return le(x, p.x) || (eq(x, p.x) && le(y, p.y));}
+	bool operator>(const point & p) const{return ge(x, p.x) || (eq(x, p.x) && ge(y, p.y));}
+	bool half(const point & p) const{return le(p.cross(*this), 0) || (eq(p.cross(*this), 0) && le(p.dot(*this), 0));}
 };
 
 istream &operator>>(istream &is, point & p){return is >> p.x >> p.y;}
-
-ostream &operator<<(ostream &os, const point & p) { return os << "(" << p.x << ", " << p.y << ")";}
+ostream &operator<<(ostream &os, const point & p){return os << "(" << p.x << ", " << p.y << ")";}
 
 int sgn(ld x){
 	if(ge(x, 0)) return 1;
 	if(le(x, 0)) return -1;
 	return 0;
+}
+
+void polarSort(vector<point> & P, const point & o, const point & v){
+	//sort points in P around o, taking the direction of v as first angle
+	sort(P.begin(), P.end(), [&](const point & a, const point & b){
+		return point((a - o).half(v), 0) < point((b - o).half(v), (a - o).cross(b - o));
+	});
 }
 
 bool pointInLine(const point & a, const point & v, const point & p){
@@ -223,38 +223,38 @@ bool pointInConvexPolygon(const vector<point> & seg, const point & p){
 	return eq(abs(seg[l].cross(seg[l + 1])), abs((p - seg[l]).cross(p - seg[l + 1])) + abs(p.cross(seg[l])) + abs(p.cross(seg[l + 1])));
 }
 
-bool lineCutsPolygon(const vector<point> & P, const point & a, const point & v){
-	//line a+tv, polygon P
+vector<point> cutPolygon(const vector<point> & P, const point & a, const point & v){
+	//returns the part of the convex polygon P on the left side of line a+tv
 	int n = P.size();
-	for(int i = 0, first = 0; i <= n; ++i){
-		int side = sgn(v.cross(P[i%n]-a));
-		if(!side) continue;
-		if(!first) first = side;
-		else if(side != first) return true;
-	}
-	return false;
-}
-
-vector<vector<point>> cutPolygon(const vector<point> & P, const point & a, const point & v){
-	//line a+tv, polygon P
-	int n = P.size();
-	if(!lineCutsPolygon(P, a, v)) return {P};
-	int idx = 0;
-	vector<vector<point>> ans(2);
+	vector<point> lhs;
 	for(int i = 0; i < n; ++i){
-		if(intersectLineSegmentInfo(a, v, P[i], P[(i+1)%n])){
+		if(geq(v.cross(P[i] - a), 0)){
+			lhs.push_back(P[i]);
+		}
+		if(intersectLineSegmentInfo(a, v, P[i], P[(i+1)%n]) == 1){
 			point p = intersectLines(a, v, P[i], P[(i+1)%n] - P[i]);
-			if(P[i] == p) continue;
-			ans[idx].push_back(P[i]);
-			ans[1-idx].push_back(p);
-			ans[idx].push_back(p);
-			idx = 1-idx;
-		}else{
-			ans[idx].push_back(P[i]);
+			if(p != P[i] && p != P[(i+1)%n]){
+				lhs.push_back(p);
+			}
 		}
 	}
-	return ans;
+	return lhs;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 point centroid(vector<point> & P){
 	point num;
@@ -294,7 +294,7 @@ pair<ld, ld> diameterAndWidth(vector<point> & P){
 		diameter = max(diameter, (P[k] - P[i]).length());
 		width = min(width, distancePointLine(P[i], P[(i+1)%n] - P[i], P[k]));
 	}
-	return make_pair(diameter, width);
+	return {diameter, width};
 }
 
 pair<ld, ld> smallestEnclosingRectangle(vector<point> & P){
@@ -315,7 +315,7 @@ pair<ld, ld> smallestEnclosingRectangle(vector<point> & P){
 		perimeter = min(perimeter, 2 * (h + w));
 		area = min(area, h * w);
 	}
-	return make_pair(area, perimeter);
+	return {area, perimeter};
 }
 
 ld distancePointCircle(const point & c, ld r, const point & p){
@@ -679,19 +679,19 @@ bool in_circle(const point & a, const point & b, const point & c, const point & 
 pair<QuadEdge*, QuadEdge*> build_tr(int l, int r, vector<point> & P){
 	if(r - l + 1 == 2){
 		QuadEdge* res = make_edge(P[l], P[r]);
-		return make_pair(res, res->rev());
+		return {res, res->rev()};
 	}
 	if(r - l + 1 == 3){
 		QuadEdge *a = make_edge(P[l], P[l + 1]), *b = make_edge(P[l + 1], P[r]);
 		splice(a->rev(), b);
 		int sg = sgn((P[l + 1] - P[l]).cross(P[r] - P[l]));
 		if(sg == 0)
-			return make_pair(a, b->rev());
+			return {a, b->rev()};
 		QuadEdge* c = connect(b, a);
 		if(sg == 1)
-			return make_pair(a, b->rev());
+			return {a, b->rev()};
 		else
-			return make_pair(c->rev(), c);
+			return {c->rev(), c};
 	}
 	int mid = (l + r) / 2;
 	QuadEdge *ldo, *ldi, *rdo, *rdi;
@@ -738,7 +738,7 @@ pair<QuadEdge*, QuadEdge*> build_tr(int l, int r, vector<point> & P){
 		else
 			basel = connect(basel->rev(), lcand->rev());
 	}
-	return make_pair(ldo, rdo);
+	return {ldo, rdo};
 }
 
 vector<tuple<point, point, point>> delaunay(vector<point> & P){
@@ -765,13 +765,13 @@ vector<tuple<point, point, point>> delaunay(vector<point> & P){
 			add();
 	vector<tuple<point, point, point>> ans;
 	for(int i = 0; i < (int)P.size(); i += 3){
-		ans.push_back(make_tuple(P[i], P[i + 1], P[i + 2]));
+		ans.emplace_back(P[i], P[i + 1], P[i + 2]);
 	}
 	return ans;
 }
 
 int main(){
-	vector<pair<point, point>> centers = {{point(-2, 5), point(-8, -7)}, {point(14, 4), point(18, 6)}, {point(9, 20), point(9, 28)},
+	/*vector<pair<point, point>> centers = {{point(-2, 5), point(-8, -7)}, {point(14, 4), point(18, 6)}, {point(9, 20), point(9, 28)},
 										  {point(21, 20), point(21, 29)}, {point(8, -10), point(14, -10)}, {point(24, -6), point(34, -6)},
 										  {point(34, 8), point(36, 9)}, {point(50, 20), point(56, 24.5)}};
 	vector<pair<ld, ld>> radii = {{7, 4}, {3, 5}, {4, 4}, {4, 5}, {3, 3}, {4, 6}, {5, 1}, {10, 2.5}};
@@ -794,7 +794,8 @@ int main(){
 			}
 			cout << "\n";
 		}
-	}
+	}*/
+
 	/*int n;
 	cin >> n;
 	vector<point> P(n);
@@ -803,11 +804,31 @@ int main(){
 	for(auto triangle : triangulation){
 		cout << get<0>(triangle) << " " << get<1>(triangle) << " " << get<2>(triangle) << "\n";
 	}*/
+
 	/*int n;
 	cin >> n;
 	vector<point> P(n);
 	for(auto & p : P) cin >> p;
 	auto ans = smallestEnclosingCircle(P);
 	cout << ans.first << " " << ans.second << "\n";*/
+
+	/*vector<point> P;
+	srand(time(0));
+	for(int i = 0; i < 1000; ++i){
+		P.emplace_back(rand() % 1000000000, rand() % 1000000000);
+	}
+	point o(rand() % 1000000000, rand() % 1000000000), v(rand() % 1000000000, rand() % 1000000000);
+	polarSort(P, o, v);
+	auto ang = [&](point p){
+		ld th = atan2(p.y, p.x);
+		if(th < 0) th += acosl(-1)*2;
+		ld t = atan2(v.y, v.x);
+		if(t < 0) t += acosl(-1)*2;
+		if(th < t) th += acosl(-1)*2;
+		return th;
+	};
+	for(int i = 0; i < P.size()-1; ++i){
+		assert(leq(ang(P[i] - o), ang(P[i+1] - o)));
+	}*/
 	return 0;
 }

@@ -55,7 +55,7 @@ lli powerMod(lli b, lli e, lli m){
 	return ans;
 }
 
-template<int prime, int gen>
+template<int p, int g>
 void ntt(vector<int> & X, int inv){
 	int n = X.size();
 	for(int i = 1, j = 0; i < n - 1; ++i){
@@ -64,21 +64,21 @@ void ntt(vector<int> & X, int inv){
 	}
 	vector<lli> wp(n>>1, 1);
 	for(int k = 1; k < n; k <<= 1){
-		lli wk = powerMod(gen, inv * (prime - 1) / (k<<1), prime);
+		lli wk = powerMod(g, inv * (p - 1) / (k<<1), p);
 		for(int j = 1; j < k; ++j)
-			wp[j] = wp[j - 1] * wk % prime;
+			wp[j] = wp[j - 1] * wk % p;
 		for(int i = 0; i < n; i += k << 1){
 			for(int j = 0; j < k; ++j){
-				int u = X[i + j], v = X[i + j + k] * wp[j] % prime;
-				X[i + j] = u + v < prime ? u + v : u + v - prime;
-				X[i + j + k] = u - v < 0 ? u - v + prime : u - v;
+				int u = X[i + j], v = X[i + j + k] * wp[j] % p;
+				X[i + j] = u + v < p ? u + v : u + v - p;
+				X[i + j + k] = u - v < 0 ? u - v + p : u - v;
 			}
 		}
 	}
 	if(inv == -1){
-		lli nrev = inverse(n, prime);
+		lli nrev = powerMod(n, p - 2, p);
 		for(int i = 0; i < n; ++i)
-			X[i] = X[i] * nrev % prime;
+			X[i] = X[i] * nrev % p;
 	}
 }
 
@@ -94,15 +94,15 @@ vector<comp> convolution(vector<comp> A, vector<comp> B){
 	return A;
 }
 
-template<int prime, int gen>
+template<int p, int g>
 vector<int> convolution(vector<int> A, vector<int> B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
 	A.resize(size), B.resize(size);
-	ntt<prime, gen>(A, 1), ntt<prime, gen>(B, 1);
+	ntt<p, g>(A, 1), ntt<p, g>(B, 1);
 	for(int i = 0; i < size; i++)
-		A[i] = (lli)A[i] * B[i] % prime;
-	ntt<prime, gen>(A, -1);
+		A[i] = (lli)A[i] * B[i] % p;
+	ntt<p, g>(A, -1);
 	A.resize(sz);
 	return A;
 }
@@ -145,23 +145,20 @@ string multiplyNumbers(const string & a, const string & b){
 }
 
 vector<int> inversePolynomial(const vector<int> & A){
-	vector<int> R(1, inverse(A[0], p));
+	vector<int> R(1, powerMod(A[0], p - 2, p));
 	//R(x) = 2R(x)-A(x)R(x)^2
 	while(R.size() < A.size()){
-		int c = 2 * R.size();
+		size_t c = 2 * R.size();
 		R.resize(c);
-		vector<int> TR = R;
-		TR.resize(2 * c);
-		vector<int> TF(TR.size());
-		for(int i = 0; i < c && i < A.size(); ++i)
-			TF[i] = A[i];
-		ntt<p, g>(TR, 1);
-		ntt<p, g>(TF, 1);
-		for(int i = 0; i < TR.size(); ++i)
-			TR[i] = (lli)TR[i] * TR[i] % p * TF[i] % p;
-		ntt<p, g>(TR, -1);
+		vector<int> R2 = R;
+		vector<int> a(min(c, A.size()));
+		for(int i = 0; i < a.size(); ++i)
+			a[i] = A[i];
+		R2 = convolution<p, g>(R2, R2);
+		R2.resize(c);
+		R2 = convolution<p, g>(R2, a);
 		for(int i = 0; i < c; ++i){
-			R[i] = R[i] + R[i] - TR[i];
+			R[i] = R[i] + R[i] - R2[i];
 			if(R[i] < 0) R[i] += p;
 			if(R[i] >= p) R[i] -= p;
 		}
@@ -170,22 +167,24 @@ vector<int> inversePolynomial(const vector<int> & A){
 	return R;
 }
 
-const int inv2 = inverse(2, p);
+
+
+
+const int inv2 = powerMod(2, p - 2, p);
 
 vector<int> sqrtPolynomial(const vector<int> & A){
 	int r0 = 1; //verify that r0^2 = A[0] mod p
 	vector<int> R(1, r0);
 	//R(x) = R(x)/2 + A(x)/(2R(x))
 	while(R.size() < A.size()){
-		int c = 2 * R.size();
+		size_t c = 2 * R.size();
 		R.resize(c);
-		vector<int> TF(c);
-		for(int i = 0; i < c && i < A.size(); ++i)
-			TF[i] = A[i];
-		vector<int> IR = inversePolynomial(R);
-		TF = convolution<p, g>(TF, IR);
+		vector<int> a(min(c, A.size()));
+		for(int i = 0; i < a.size(); ++i)
+			a[i] = A[i];
+		a = convolution<p, g>(a, inversePolynomial(R));
 		for(int i = 0; i < c; ++i){
-			R[i] = R[i] + TF[i];
+			R[i] = R[i] + a[i];
 			if(R[i] >= p) R[i] -= p;
 			R[i] = (lli)R[i] * inv2 % p;
 		}
@@ -193,6 +192,7 @@ vector<int> sqrtPolynomial(const vector<int> & A){
 	R.resize(A.size());
 	return R;
 }
+
 
 vector<int> derivative(vector<int> A){
 	for(int i = 0; i < A.size(); ++i)
@@ -203,7 +203,7 @@ vector<int> derivative(vector<int> A){
 
 vector<int> integral(vector<int> A){
 	for(int i = 0; i < A.size(); ++i)
-		A[i] = (lli)A[i] * (inverse(i+1, p)) % p;
+		A[i] = (lli)A[i] * (powerMod(i+1, p-2, p)) % p;
 	A.insert(A.begin(), 0);
 	return A;
 }
@@ -223,7 +223,7 @@ vector<int> exponential(const vector<int> & A){
 	//E(x) = E(x)(1-ln(E(x))+A(x))
 	vector<int> E(1, 1);
 	while(E.size() < A.size()){
-		int c = 2*E.size();
+		size_t c = 2*E.size();
 		E.resize(c);
 		vector<int> S = logarithm(E);
 		for(int i = 0; i < c && i < A.size(); ++i){
@@ -333,9 +333,8 @@ vector<comp> bluestein(vector<comp> A){
 	return A;
 }
 
-//A and B are real-valued vectors
-//just do 2 fft's instead of 3
-vector<comp> convolutionTrick(const vector<comp> & A, const vector<comp> & B){
+//A and B are real-valued vectors, just do 2 fft's instead of 3
+vector<double> convolutionTrick(const vector<double> & A, const vector<double> & B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
 	vector<comp> C(size);
@@ -351,8 +350,9 @@ vector<comp> convolutionTrick(const vector<comp> & A, const vector<comp> & B){
 		D[i] = (conj(C[j]*C[j]) - C[i]*C[i]) * 0.25 * I;
 	}
 	fft(D, -1);
-	D.resize(sz);
-	return D;
+	vector<double> E;
+	for_each(D.begin(), D.begin() + sz, [&](comp x){E.push_back(x.real());});
+	return E;
 }
 
 //convolution with arbitrary modulo using only 4 fft's
@@ -394,7 +394,7 @@ vector<int> convolutionMod(const vector<int> & A, const vector<int> & B, int mod
 //convolution with arbitrary modulo using CRT
 //slower but with no precision errors
 const int a = 998244353, b = 985661441, c = 754974721;
-const lli a_b = inverse(a, b), a_c = inverse(a, c), b_c = inverse(b, c);
+const lli a_b = powerMod(a, b-2, b), a_c = powerMod(a, c-2, c), b_c = powerMod(b, c-2, c);
 vector<int> convolutionModCRT(const vector<int> & A, const vector<int> & B, int mod){
 	vector<int> P = convolution<a, 3>(A, B);
 	vector<int> Q = convolution<b, 3>(A, B);
@@ -441,7 +441,7 @@ void fwt(vector<int> & A, int op, int inv){
 				}
 			}
 	if(inv == -1 && op == 2){
-		lli nrev = inverse(n, p);
+		lli nrev = powerMod(n, p-2, p);
 		for(int i = 0; i < n; ++i)
 			A[i] = A[i] * nrev % p;
 	}
@@ -544,7 +544,7 @@ int main(){
 	vector<int> fact(m + 2, 1), invfact(m + 2, 1), den(m + 1, 1);
 	for(int i = 1; i <= m + 1; ++i){
 		fact[i] = (lli)fact[i - 1] * i % p;
-		invfact[i] = inverse(fact[i], p);
+		invfact[i] = powerMod(fact[i], p-2, p);
 	}
 	for(int i = 0; i <= m; ++i){
 		den[i] = invfact[i + 1];
@@ -556,10 +556,10 @@ int main(){
 	}
 	int sum = 0;
 	for(int k = 0; k <= m; ++k){
-		sum += (lli)fact[m + 1] * invfact[k] % p * invfact[m + 1 - k] % p * bernoulli[k] % p * powerMod(n, m + 1 - k, p) % p;
+		sum += (lli)fact[m + 1] * invfact[k] % p * invfact[m + 1 - k] % p * bernoulli[k] % p * powerMod(n % p, m + 1 - k, p) % p;
 		if(sum >= p) sum -= p;
 	}
-	sum = (lli)sum * inverse(m + 1, p) % p;
+	sum = (lli)sum * powerMod(m + 1, p-2, p) % p;
 	cout << sum << "\n";*/
 
 	/*int n;
@@ -609,7 +609,7 @@ int main(){
 	vector<int> fact(M+1, 1), invfact(M+1, 1);
 	for(int i = 1; i <= M; ++i){
 		fact[i] = (lli)i * fact[i-1] % p;
-		invfact[i] = inverse(fact[i], p);
+		invfact[i] = powerMod(fact[i], p-2, p);
 	}*/
 	
 	/*vector<int> C(M+1, 1);

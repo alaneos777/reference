@@ -116,15 +116,15 @@ pair<lli, lli> chinese(vector<lli> & a, vector<lli> & m){
 	return {ans, prod};
 }
 
-vector<lli> divisorsSum;
-vector<vector<int>> divisors;
+vector<lli> divsSum;
+vector<vector<int>> divs;
 void divisorsSieve(int n){
-	divisorsSum.resize(n + 1, 0);
-	divisors.resize(n + 1);
+	divsSum.resize(n + 1, 0);
+	divs.resize(n + 1);
 	for(int i = 1; i <= n; ++i){
 		for(int j = i; j <= n; j += i){
-			divisorsSum[j] += i;
-			divisors[j].push_back(i);
+			divsSum[j] += i;
+			divs[j].push_back(i);
 		}
 	}
 }
@@ -1075,6 +1075,26 @@ lli pisano(lli mod){
 	return ans;
 }
 
+vector<int> cyclotomic(int n){
+	if(n == 1) return {-1, 1};
+	int deg = Phi[n];
+	vector<int> a(deg+1);
+	a[0] = 1;
+	for(int d : divs[n]){
+		if(Mu[n/d] == 0) continue;
+		if(Mu[n/d] == 1){
+			for(int i = deg; i >= d; --i){
+				a[i] -= a[i-d];
+			}
+		}else{
+			for(int i = d; i <= deg; ++i){
+				a[i] += a[i-d];
+			}
+		}
+	}
+	return a;
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -1127,8 +1147,10 @@ void info_ntt(lli e, lli l, lli r){
 int main(){
 	srand(time(NULL));
 	primesSieve(1e5);
+	divisorsSieve(1e4);
+	phiSieve(1e4);
+	muSieve(1e4);
 	ncrSieve(300);
-	muSieve(300);
 	bellNumbers(50);
 	stirlingNumber1stKind(50);
 	stirlingNumber2ndKind(50);
@@ -1177,9 +1199,9 @@ int main(){
 		cout << it.first << " " << it.second << "\n";
 	}*/
 
-	for(lli i = 1; i <= 10000; ++i){
+	/*for(lli i = 1; i <= 10000; ++i){
 		cout << i << " " << pisano(i) << "\n";
-	}
+	}*/
 
 	/*lli p, n, q;
 	cin >> p >> n >> q;
@@ -1257,6 +1279,15 @@ int main(){
 	}
 	auto answer = crt(a, m);
 	cout << "x = " << answer.first << " mod " << answer.second << "\n";*/
+
+	for(int i = 1; i <= 105; ++i){
+		cout << i << ": ";
+		auto p = cyclotomic(i);
+		for(int pi : p){
+			cout << pi << " ";
+		}
+		cout << "\n";
+	}
 	
 	return 0;
 }
