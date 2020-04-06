@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
-typedef long long int lli;
+using lli = long long int;
 
 const lli mod = 1e7 + 19;
 

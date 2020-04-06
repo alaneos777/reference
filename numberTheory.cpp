@@ -1095,6 +1095,27 @@ vector<int> cyclotomic(int n){
 	return a;
 }
 
+pair<lli, lli> sq2(lli p){
+	assert(p >= 3 && p % 4 == 1);
+	lli z;
+	for(lli a = 2; a < p-1; ++a){
+		if(powerMod(a, (p-1)/2, p) == p-1){
+			z = powerMod(a, (p-1)/4, p);
+			break;
+		}
+	}
+	lli w0 = p, w1 = 0, z0 = z, z1 = 1;
+	while(z0 || z1){
+		lli n = z0*z0 + z1*z1;
+		lli u0 = (w0*z0 + w1*z1) / n;
+		lli u1 = (w1*z0 - w0*z1) / n;
+		lli r0 = w0 - z0*u0 + z1*u1;
+		lli r1 = w1 - z0*u1 - z1*u0;
+		w0 = z0, w1 = z1, z0 = r0, z1 = r1;
+	}
+	return {abs(w0), abs(w1)};
+}
+
 ostream &operator<<(ostream &os, const __int128 & value){
 	char buffer[64];
 	char *pos = end(buffer) - 1;
@@ -1280,14 +1301,19 @@ int main(){
 	auto answer = crt(a, m);
 	cout << "x = " << answer.first << " mod " << answer.second << "\n";*/
 
-	for(int i = 1; i <= 105; ++i){
+	/*for(int i = 1; i <= 105; ++i){
 		cout << i << ": ";
 		auto p = cyclotomic(i);
 		for(int pi : p){
 			cout << pi << " ";
 		}
 		cout << "\n";
-	}
+	}*/
+
+	lli p;
+	cin >> p;
+	auto sq = sq2(p);
+	cout << sq.first << " " << sq.second << "\n";
 	
 	return 0;
 }

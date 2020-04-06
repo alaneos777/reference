@@ -54,6 +54,7 @@ lli SumPrimePi(lli n, int k){
 		q = p * p;
 		hi[1] -= (hi[p] - temp) * powMod(p, k, Mod) % Mod;
 		if(hi[1] < 0) hi[1] += Mod;
+		if(hi[1] >= Mod) hi[1] -= Mod;
 		j = 1 + (p & 1);
 		end = (v <= n/q) ? v : n/q;
 		for(i = p + j; i <= 1 + end; i += j){
@@ -64,6 +65,7 @@ lli SumPrimePi(lli n, int k){
 			else
 				hi[i] -= (lo[n/d] - temp) * powMod(p, k, Mod) % Mod;
 			if(hi[i] < 0) hi[i] += Mod;
+			if(hi[i] >= Mod) hi[i] -= Mod;
 		}
 		if(q <= v)
 			for(i = q; i <= end; i += p*j)
@@ -71,9 +73,10 @@ lli SumPrimePi(lli n, int k){
 		for(i = v; i >= q; i--){
 			lo[i] -= (lo[i/p] - temp) * powMod(p, k, Mod) % Mod;
 			if(lo[i] < 0) lo[i] += Mod;
+			if(lo[i] >= Mod) lo[i] -= Mod;
 		}
 	}
-	return hi[1] % Mod;
+	return hi[1];
 }
 
 int main(){

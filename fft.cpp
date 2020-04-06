@@ -407,7 +407,7 @@ vector<int> convolutionModCRT(const vector<int> & A, const vector<int> & B, int 
 		if(x2 < 0) x2 += b;
 		int x3 = (a_c * (R[i] - x1) % c - x2) * b_c % c;
 		if(x3 < 0) x3 += c;
-		D[i] = x1 + a*(x2 + (lli)x3*b % mod) % mod;
+		D[i] = x1 % mod + a*(x2 + (lli)x3*b % mod) % mod;
 		if(D[i] >= mod) D[i] -= mod;
 		if(D[i] < 0) D[i] += mod;
 	}

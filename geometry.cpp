@@ -179,7 +179,7 @@ bool pointInPerimeter(vector<point> & P, const point & p){
 }
 
 bool crossesRay(const point & a, const point & b, const point & p){
-	return ge((geq(b.y, p.y) - geq(a.y, p.y)) * (a - p).cross(b - p), 0);
+	return (geq(b.y, p.y) - geq(a.y, p.y)) * sgn((a - p).cross(b - p)) > 0;
 }
 
 int pointInPolygon(vector<point> & P, const point & p){
