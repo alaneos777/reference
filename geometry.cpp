@@ -168,7 +168,7 @@ vector<point> convexHull(vector<point> P){
 	return L;
 }
 
-bool pointInPerimeter(vector<point> & P, const point & p){
+bool pointInPerimeter(const vector<point> & P, const point & p){
 	int n = P.size();
 	for(int i = 0; i < n; i++){
 		if(pointInSegment(P[i], P[(i + 1) % n], p)){
@@ -182,7 +182,7 @@ bool crossesRay(const point & a, const point & b, const point & p){
 	return (geq(b.y, p.y) - geq(a.y, p.y)) * sgn((a - p).cross(b - p)) > 0;
 }
 
-int pointInPolygon(vector<point> & P, const point & p){
+int pointInPolygon(const vector<point> & P, const point & p){
 	if(pointInPerimeter(P, p)){
 		return -1; //point in the perimeter
 	}
@@ -194,34 +194,34 @@ int pointInPolygon(vector<point> & P, const point & p){
 	return rays & 1; //0: point outside, 1: point inside
 }
 
-//point in convex polygon in log(n)
-//first do preprocess: seg=process(P),
-//then for each query call pointInConvexPolygon(seg, p - P[0])
-vector<point> process(vector<point> & P){
-	int n = P.size();
-	rotate(P.begin(), min_element(P.begin(), P.end()), P.end());
-	vector<point> seg(n - 1);
-	for(int i = 0; i < n - 1; ++i)
-		seg[i] = P[i + 1] - P[0];
-	return seg;
+//point in convex polygon in O(log n)
+//make sure that P is convex and in ccw
+//before the queries, do the preprocess on P:
+// rotate(P.begin(), min_element(P.begin(), P.end()), P.end());
+// int right = max_element(P.begin(), P.end()) - P.begin();
+//returns 0 if p is outside, 1 if p is inside, -1 if p is in the perimeter
+int pointInConvexPolygon(const vector<point> & P, const point & p, int right){
+	if(p < P[0] || P[right] < p) return 0;
+	int orientation = sgn((P[right] - P[0]).cross(p - P[0]));
+	if(orientation == 0){
+		if(p == P[0] || p == P[right]) return -1;
+		return (right == 1 || right + 1 == P.size()) ? -1 : 1;
+	}else if(orientation < 0){
+		auto r = lower_bound(P.begin() + 1, P.begin() + right, p);
+		int det = sgn((p - r[-1]).cross(r[0] - r[-1])) - 1;
+		if(det == -2) det = 1;
+		return det;
+	}else{
+		auto l = upper_bound(P.rbegin(), P.rend() - right - 1, p);
+		int det = sgn((p - l[0]).cross((l == P.rbegin() ? P[0] : l[-1]) - l[0])) - 1;
+		if(det == -2) det = 1;
+		return det;
+	}
 }
 
-bool pointInConvexPolygon(const vector<point> & seg, const point & p){
-	int n = seg.size();
-	if(neq(seg[0].cross(p), 0) && sgn(seg[0].cross(p)) != sgn(seg[0].cross(seg[n - 1])))
-		return false;
-	if(neq(seg[n - 1].cross(p), 0) && sgn(seg[n - 1].cross(p)) != sgn(seg[n - 1].cross(seg[0])))
-		return false;
-	if(eq(seg[0].cross(p), 0))
-		return geq(seg[0].length(), p.length());
-	int l = 0, r = n - 1;
-	while(r - l > 1){
-		int m = l + ((r - l) >> 1);
-		if(geq(seg[m].cross(p), 0)) l = m;
-		else r = m;
-	}
-	return eq(abs(seg[l].cross(seg[l + 1])), abs((p - seg[l]).cross(p - seg[l + 1])) + abs(p.cross(seg[l])) + abs(p.cross(seg[l + 1])));
-}
+
+
+
 
 vector<point> cutPolygon(const vector<point> & P, const point & a, const point & v){
 	//returns the part of the convex polygon P on the left side of line a+tv
