@@ -968,6 +968,64 @@ int main(){
 	return 0;
 }
 
+struct HeavyLight{
+	int n;
+	vector<vector<int>> adj;
+	vector<int> parent, level, size, heavy, head, pos;
+	int cur_pos;
+	SegmentTree<int> * st;
+
+	HeavyLight(int n, SegmentTree<int> * st): n(n), st(st){
+		adj.resize(n);
+		parent.resize(n), level.resize(n), size.resize(n);
+		heavy.resize(n, -1), head.resize(n), pos.resize(n);
+	}
+
+	void dfs(int u){
+		size[u] = 1;
+		int mx = 0;
+		for(int v : adj[u]){
+			if(v != parent[u]){
+				parent[v] = u;
+				level[v] = level[u] + 1;
+				dfs(v);
+				if(size[v] > mx){
+					mx = size[v];
+					heavy[u] = v;
+				}
+				size[u] += size[v];
+			}
+		}
+	}
+
+	void build(int u, int h){
+		head[u] = h;
+		pos[u] = cur_pos++;
+		if(heavy[u] != -1) build(heavy[u], h);
+		for(int v : adj[u])
+			if(v != parent[u] && v != heavy[u])
+				build(v, v);
+	}
+
+	void init(){
+		cur_pos = 0;
+		dfs(0);
+		build(0, 0);
+	}
+
+	int query(int a, int b){
+		int mx = 0;
+		while(head[a] != head[b]){
+			if(level[head[a]] > level[head[b]]) swap(a, b);
+			mx = max(mx, st->query(pos[head[b]], pos[b]));
+			b = parent[head[b]];
+		}
+		if(level[a] > level[b]) swap(a, b);
+		mx = max(mx, st->query(pos[a], pos[b]));
+		return mx;
+	}
+};
+
 /*int main(){
 	int n, t, pos, value, l, r;
 	cin >> n;
