@@ -971,12 +971,12 @@ int main(){
 struct HeavyLight{
 	int n;
 	vector<vector<int>> adj;
-	vector<int> parent, level, size, heavy, head, pos;
+	vector<int> parent, level, size, heavy, head, pos, ipos;
 	int cur_pos;
 	SegmentTree<int> * st;
 
 	HeavyLight(int n, SegmentTree<int> * st): n(n), st(st){
-		adj.resize(n);
+		adj.resize(n), ipos.resize(n);
 		parent.resize(n), level.resize(n), size.resize(n);
 		heavy.resize(n, -1), head.resize(n), pos.resize(n);
 	}
@@ -1000,17 +1000,18 @@ struct HeavyLight{
 
 	void build(int u, int h){
 		head[u] = h;
-		pos[u] = cur_pos++;
+		pos[u] = cur_pos;
+		ipos[cur_pos++] = u;
 		if(heavy[u] != -1) build(heavy[u], h);
 		for(int v : adj[u])
 			if(v != parent[u] && v != heavy[u])
 				build(v, v);
 	}
 
-	void init(){
+	void init(int root = 0){
 		cur_pos = 0;
-		dfs(0);
-		build(0, 0);
+		dfs(root);
+		build(root, root);
 	}
 
 	int query(int a, int b){
@@ -1022,7 +1023,16 @@ struct HeavyLight{
 		}
 		if(level[a] > level[b]) swap(a, b);
 		mx = max(mx, st->query(pos[a], pos[b]));
+		//LCA at a
 		return mx;
+	}
+
+	int kth_ancestor(int u, int k){
+		while(pos[u] - pos[head[u]] < k){
+			k -= pos[u] - pos[head[u]] + 1;
+			u = parent[head[u]];
+		}
+		return ipos[pos[u] - k];
 	}
 };
 
