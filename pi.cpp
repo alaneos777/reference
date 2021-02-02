@@ -137,8 +137,9 @@ struct MultiplicativeSum{
 
 template<typename T>
 T f(const SumPrimePi<T> & pi, function<T(lli, int)> g, lli n, int idx = 0){
-	//# of primes between primes[idx] and n
-	T ans = pi.get(n) - pi.get(pi.primes[idx] - 1);
+	// sum of g(p, 1) for primes p such that primes[idx] <= p <= n
+	int lo = idx ? pi.primes[idx-1] : 0;
+	T ans = pi.get(n) - pi.get(lo);
 	if(idx == 0) ans++;
 	for(int i = idx; i < pi.primes.size(); ++i){
 		lli p = pi.primes[i];

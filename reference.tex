@@ -690,14 +690,14 @@
 			$B_n$ representa el número de formas de particionar un conjunto de $n$ elementos.
 			\begin{align*}
 				B_n &= \sum_{k=0}^{n}\stirlingII{n}{k} = \sum_{k=0}^{n-1}\binom{n-1}{k} B_k \\
-				\sum_{k=0}^{\infty} \dfrac{B_n}{n!}x^n &= e^{e^x-1}
+				\sum_{n=0}^{\infty} \dfrac{B_n}{n!}x^n &= e^{e^x-1}
 			\end{align*}
 		
 		\subsection{Números de Bernoulli}
 			\begin{align*}
 				{B_0}^+ &= 1 \\
 				{B_n}^+ &= 1 - \sum_{k=0}^{n-1}\binom{n}{k}\dfrac{{B_k}^+}{n-k+1} \\
-				\sum_{m=0}^{\infty} \dfrac{{B_n}^+ x^n}{n!} &= \dfrac{x}{1-e^{-x}} = \dfrac{1}{\frac{1}{1!}-\frac{x}{2!}+\frac{x^2}{3!}-\frac{x^3}{4!}+\cdots}
+				\sum_{n=0}^{\infty} \dfrac{{B_n}^+ x^n}{n!} &= \dfrac{x}{1-e^{-x}} = \dfrac{1}{\frac{1}{1!}-\frac{x}{2!}+\frac{x^2}{3!}-\frac{x^3}{4!}+\cdots}
 			\end{align*}
 		
 		\subsection{Fórmula de Faulhaber}
