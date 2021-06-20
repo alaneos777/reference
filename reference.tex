@@ -90,7 +90,7 @@
 			\inputminted[tabsize=2,breaklines,firstline=48,lastline=68,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Euclides extendido e inverso modular}
-			\inputminted[tabsize=2,breaklines,firstline=70,lastline=91,fontsize=\small]{c++}{numberTheory.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=70,lastline=85,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Todos los inversos módulo $p$}
 			\inputminted[tabsize=2,breaklines,firstline=711,lastline=718,fontsize=\small]{c++}{numberTheory.cpp}
@@ -99,10 +99,7 @@
 			\inputminted[tabsize=2,breaklines,firstline=93,lastline=106,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Teorema chino del residuo}
-			\inputminted[tabsize=2,breaklines,firstline=108,lastline=117,fontsize=\small]{c++}{numberTheory.cpp}
-			
-			\subsubsection{Teorema chino del residuo generalizado}
-			\inputminted[tabsize=2,breaklines,firstline=950,lastline=965,fontsize=\small]{c++}{numberTheory.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=950,lastline=964,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Coeficiente binomial}
 			\inputminted[tabsize=2,breaklines,firstline=433,lastline=440,fontsize=\small]{c++}{numberTheory.cpp}
@@ -115,13 +112,13 @@
 			\inputminted[tabsize=2,breaklines,firstline=119,lastline=130,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Criba de primos}
-			\inputminted[tabsize=2,breaklines,firstline=132,lastline=148,fontsize=\small]{c++}{numberTheory.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=132,lastline=146,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Criba de factor primo más pequeño}
-			\inputminted[tabsize=2,breaklines,firstline=150,lastline=160,fontsize=\small]{c++}{numberTheory.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=150,lastline=159,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Criba de factor primo más grande}
-			\inputminted[tabsize=2,breaklines,firstline=939,lastline=948,fontsize=\small]{c++}{numberTheory.cpp}
+			\inputminted[tabsize=2,breaklines,firstline=939,lastline=947,fontsize=\small]{c++}{numberTheory.cpp}
 			
 			\subsubsection{Criba de factores primos}
 			\inputminted[tabsize=2,breaklines,firstline=162,lastline=170,fontsize=\small]{c++}{numberTheory.cpp}
@@ -722,7 +719,7 @@
 			\begin{align*}
 				\sum_{n=0}^{\infty} \left( \sum_{k=0}^{n}a_k \right) x^n &= \dfrac{1}{1-x}\sum_{n=0}^{\infty} a_n x^n \\
 				\sum_{n=0}^{\infty} \binom{n+k-1}{k-1}x^n &= \dfrac{1}{\left(1-x\right)^k} \\
-				\sum_{n=0}^{\infty} p_n x^n &= \dfrac{1}{\displaystyle \prod_{k=1}^{\infty}(1-x^k)} = \dfrac{1}{\displaystyle \sum_{n=-\infty}^{\infty} x^{\frac{1}{2}n(3n+1)}} \\
+				\sum_{n=0}^{\infty} p_n x^n &= \dfrac{1}{\displaystyle \prod_{k=1}^{\infty}(1-x^k)} = \dfrac{1}{\displaystyle \sum_{n=-\infty}^{\infty} (-1)^n x^{\frac{1}{2}n(3n+1)}} \\
 				\sum_{p=0}^{\infty} \dfrac{S_p(n)}{p!} x^p &= \dfrac{e^{x(n+1)}-e^x}{e^x-1} \\
 				\sum_{n=0}^{\infty} n^k x^n &= \dfrac{\displaystyle \sum_{i=0}^{k-1} \euler{k}{i} x^{i+1}}{(1-x)^{k+1}} \quad , \quad k \geq 1
 			\end{align*}

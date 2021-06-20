@@ -19,7 +19,7 @@ void fft(vector<comp> & X, int inv){
 	vector<comp> wp(n>>1);
 	for(int k = 1; k < n; k <<= 1){
 		for(int j = 0; j < k; ++j)
-			wp[j] = polar(1.0, PI * j / k * inv);
+			wp[j] = polar(1.0, PI * j / k * inv); // best precision but slower
 		for(int i = 0; i < n; i += k << 1){
 			for(int j = 0; j < k; ++j){
 				comp t = X[i + j + k] * wp[j];
@@ -311,25 +311,25 @@ vector<int> multiEvaluate(const vector<int> & P, const vector<int> & points){
 	return res;
 }
 
-//it evaluates 1, w^2, w^4, ..., w^(2n-2) on the polynomial a(x)
+//it evaluates 1, w, w^2, ..., w^(n-1) on the polynomial a(x)
 //in this example we do a DFT with arbitrary size
 vector<comp> bluestein(vector<comp> A){
-	int n = A.size();
-	int m = nearestPowerOfTwo(2*n-1);
-	comp w = polar(1.0, PI / n), w1 = w, w2 = 1;
+	int n = A.size(), m = nearestPowerOfTwo(2*n-1);
+	comp w = polar(1.0, 2*PI/n), w1 = 1, w2 = 1;
 	vector<comp> p(m), q(m), b(n);
-	for(int k = 0; k < n; ++k, w2 *= w1, w1 *= w*w){
+	for(int k = 0; k < n; ++k, w2 *= w1, w1 *= w){
 		b[k] = w2;
-		p[k] = A[k] * b[k];
-		q[k] = (comp)1 / b[k];
-		if(k) q[m-k] = q[k];
+		p[n-1-k] = A[k] / b[k];
+		q[k] = b[k];
+		if((n&1) == 1 && k < n-1) q[k+n] = q[k];
+		else if((n&1) == 0 && k < n-1) q[k+n] = -q[k]; // q[k]*w^(n/2)
 	}
 	fft(p, 1), fft(q, 1);
 	for(int i = 0; i < m; i++)
 		p[i] *= q[i];
 	fft(p, -1);
 	for(int k = 0; k < n; ++k)
-		A[k] = b[k] * p[k];
+		A[k] = p[k+n-1] / b[k];
 	return A;
 }
 
@@ -447,49 +447,43 @@ void fwt(vector<int> & A, int op, int inv){
 	}
 }
 
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+int aleatorio_int(int a, int b){
+	uniform_int_distribution<int> dist(a, b);
+	return dist(rng);
+}
+
+double aleatorio_double(double a, double b){
+	uniform_real_distribution<double> dist(a, b);
+	return dist(rng);
+}
+
 void test_fft(){
-	int degX, degY;	
-	cin >> degX >> degY;
-	vector<comp> X(degX + 1), Y(degY + 1);
-
-	for(int i = 0; i <= degX; i++) cin >> X[i];
-	for(int i = 0; i <= degY; i++) cin >> Y[i];
-
-	std::clock_t start;
-	double duration;
-	start = std::clock();
-
-	X = convolution(X, Y);
-
-	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-
-	for(int i = 0; i < X.size(); i++) cout << (int)round(X[i].real()) << " ";
-
-	cout << "\n" << duration << "\n";
+	int sz = 1<<20;
+	vector<comp> A(sz);
+	for(int i = 0; i < sz; ++i){
+		A[i] = comp(aleatorio_double(0, 1), aleatorio_double(0, 1));
+	}
+	clock_t start = clock();
+	fft(A, 1);
+	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
+	cout << duration << "\n";
 }
 
 void test_ntt(){
-	int degX, degY;
-	cin >> degX >> degY;
-	vector<int> X(degX + 1), Y(degY + 1);
-
-	for(int i = 0; i <= degX; i++) cin >> X[i];
-	for(int i = 0; i <= degY; i++) cin >> Y[i];
-
-	std::clock_t start;
-	double duration;
-	start = std::clock();
-
-	X = convolution<p, g>(X, Y);
-
-	duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-
-	for(int i = 0; i < X.size(); i++) cout << X[i] << " ";
-
-	cout << "\n" << duration << "\n";
+	int sz = 1<<20;
+	vector<int> A(sz);
+	for(int i = 0; i < sz; ++i){
+		A[i] = aleatorio_int(0, 9);
+	}
+	clock_t start = clock();
+	ntt<p,g>(A, 1);
+	double duration = (clock() - start) / (double) CLOCKS_PER_SEC;
+	cout << duration << "\n";
 }
 
-void test_random_fft(){
+void test_random_conv_fft(){
 	int deg = 1e6;
 	vector<comp> A(deg + 1), B(deg + 1);
 	for(int i = 0; i <= deg; i++){
@@ -502,7 +496,7 @@ void test_random_fft(){
 	cout << duration << "\n";
 }
 
-void test_random_ntt(){
+void test_random_conv_ntt(){
 	int deg = 1e6;
 	vector<int> A(deg + 1), B(deg + 1);
 	for(int i = 0; i <= deg; i++){
@@ -533,9 +527,11 @@ int main(){
 	/*string a, b;
 	cin >> a >> b;
 	cout << multiplyNumbers(a, b) << "\n";*/
+	test_fft();
+	test_ntt();
 	//test_random_mult();
-	//test_random_fft();
-	//test_random_ntt();
+	//test_random_conv_fft();
+	//test_random_conv_ntt();
 	//test_fft();
 	//test_ntt();
 
@@ -580,7 +576,7 @@ int main(){
 
 	/*vector<comp> test = {comp(5,-3), comp(2,1), comp(0,7), comp(-4,9), comp(8,0)};
 	test = bluestein(bluestein(test));
-	for(auto t : test) cout << t << " "; cout << "\n";*/
+	for(auto t : test) cout << t/comp(test.size()) << " "; cout << "\n";*/
 
 	/*vector<int> A = {9, 7, 2, 11, 3, 4, 5, 1}, B = {3, 7, 2, 5, 1};
 	auto Q = quotient(A, B);

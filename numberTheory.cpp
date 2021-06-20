@@ -35,7 +35,7 @@ lli multMod(lli a, lli b, lli n){
 	a %= n, b %= n;
 	if(abs(b) > abs(a)) swap(a, b);
 	if(b < 0){
-		a *= -1, b *= -1;
+		a = -a, b = -b;
 	}
 	while(b){
 		if(b & 1) ans = (ans + a) % n;
@@ -55,59 +55,59 @@ lli lcm(lli a, lli b){
 	return b * (a / gcd(a, b));
 }
 
-lli gcd(vector<lli> & nums){
+lli gcd(const vector<lli>& nums){
 	lli ans = 0;
-	for(lli & num : nums) ans = gcd(ans, num);
+	for(lli num : nums) ans = gcd(ans, num);
 	return ans;
 }
 
-lli lcm(vector<lli> & nums){
+lli lcm(const vector<lli>& nums){
 	lli ans = 1;
-	for(lli & num : nums) ans = lcm(ans, num);
+	for(lli num : nums) ans = lcm(ans, num);
 	return ans;
 }
 
-lli extendedGcd(lli a, lli b, lli & s, lli & t){
-	lli q, r0 = a, r1 = b, ri, s0 = 1, s1 = 0, si, t0 = 0, t1 = 1, ti;
-	while(r1){
-		q = r0 / r1;
-		ri = r0 % r1, r0 = r1, r1 = ri;
-		si = s0 - s1 * q, s0 = s1, s1 = si;
-		ti = t0 - t1 * q, t0 = t1, t1 = ti;
-	} 
-	s = s0, t = t0;
-	return r0;
+tuple<lli, lli, lli> extendedGcd(lli a, lli b){
+	if(b == 0){
+		if(a > 0) return {a, 1, 0};
+		else return {-a, -1, 0};
+	}else{
+		auto[d, x, y] = extendedGcd(b, a%b);
+		return {d, y, x - y*(a/b)};
+	}
 }
 
 lli modularInverse(lli a, lli m){
-	lli r0 = a, r1 = m, ri, s0 = 1, s1 = 0, si;
-	while(r1){
-		si = s0 - s1 * (r0 / r1), s0 = s1, s1 = si;
-		ri = r0 % r1, r0 = r1, r1 = ri;
-	}
-	if(r0 < 0) s0 *= -1;
-	if(s0 < 0) s0 += m;
-	return s0;
+	auto[d, x, y] = extendedGcd(a, m);
+	if(d != 1) return -1; // inverse doesn't exist
+	if(x < 0) x += m;
+	return x;
 }
+
+
+
+
+
+
 
 lli powerMod(lli b, lli e, lli m){
 	lli ans = 1;
 	b %= m;
 	if(e < 0){
 		b = modularInverse(b, m);
-		e *= -1;
+		e = -e;
 	}
 	while(e){
-		if(e & 1) ans = (ans * b) % m;
+		if(e & 1) ans = ans * b % m;
 		e >>= 1;
-		b = (b * b) % m;
+		b = b * b % m;
 	}
 	return ans;
 }
 
-pair<lli, lli> chinese(vector<lli> & a, vector<lli> & m){
+pair<lli, lli> chinese(const vector<lli>& a, const vector<lli>& m){
 	lli prod = 1, p, ans = 0;
-	for(lli & ni : m) prod *= ni;
+	for(lli ni : m) prod *= ni;
 	for(int i = 0; i < a.size(); ++i){
 		p = prod / m[i];
 		ans += (a[i] % m[i]) * modularInverse(p, m[i]) % prod * p % prod;
@@ -129,66 +129,66 @@ void divisorsSieve(int n){
 	}
 }
 
-vector<int> primes;
-vector<bool> isPrime;
-void primesSieve(int n){
-	isPrime.resize(n + 1, true);
-	isPrime[0] = isPrime[1] = false;
-	primes.push_back(2);
-	for(int i = 4; i <= n; i += 2) isPrime[i] = false;
-	int limit = sqrt(n);
+vector<int> primesSieve(int n){
+	vector<bool> is(n+1, true);
+	vector<int> primes = {2};
+	is[0] = is[1] = false;
+	for(int i = 4; i <= n; i += 2) is[i] = false;
 	for(int i = 3; i <= n; i += 2){
-		if(isPrime[i]){
+		if(is[i]){
 			primes.push_back(i);
-			if(i <= limit)
-				for(int j = i * i; j <= n; j += 2 * i)
-					isPrime[j] = false;
+			if((long long)i*i <= n)
+				for(int j = i*i; j <= n; j += 2*i)
+					is[j] = false;
 		}
 	}
+	return primes;
 }
 
-vector<int> lowestPrime;
-void lowestPrimeSieve(int n){
-	lowestPrime.resize(n + 1, 1);
-	lowestPrime[0] = lowestPrime[1] = 0;
-	for(int i = 2; i <= n; ++i) lowestPrime[i] = (i & 1 ? i : 2);
-	int limit = sqrt(n);
-	for(int i = 3; i <= limit; i += 2)
-		if(lowestPrime[i] == i)
-			for(int j = i * i; j <= n; j += 2 * i)
-				if(lowestPrime[j] == j) lowestPrime[j] = i;
+vector<int> primes;
+
+vector<int> lowestPrimeSieve(int n){
+	vector<int> lp(n+1);
+	iota(lp.begin(), lp.end(), 0);
+	for(int i = 4; i <= n; i += 2) lp[i] = 2;
+	for(int i = 3; i*i <= n; i += 2)
+		if(lp[i] == i)
+			for(int j = i*i; j <= n; j += 2*i)
+				lp[j] = min(lp[j], i);
+	return lp;
 }
 
-vector<vector<int>> primeFactors;
-void primeFactorsSieve(lli n){
-	primeFactors.resize(n + 1);
-	for(int i = 0; i < primes.size(); ++i){
-		int p = primes[i];
-		for(int j = p; j <= n; j += p)
-			primeFactors[j].push_back(p);
+
+vector<vector<int>> primeFactorsSieve(int n){
+	vector<vector<int>> primeFactors(n+1);
+	for(int p = 2; p <= n; ++p){
+		if(primeFactors[p].empty())
+			for(int j = p; j <= n; j += p)
+				primeFactors[j].push_back(p);
 	}
+	return primeFactors;
 }
 
-vector<int> Phi;
-void phiSieve(int n){
-	Phi.resize(n + 1);
-	for(int i = 1; i <= n; ++i) Phi[i] = i;
+vector<int> phiSieve(int n){
+	vector<int> Phi(n+1);
+	iota(Phi.begin(), Phi.end(), 0);
 	for(int i = 2; i <= n; ++i)
 		if(Phi[i] == i)
 			for(int j = i; j <= n; j += i)
 				Phi[j] -= Phi[j] / i;
+	return Phi;
 }
 
-vector<vector<lli>> Ncr;
-void ncrSieve(lli n){
-	Ncr.resize(n + 1);
+vector<vector<lli>> ncrSieve(int n){
+	vector<vector<lli>> Ncr(n+1);
 	Ncr[0] = {1};
-	for(lli i = 1; i <= n; ++i){
+	for(int i = 1; i <= n; ++i){
 		Ncr[i].resize(i + 1);
 		Ncr[i][0] = Ncr[i][i] = 1;
-		for(lli j = 1; j <= i / 2; j++)
+		for(int j = 1; j <= i / 2; j++)
 			Ncr[i][i - j] = Ncr[i][j] = Ncr[i - 1][j - 1] + Ncr[i - 1][j];
 	}
+	return Ncr;
 }
 
 vector<pair<lli, int>> factorize(lli n){
@@ -374,11 +374,11 @@ lli findFirstPrimitiveKthRootUnity(lli k, lli m){
 
 // Solves for x in the equation a^x = b mod m
 pair<lli, lli> discreteLogarithm(lli a, lli b, lli m){
-	lli m1 = m, pw = 1, d, x, y, nonRep = 0;
-	for(; (d = gcd(a, m1)) > 1; ++nonRep, m1 /= d, pw = pw * a % m){
+	lli m1 = m, pw = 1, div, nonRep = 0;
+	for(; (div = gcd(a, m1)) > 1; ++nonRep, m1 /= div, pw = pw * a % m){
 		if(pw == b) return {nonRep, 0}; //aperiodic solution found
 	}
-	d = extendedGcd(pw, m, x, y);
+	auto[d, x, y] = extendedGcd(pw, m);
 	if(b % d > 0) return {-1, 0}; //solution not found
 	b = x * (b / d) % m;
 	if(b < 0) b += m;
@@ -682,9 +682,9 @@ lli getFactor(lli n){
 	lli a = aleatorio(1, n - 1), b = aleatorio(1, n - 1);
 	lli x = 2, y = 2, d = 1;
 	while(d == 1){
-		x = x * (x + b) % n + a;
-		y = y * (y + b) % n + a;
-		y = y * (y + b) % n + a;
+		x = x * ((x + b) % n) % n + a;
+		y = y * ((y + b) % n) % n + a;
+		y = y * ((y + b) % n) % n + a;
 		d = gcd(abs(x - y), n);
 	}
 	return d;
@@ -756,14 +756,14 @@ lli orderedFactorizations(lli n){
 	//module if needed
 	for(int i = 0; i <= q; i++){
 		for(int j = 1; j <= k; j++){
-			prod[i] = prod[i] * Ncr[powers[j] + i][powers[j]];
+			prod[i] = prod[i] * ncr(powers[j] + i, powers[j]);
 		}
 	}
 	lli ans = 0;
 	for(int j = 1; j <= q; j++){
 		int alt = 1;
 		for(int i = 0; i < j; i++){
-			ans = ans + alt * Ncr[j][i] * prod[j - i - 1];
+			ans = ans + alt * ncr(j, i) * prod[j - i - 1];
 			alt *= -1;
 		}
 	}
@@ -777,7 +777,7 @@ lli orderedFactorizations(lli n){
 //mem.reserve(1024); mem.max_load_factor(0.25);
 struct HASH{
   size_t operator()(const pair<int,int>&x)const{
-    return hash<long long>()(((long long)x.first)^(((long long)x.second)<<32));
+	return hash<long long>()(((long long)x.first)^(((long long)x.second)<<32));
   }
 };
 unordered_map<pair<int, int>, lli, HASH> mem;
@@ -798,14 +798,14 @@ lli unorderedFactorizations(int m, int n){
 	return mem[{m, n}] = ans;
 }
 
-vector<int> Mu;
-void muSieve(int n){
-	Mu.resize(n + 1, -1);
+vector<int> muSieve(int n){
+	vector<int> Mu(n+1, -1);
 	Mu[0] = 0, Mu[1] = 1;
 	for(int i = 2; i <= n; ++i)
 		if(Mu[i])
 			for(int j = 2*i; j <= n; j += i)
 				Mu[j] -= Mu[i];
+	return Mu;
 }
 
 vector<int> linearPrimeSieve(int n){
@@ -936,33 +936,33 @@ lli sqrtMod(lli a, lli p){
 	}
 }
 
-vector<int> greatestPrime;
-void greatestPrimeSieve(int n){
-	greatestPrime.resize(n + 1, 1);
-	greatestPrime[0] = greatestPrime[1] = 0;
-	for(int i = 2; i <= n; ++i) greatestPrime[i] = i;
+vector<int> greatestPrimeSieve(int n){
+	vector<int> gp(n+1);
+	iota(gp.begin(), gp.end(), 0);
 	for(int i = 2; i <= n; i++)
-		if(greatestPrime[i] == i)
-			for(int j = i; j <= n; j += i)
-				greatestPrime[j] = i;
+		if(gp[i] == i)
+			for(int j = 2*i; j <= n; j += i)
+				gp[j] = i;
+	return gp;
 }
+
 
 //generalized chinese remainder theorem
 //the modulos doesn't need to be pairwise coprime
-pair<lli, lli> crt(const vector<lli> & a, const vector<lli> & m){
-	lli a0 = a[0] % m[0], m0 = m[0], a1, m1, s, t, d, M;
+pair<lli, lli> crt(const vector<lli>& a, const vector<lli>& m){
+	lli x = a[0], mod = m[0];
 	for(int i = 1; i < a.size(); ++i){
-		a1 = a[i] % m[i], m1 = m[i];
-		d = extendedGcd(m0, m1, s, t);
-		if((a0 - a1) % d != 0) return {0, 0}; //error, no solution
-		M = m0 * (m1 / d);
-		a0 = a0 * t % M * (m1 / d) % M + a1 * s % M * (m0 / d) % M;
-		while(a0 >= M) a0 -= M; while(a0 < 0) a0 += M;
-		m0 = M;
+		auto[d, s, t] = extendedGcd(mod, -m[i]);
+		if((a[i] - x) % d != 0) return {-1, -1};
+		lli step = m[i] / d;
+		lli k = s * (((a[i] - x) / d) % step) % step;
+		if(k < 0) k += step;
+		x += mod*k;
+		mod *= step;
 	}
-	while(a0 >= m0) a0 -= m0; while(a0 < 0) a0 += m0;
-	return {a0, m0};
+	return {x, mod};
 }
+
 
 //s(n, k) represents the number of permutations
 //of n elements with k disjoint cycles
@@ -1002,23 +1002,23 @@ void eulerianNumbers(lli n){
 
 //finds sum(floor(p*i/q), 1<=i<=n)
 lli floorsSum(lli p, lli q, lli n){
-    lli t = gcd(p, q);
-    p /= t, q /= t;
-    lli s = 0, z = 1;
-    while(q && n){
-        t = p/q;
-        s += z*t*n*(n+1)/2;
-        p -= q*t;
-        t = n/q;
-        s += z*p*t*(n+1) - z*t*(p*q*t + p + q - 1)/2;
-        n -= q*t;
-        t = n*p/q;
-        s += z*t*n;
-        n = t;
-        swap(p, q);
-        z = -z;
-    }
-    return s;
+	lli t = gcd(p, q);
+	p /= t, q /= t;
+	lli s = 0, z = 1;
+	while(q && n){
+		t = p/q;
+		s += z*t*n*(n+1)/2;
+		p -= q*t;
+		t = n/q;
+		s += z*p*t*(n+1) - z*t*(p*q*t + p + q - 1)/2;
+		n -= q*t;
+		t = n*p/q;
+		s += z*t*n;
+		n = t;
+		swap(p, q);
+		z = -z;
+	}
+	return s;
 }
 
 //Finds (n!/p^m) mod p^s, where m is the largest power of p
@@ -1077,12 +1077,12 @@ lli pisano(lli mod){
 
 vector<int> cyclotomic(int n){
 	if(n == 1) return {-1, 1};
-	int deg = Phi[n];
+	int deg = phi(n);
 	vector<int> a(deg+1);
 	a[0] = 1;
 	for(int d : divs[n]){
-		if(Mu[n/d] == 0) continue;
-		if(Mu[n/d] == 1){
+		if(mu(n/d) == 0) continue;
+		if(mu(n/d) == 1){
 			for(int i = deg; i >= d; --i){
 				a[i] -= a[i-d];
 			}
@@ -1167,15 +1167,46 @@ void info_ntt(lli e, lli l, lli r){
 
 int main(){
 	srand(time(NULL));
-	primesSieve(1e5);
+	primes = primesSieve(1e5);
 	divisorsSieve(1e4);
-	phiSieve(1e4);
-	muSieve(1e4);
-	ncrSieve(300);
+	auto Phi = phiSieve(1e4);
+	auto Mu = muSieve(1e4);
+	auto Ncr = ncrSieve(300);
 	bellNumbers(50);
 	stirlingNumber1stKind(50);
 	stirlingNumber2ndKind(50);
 	eulerianNumbers(50);
+	auto lp = lowestPrimeSieve(1e5);
+	auto gp = greatestPrimeSieve(1e5);
+	auto primeFactors = primeFactorsSieve(1e4);
+
+	/*for(int i = 1; i <= 10000; ++i){
+		int a = rand() % 10000 - 5000, b = rand() % 10000 - 5000;
+		auto[d, x, y] = extendedGcd(a, b);
+		assert(a*x + b*y == d && d > 0 && __gcd(abs(a), abs(b)) == d);
+	}*/
+
+	/*for(int p : primes){
+		cout << p << " ";
+	}*/
+
+	/*for(int i = 1; i < lp.size(); ++i){
+		cout << i << ": " << lp[i] << " " << gp[i] << "\n";
+	}*/
+
+	/*for(int i = 1; i < primeFactors.size(); ++i){
+		cout << i << ": ";
+		for(int p : primeFactors[i]) cout << p << " ";
+		cout << "\n";
+	}*/
+
+	/*for(int i = 1; i <= 300; ++i){
+		cout << "mu(" << i << ") = " << Mu[i] << "\n";
+	}*/
+
+	/*for(int i = 1; i <= 300; ++i){
+		cout << "phi(" << i << ") = " << Phi[i] << "\n";
+	}*/
 
 	/*lli sum = 0, p, q, n;
 	cin >> p >> q >> n;
@@ -1208,10 +1239,6 @@ int main(){
 		cout << "f(" << i << ") = " << pre[i] << "\n";
 	}*/
 
-	/*for(int i = 1; i <= 300; ++i){
-		cout << "mu(" << i << ") = " << Mu[i] << "\n";
-	}*/
-
 	/*lli x;
 	cin >> x;
 	cout << isPrimeMillerRabin(x) << "\n";
@@ -1219,6 +1246,14 @@ int main(){
 	for(auto & it : fact){
 		cout << it.first << " " << it.second << "\n";
 	}*/
+
+	for(int i = 1; i <= 1; ++i){
+		lli x = 8771651710523331247ll;
+		factorizePollardRho(x);
+		for(auto[p, a] : fact){
+			cout << p << " " << a << "\n";
+		}
+	}
 
 	/*for(lli i = 1; i <= 10000; ++i){
 		cout << i << " " << pisano(i) << "\n";
@@ -1310,10 +1345,10 @@ int main(){
 		cout << "\n";
 	}*/
 
-	lli p;
+	/*lli p;
 	cin >> p;
 	auto sq = sq2(p);
-	cout << sq.first << " " << sq.second << "\n";
+	cout << sq.first << " " << sq.second << "\n";*/
 	
 	return 0;
 }
