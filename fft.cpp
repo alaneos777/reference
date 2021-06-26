@@ -33,16 +33,6 @@ void fft(vector<comp> & X, int inv){
 			X[i] /= n;
 }
 
-int inverse(int a, int n){
-	int r0 = a, r1 = n, ri, s0 = 1, s1 = 0, si;
-	while(r1){
-		si = s0 - s1 * (r0 / r1), s0 = s1, s1 = si;
-		ri = r0 % r1, r0 = r1, r1 = ri;
-	}
-	if(s0 < 0) s0 += n;
-	return s0;
-}
-
 lli powerMod(lli b, lli e, lli m){
 	lli ans = 1;
 	e %= m-1;
@@ -167,9 +157,6 @@ vector<int> inversePolynomial(const vector<int> & A){
 	return R;
 }
 
-
-
-
 const int inv2 = powerMod(2, p - 2, p);
 
 vector<int> sqrtPolynomial(const vector<int> & A){
@@ -192,7 +179,6 @@ vector<int> sqrtPolynomial(const vector<int> & A){
 	R.resize(A.size());
 	return R;
 }
-
 
 vector<int> derivative(vector<int> A){
 	for(int i = 0; i < A.size(); ++i)
@@ -265,50 +251,72 @@ vector<int> remainder(vector<int> A, const vector<int> & B){
 	return A;
 }
 
-//evaluates all the points in P(x), both the size of P and points must be the same
+//evaluates all the points in P(x)
 vector<int> multiEvaluate(const vector<int> & P, const vector<int> & points){
 	int n = points.size();
-	vector<vector<int>> prod(2*n - 1);
-	function<void(int, int, int)> pre = [&](int v, int l, int r){
-		if(l == r) prod[v] = vector<int>{(p - points[l]) % p, 1};
-		else{
-			int y = (l + r) / 2;
-			int z = v + (y - l + 1) * 2;
-			pre(v + 1, l, y);
-			pre(z, y + 1, r);
-			prod[v] = convolution<p, g>(prod[v + 1], prod[z]);
+	vector<vector<int>> t(n<<1), r(n<<1), e(n<<1);
+	vector<bool> calc(n<<1);
+	vector<int> ans(n);
+	for(int i = 0; i < n; ++i){
+		t[n+i] = {(p - points[i]) % p, 1};
+		e[n+i].push_back(i);
+	}
+	for(int i = n-1; i > 0; --i){
+		t[i] = convolution<p, g>(t[i<<1], t[i<<1|1]);
+		e[i] = e[i<<1];
+		e[i].insert(e[i].end(), e[i<<1|1].begin(), e[i<<1|1].end());
+	}
+	auto naive = [&](const vector<int>& P, int x){
+		int y = 0;
+		for(int i = (int)P.size()-1; i >= 0; --i){
+			y = ((lli)y*x + P[i]) % p;
 		}
+		return y;
 	};
-	pre(0, 0, n - 1);
-
-	function<int(const vector<int>&, int)> eval = [&](const vector<int> & poly, int x0){
-		int ans = 0;
-		for(int i = (int)poly.size()-1; i >= 0; --i){
-			ans = (lli)ans * x0 % p + poly[i];
-			if(ans >= p) ans -= p;
-		}
-		return ans;
-	};
-
-	vector<int> res(n);
-	function<void(int, int, int, vector<int>)> evaluate = [&](int v, int l, int r, vector<int> poly){
-		poly = remainder(poly, prod[v]);
-		if(poly.size() < 400){
-			for(int i = l; i <= r; ++i)
-				res[i] = eval(poly, points[i]);
-		}else{
-			if(l == r)
-				res[l] = poly[0];
-			else{
-				int y = (l + r) / 2;
-				int z = v + (y - l + 1) * 2;
-				evaluate(v + 1, l, y, poly);
-				evaluate(z, y + 1, r, poly);
+	r[1] = remainder(P, t[1]);
+	for(int i = 1; i < n; ++i){
+		if(calc[i]){
+			calc[i<<1] = calc[i<<1|1] = true;
+		}else if(e[i].size() < 400){
+			for(int pos : e[i]){
+				r[n+pos] = {naive(r[i], points[pos])};
 			}
+			calc[i<<1] = calc[i<<1|1] = true;
+		}else{
+			r[i<<1] = remainder(r[i], t[i<<1]);
+			r[i<<1|1] = remainder(r[i], t[i<<1|1]);
 		}
-	};
-	evaluate(0, 0, n - 1, P);
-	return res;
+	}
+	for(int i = 0; i < n; ++i){
+		ans[i] = r[n+i][0];
+	}
+	return ans;
+}
+
+vector<int> interpolate(const vector<int>& X, const vector<int>& Y){
+	int n = X.size();
+	vector<vector<int>> t(n<<1), r(n<<1);
+	vector<int> ans(n);
+	for(int i = 0; i < n; ++i){
+		t[n+i] = {(p - X[i]) % p, 1};
+	}
+	for(int i = n-1; i > 0; --i){
+		t[i] = convolution<p, g>(t[i<<1], t[i<<1|1]);
+	}
+	vector<int> Q = multiEvaluate(derivative(t[1]), X);
+	for(int i = 0; i < n; ++i){
+		r[n+i] = {Y[i] * powerMod(Q[i], p-2, p) % p};
+	}
+	for(int i = n-1; i > 0; --i){
+		r[i] = convolution<p, g>(r[i<<1], t[i<<1|1]);
+		vector<int> rhs = convolution<p, g>(r[i<<1|1], t[i<<1]);
+		r[i].resize(max(r[i].size(), rhs.size()));
+		for(int j = 0; j < rhs.size(); ++j){
+			r[i][j] += rhs[j];
+			if(r[i][j] >= p) r[i][j] -= p;
+		}
+	}
+	return r[1];
 }
 
 //it evaluates 1, w, w^2, ..., w^(n-1) on the polynomial a(x)
@@ -333,7 +341,7 @@ vector<comp> bluestein(vector<comp> A){
 	return A;
 }
 
-//A and B are real-valued vectors, just do 2 fft's instead of 3
+//A and B are real-valued vectors, just 2 fft's instead of 3
 vector<double> convolutionTrick(const vector<double> & A, const vector<double> & B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
@@ -585,10 +593,13 @@ int main(){
 	for(auto r : R) cout << r << " ";*/
 
 	/*int n = 60000;
-	vector<int> P(n), points(n);
+	set<int> pts;
+	while(pts.size() < n){
+		pts.insert(aleatorio_int(0, p-1));
+	}
+	vector<int> P(n), points(pts.begin(), pts.end());
 	for(int i = 0; i < n; ++i){
-		P[i] = rand() % p;
-		points[i] = rand() % p;
+		P[i] = aleatorio_int(0, p-1);
 	}
 	vector<int> evals = multiEvaluate(P, points);
 	vector<int> naive(n);
@@ -597,9 +608,9 @@ int main(){
 			naive[i] = ((lli)naive[i] * points[i] % p + P[j]) % p;
 		}
 	}
-	for(int i = 0; i < n; ++i){
-		assert(naive[i] == evals[i]);
-	}*/
+	assert(naive == evals);
+	vector<int> Q = interpolate(points, evals);
+	assert(P == Q);*/
 
 	/*int M = 100;
 	vector<int> fact(M+1, 1), invfact(M+1, 1);
