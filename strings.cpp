@@ -252,6 +252,36 @@ vector<int> z_function(const string & s){
     return z;
 }
 
+vector<int> manacher_odd(const string& s){
+	int n = s.size();
+	vector<int> odd(n);
+	for(int i = 0, l = 0, r = -1; i < n; ++i){
+		int k = (i > r ? 1 : min(odd[l+r-i], r-i+1));
+		while(0 <= i-k && i+k < n && s[i-k] == s[i+k]) k++;
+		odd[i] = k--;
+		if(i+k > r){
+			l = i-k;
+			r = i+k;
+		}
+	}
+	return odd;
+}
+
+vector<int> manacher_even(const string& s){
+	int n = s.size();
+	vector<int> even(n);
+	for(int i = 0, l = 0, r = -1; i < n; ++i){
+		int k = (i > r ? 0 : min(even[l+r-i+1], r-i+1));
+		while(0 <= i-k-1 && i+k < n && s[i-k-1] == s[i+k]) k++;
+		even[i] = k--;
+		if(i+k > r){
+			l = i-k-1;
+			r = i+k;
+		}
+	}
+	return even;
+}
+
 /*int main(){
 	AhoCorasick ac;
 	int patterns;

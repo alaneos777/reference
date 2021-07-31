@@ -2,8 +2,8 @@
 using namespace std;
 using lli = long long int;
 using comp = complex<double>;
+using poly = vector<int>;
 const double PI = acos(-1.0);
-
 int nearestPowerOfTwo(int n){
 	int ans = 1;
 	while(ans < n) ans <<= 1;
@@ -46,7 +46,7 @@ lli powerMod(lli b, lli e, lli m){
 }
 
 template<int p, int g>
-void ntt(vector<int> & X, int inv){
+void ntt(poly & X, int inv){
 	int n = X.size();
 	for(int i = 1, j = 0; i < n - 1; ++i){
 		for(int k = n >> 1; (j ^= k) < k; k >>= 1);
@@ -85,7 +85,7 @@ vector<comp> convolution(vector<comp> A, vector<comp> B){
 }
 
 template<int p, int g>
-vector<int> convolution(vector<int> A, vector<int> B){
+poly convolution(poly A, poly B){
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
 	A.resize(size), B.resize(size);
@@ -110,7 +110,7 @@ string multiplyNumbers(const string & a, const string & b){
 		if(b[pos2] == '-') sgn *= -1;
 		++pos2;
 	}
-	vector<int> X(a.size() - pos1), Y(b.size() - pos2);
+	poly X(a.size() - pos1), Y(b.size() - pos2);
 	if(X.empty() || Y.empty()) return "0";
 	for(int i = pos1, j = X.size() - 1; i < a.size(); ++i)
 		X[j--] = a[i] - '0';
@@ -134,14 +134,14 @@ string multiplyNumbers(const string & a, const string & b){
 	return ss.str();
 }
 
-vector<int> inversePolynomial(const vector<int> & A){
-	vector<int> R(1, powerMod(A[0], p - 2, p));
+poly inversePolynomial(const poly & A){
+	poly R(1, powerMod(A[0], p - 2, p));
 	//R(x) = 2R(x)-A(x)R(x)^2
 	while(R.size() < A.size()){
 		size_t c = 2 * R.size();
 		R.resize(c);
-		vector<int> R2 = R;
-		vector<int> a(min(c, A.size()));
+		poly R2 = R;
+		poly a(min(c, A.size()));
 		for(int i = 0; i < a.size(); ++i)
 			a[i] = A[i];
 		R2 = convolution<p, g>(R2, R2);
@@ -159,14 +159,14 @@ vector<int> inversePolynomial(const vector<int> & A){
 
 const int inv2 = powerMod(2, p - 2, p);
 
-vector<int> sqrtPolynomial(const vector<int> & A){
+poly sqrtPolynomial(const poly & A){
 	int r0 = 1; //verify that r0^2 = A[0] mod p
-	vector<int> R(1, r0);
+	poly R(1, r0);
 	//R(x) = R(x)/2 + A(x)/(2R(x))
 	while(R.size() < A.size()){
 		size_t c = 2 * R.size();
 		R.resize(c);
-		vector<int> a(min(c, A.size()));
+		poly a(min(c, A.size()));
 		for(int i = 0; i < a.size(); ++i)
 			a[i] = A[i];
 		a = convolution<p, g>(a, inversePolynomial(R));
@@ -180,21 +180,21 @@ vector<int> sqrtPolynomial(const vector<int> & A){
 	return R;
 }
 
-vector<int> derivative(vector<int> A){
+poly derivative(poly A){
 	for(int i = 0; i < A.size(); ++i)
 		A[i] = (lli)A[i] * i % p;
 	if(!A.empty()) A.erase(A.begin());
 	return A;
 }
 
-vector<int> integral(vector<int> A){
+poly integral(poly A){
 	for(int i = 0; i < A.size(); ++i)
 		A[i] = (lli)A[i] * (powerMod(i+1, p-2, p)) % p;
 	A.insert(A.begin(), 0);
 	return A;
 }
 
-vector<int> logarithm(vector<int> A){
+poly logarithm(poly A){
 	assert(A[0] == 1);
 	int n = A.size();
 	A = convolution<p, g>(derivative(A), inversePolynomial(A));
@@ -204,14 +204,14 @@ vector<int> logarithm(vector<int> A){
 	return A;
 }
 
-vector<int> exponential(const vector<int> & A){
+poly exponential(const poly & A){
 	assert(A[0] == 0);
 	//E(x) = E(x)(1-ln(E(x))+A(x))
-	vector<int> E(1, 1);
+	poly E(1, 1);
 	while(E.size() < A.size()){
 		size_t c = 2*E.size();
 		E.resize(c);
-		vector<int> S = logarithm(E);
+		poly S = logarithm(E);
 		for(int i = 0; i < c && i < A.size(); ++i){
 			S[i] = A[i] - S[i];
 			if(S[i] < 0) S[i] += p;
@@ -225,9 +225,9 @@ vector<int> exponential(const vector<int> & A){
 }
 
 //returns Q(x), where A(x)=B(x)Q(x)+R(x)
-vector<int> quotient(vector<int> A, vector<int> B){
+poly quotient(poly A, poly B){
 	int n = A.size(), m = B.size();
-	if(n < m) return vector<int>{0};
+	if(n < m) return poly{};
 	reverse(A.begin(), A.end());
 	reverse(B.begin(), B.end());
 	A.resize(n-m+1), B.resize(n-m+1);
@@ -238,10 +238,10 @@ vector<int> quotient(vector<int> A, vector<int> B){
 }
 
 //returns R(x), where A(x)=B(x)Q(x)+R(x)
-vector<int> remainder(vector<int> A, const vector<int> & B){
+poly remainder(poly A, const poly & B){
 	int n = A.size(), m = B.size();
 	if(n >= m){
-		vector<int> C = convolution<p, g>(quotient(A, B), B);
+		poly C = convolution<p, g>(quotient(A, B), B);
 		A.resize(m-1);
 		for(int i = 0; i < m-1; ++i){
 			A[i] -= C[i];
@@ -252,9 +252,9 @@ vector<int> remainder(vector<int> A, const vector<int> & B){
 }
 
 //evaluates all the points in P(x)
-vector<int> multiEvaluate(const vector<int> & P, const vector<int> & points){
+vector<int> multiEvaluate(const poly & P, const vector<int> & points){
 	int n = points.size();
-	vector<vector<int>> t(n<<1), r(n<<1), e(n<<1);
+	vector<poly> t(n<<1), r(n<<1); vector<vector<int>> e(n<<1);
 	vector<bool> calc(n<<1);
 	vector<int> ans(n);
 	for(int i = 0; i < n; ++i){
@@ -266,7 +266,7 @@ vector<int> multiEvaluate(const vector<int> & P, const vector<int> & points){
 		e[i] = e[i<<1];
 		e[i].insert(e[i].end(), e[i<<1|1].begin(), e[i<<1|1].end());
 	}
-	auto naive = [&](const vector<int>& P, int x){
+	auto naive = [&](const poly& P, int x){
 		int y = 0;
 		for(int i = (int)P.size()-1; i >= 0; --i){
 			y = ((lli)y*x + P[i]) % p;
@@ -293,23 +293,23 @@ vector<int> multiEvaluate(const vector<int> & P, const vector<int> & points){
 	return ans;
 }
 
-vector<int> interpolate(const vector<int>& X, const vector<int>& Y){
-	int n = X.size();
-	vector<vector<int>> t(n<<1), r(n<<1);
-	vector<int> ans(n);
+//finds a polynomial P(x) such that P(x[i]) = y[i]
+poly interpolate(const vector<int>& x, const vector<int>& y){
+	int n = x.size();
+	vector<poly> t(n<<1), r(n<<1);
 	for(int i = 0; i < n; ++i){
-		t[n+i] = {(p - X[i]) % p, 1};
+		t[n+i] = {(p - x[i]) % p, 1};
 	}
 	for(int i = n-1; i > 0; --i){
 		t[i] = convolution<p, g>(t[i<<1], t[i<<1|1]);
 	}
-	vector<int> Q = multiEvaluate(derivative(t[1]), X);
+	vector<int> Q = multiEvaluate(derivative(t[1]), x);
 	for(int i = 0; i < n; ++i){
-		r[n+i] = {Y[i] * powerMod(Q[i], p-2, p) % p};
+		r[n+i] = {y[i] * powerMod(Q[i], p-2, p) % p};
 	}
 	for(int i = n-1; i > 0; --i){
 		r[i] = convolution<p, g>(r[i<<1], t[i<<1|1]);
-		vector<int> rhs = convolution<p, g>(r[i<<1|1], t[i<<1]);
+		poly rhs = convolution<p, g>(r[i<<1|1], t[i<<1]);
 		r[i].resize(max(r[i].size(), rhs.size()));
 		for(int j = 0; j < rhs.size(); ++j){
 			r[i][j] += rhs[j];
@@ -317,6 +317,83 @@ vector<int> interpolate(const vector<int>& X, const vector<int>& Y){
 		}
 	}
 	return r[1];
+}
+
+void clean(poly& A){
+	while(!A.empty() && A.back() == 0) A.pop_back();
+}
+
+poly operator+(const poly& a, const poly& b){
+	poly c(max(a.size(), b.size()));
+	for(int i = 0; i < c.size(); ++i){
+		if(i < a.size()) c[i] = a[i];
+		if(i < b.size()) c[i] += b[i];
+		if(c[i] >= p) c[i] -= p;
+	}
+	clean(c);
+	return c;
+}
+
+poly operator-(const poly& a, const poly& b){
+	poly c(max(a.size(), b.size()));
+	for(int i = 0; i < c.size(); ++i){
+		if(i < a.size()) c[i] = a[i];
+		if(i < b.size()) c[i] -= b[i];
+		if(c[i] < 0) c[i] += p;
+	}
+	clean(c);
+	return c;
+}
+
+const poly zero, one = {1};
+poly operator*(const poly& a, const poly& b){
+	if(a.empty() || b.empty()) return {};
+	poly ans = convolution<p,g>(a, b);
+	clean(ans);
+	return ans;
+}
+
+using mat = array<poly, 4>;
+using arr = array<poly, 2>;
+mat operator*(const mat& A, const mat& B){
+	return {A[0]*B[0] + A[1]*B[2], A[0]*B[1] + A[1]*B[3], A[2]*B[0] + A[3]*B[2], A[2]*B[1] + A[3]*B[3]};
+}
+
+arr operator*(const mat& A, const arr& b){
+	return {A[0]*b[0] + A[1]*b[1], A[2]*b[0] + A[3]*b[1]};
+}
+
+mat pgcd(arr a){
+	assert(a[0].size() > a[1].size() && !a[1].empty());
+	int m = a[0].size()/2;
+	if(a[1].size() <= m) return {one, zero, zero, one};
+	auto R = pgcd({poly(a[0].begin() + m, a[0].end()), poly(a[1].begin() + m, a[1].end())});
+	a = R*a;
+	if(a[1].size() <= m) return R;
+	mat Q = {zero, one, one, zero - quotient(a[0], a[1])};
+	R = Q*R, a = Q*a;
+	if(a[1].size() <= m) return R;
+	int k = 2*m + 1 - a[0].size();
+	return pgcd({poly(a[0].begin() + k, a[0].end()), poly(a[1].begin() + k, a[1].end())}) * R;
+}
+
+mat egcd(arr a){
+	assert(a[0].size() > a[1].size() && !a[1].empty());
+	auto m0 = pgcd(a);
+	a = m0*a;
+	if(a[1].empty()) return m0;
+	mat Q = {zero, one, one, zero - quotient(a[0], a[1])};
+	m0 = Q*m0, a = Q*a;
+	if(a[1].empty()) return m0;
+	return egcd(a) * m0;
+}
+
+array<poly, 3> extgcd(const poly& a, const poly& b){
+	mat Q = {zero, one, one, zero - quotient(a, b)};
+	auto m = Q;
+	auto ap = Q*arr{a, b};
+	if(!ap[1].empty()) m = egcd(ap) * m;
+	return {a*m[0] + b*m[1], m[0], m[1]};
 }
 
 //it evaluates 1, w, w^2, ..., w^(n-1) on the polynomial a(x)
@@ -364,7 +441,7 @@ vector<double> convolutionTrick(const vector<double> & A, const vector<double> &
 }
 
 //convolution with arbitrary modulo using only 4 fft's
-vector<int> convolutionMod(const vector<int> & A, const vector<int> & B, int mod){
+poly convolutionMod(const poly & A, const poly & B, int mod){
 	int s = sqrt(mod);
 	int sz = A.size() + B.size() - 1;
 	int size = nearestPowerOfTwo(sz);
@@ -386,7 +463,7 @@ vector<int> convolutionMod(const vector<int> & A, const vector<int> & B, int mod
 		d[i] = f * h;
 	}
 	fft(c, -1), fft(d, -1);
-	vector<int> D(sz);
+	poly D(sz);
 	for(int i = 0, j = 0; i < sz; ++i){
 		j = (size-1) & (size-i);
 		int p0 = (lli)round(real(c[i])) % mod;
@@ -403,11 +480,11 @@ vector<int> convolutionMod(const vector<int> & A, const vector<int> & B, int mod
 //slower but with no precision errors
 const int a = 998244353, b = 985661441, c = 754974721;
 const lli a_b = powerMod(a, b-2, b), a_c = powerMod(a, c-2, c), b_c = powerMod(b, c-2, c);
-vector<int> convolutionModCRT(const vector<int> & A, const vector<int> & B, int mod){
-	vector<int> P = convolution<a, 3>(A, B);
-	vector<int> Q = convolution<b, 3>(A, B);
-	vector<int> R = convolution<c, 11>(A, B);
-	vector<int> D(P.size());
+poly convolutionModCRT(const poly & A, const poly & B, int mod){
+	poly P = convolution<a, 3>(A, B);
+	poly Q = convolution<b, 3>(A, B);
+	poly R = convolution<c, 11>(A, B);
+	poly D(P.size());
 	for(int i = 0; i < D.size(); ++i){
 		int x1 = P[i] % a;
 		if(x1 < 0) x1 += a;
@@ -481,7 +558,7 @@ void test_fft(){
 
 void test_ntt(){
 	int sz = 1<<20;
-	vector<int> A(sz);
+	poly A(sz);
 	for(int i = 0; i < sz; ++i){
 		A[i] = aleatorio_int(0, 9);
 	}
@@ -506,7 +583,7 @@ void test_random_conv_fft(){
 
 void test_random_conv_ntt(){
 	int deg = 1e6;
-	vector<int> A(deg + 1), B(deg + 1);
+	poly A(deg + 1), B(deg + 1);
 	for(int i = 0; i <= deg; i++){
 		A[i] = rand() % 10;
 		B[i] = rand() % 10;
