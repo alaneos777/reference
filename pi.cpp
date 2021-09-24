@@ -1,8 +1,34 @@
 #include <bits/stdc++.h>
 using namespace std;
 using lli = long long int;
-
 const lli Mod = 1e9 + 7;
+
+lli power(lli a, lli b){
+	lli ans = 1;
+	while(b){
+		if(b & 1) ans *= a;
+		b >>= 1;
+		a *= a;
+	}
+	return ans;
+}
+
+auto sieve(int n){
+	vector<int> primes;
+	vector<bool> is(n+1, true);
+	for(int i = 2; i <= n; ++i){
+		if(is[i]) primes.push_back(i);
+		for(int p : primes){
+			int d = i*p;
+			if(d > n) break;
+			is[d] = false;
+			if(i % p == 0) break;
+		}
+	}
+	return primes;
+}
+
+const auto primes = sieve(1e7);
 
 template<typename T>
 struct SumPrimePi{
@@ -135,19 +161,43 @@ struct MultiplicativeSum{
 	}
 };
 
+// prefix sum of general multiplicative function f(n) such that f(p^e)=g(p,e)
+// runs in O(n^(3/4)), G(n) is sum of g(p) for 1<=p<=n and p prime
+// needs primes precalculated up to sqrt(n)
 template<typename T>
-T f(const SumPrimePi<T> & pi, function<T(lli, int)> g, lli n, int idx = 0){
-	// sum of g(p, 1) for primes p such that primes[idx] <= p <= n
-	int lo = idx ? pi.primes[idx-1] : 0;
-	T ans = pi.get(n) - pi.get(lo);
+T F_sum(function<T(lli, int)> g, function<T(lli)> G, lli n, int idx = 0){
+	// initialize ans with sum of g(p, 1) for primes p such that primes[idx] <= p <= n
+	int lo = idx ? primes[idx-1] : 0;
+	T ans = G(n) - G(lo);
 	if(idx == 0) ans++;
-	for(int i = idx; i < pi.primes.size(); ++i){
-		lli p = pi.primes[i];
+	for(int i = idx; i < primes.size(); ++i){
+		lli p = primes[i];
 		if(p * p > n) break;
 		int e = 1;
 		lli curr = n / p;
 		while(curr >= p){
-			ans += g(p, e) * f(pi, g, curr, i+1) + g(p, e+1);
+			ans += g(p, e) * F_sum(g, G, curr, i+1) + g(p, e+1);
+			curr /= p;
+			++e;
+		}
+	}
+	return ans;
+}
+
+// prefix sum of multiplicative function f(n) such that f(p^e)=g(p,e)
+// let u(n) be a multiplicative function such that u(p^a)=[f(p)]^a
+// if sum of u(n) for 1<=i<=n can be calculated in O(1), then F(n) can be calculated in O(sqrt(n))
+// needs primes precalculated up to sqrt(n)
+template<typename T>
+T F(function<T(lli, int)> g, function<T(lli)> U, lli n, int idx = 0){
+	T ans = U(n); // sum of u(n) for 1<=i<=n
+	for(int i = idx; i < primes.size(); ++i){
+		lli p = primes[i];
+		lli curr = n / (p * p);
+		if(curr == 0) break;
+		int e = 2;
+		while(curr >= 1){
+			ans += (g(p, e) - g(p, 1) * g(p, e - 1)) * F(g, U, curr, i+1);
 			curr /= p;
 			++e;
 		}
@@ -156,7 +206,7 @@ T f(const SumPrimePi<T> & pi, function<T(lli, int)> g, lli n, int idx = 0){
 }
 
 int main(){
-	lli n;
+	int64_t n;
 	int k;
 	cin >> n >> k;
 	clock_t start = clock();
@@ -164,6 +214,17 @@ int main(){
 	pi.build();
 	lli ans = pi.get(n);
 	clock_t end = clock();
-	cout << ans << "\n" << (double)(end - start) / (double)CLOCKS_PER_SEC << "s\n";
+	cout << "pi(" << n << ") = " << ans << "\n" << (double)(end - start) / (double)CLOCKS_PER_SEC << "s\n";
+
+	start = clock();
+	ans = F_sum<lli>([&](lli p, int a){return power(p, 2*(a/2));}, [&](lli n){return pi.get(n);}, n);
+	end = clock();
+	cout << "F(" << n << ") = " << ans << "\n" << (double)(end - start) / (double)CLOCKS_PER_SEC << "s\n";
+
+	start = clock();
+	ans = F<lli>([&](lli p, int a){return power(p, 2*(a/2));}, [&](lli n){return n;}, n);
+	end = clock();
+	cout << "F(" << n << ") = " << ans << "\n" << (double)(end - start) / (double)CLOCKS_PER_SEC << "s\n";
+
 	return 0;
 }

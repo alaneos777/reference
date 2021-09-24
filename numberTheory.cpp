@@ -290,10 +290,7 @@ int mu(lli n){
 lli multiplicativeOrder(lli x, lli m){
 	if(gcd(x, m) != 1) return 0;
 	lli order = phi(m);
-	auto f = factorize(order);
-	for(auto & factor : f){
-		lli p = factor.first;
-		int a = factor.second;
+	for(auto[p, a] : factorize(order)){
 		order /= power(p, a);
 		lli tmp = powerMod(x, order, m);
 		while(tmp != 1){
@@ -303,6 +300,9 @@ lli multiplicativeOrder(lli x, lli m){
 	}
 	return order;
 }
+
+
+
 
 //number of generators modulo m
 lli numberOfGenerators(lli m){
@@ -698,10 +698,10 @@ void factorizePollardRho(lli n, bool clean = true){
 		for(; f == n; f = getFactor(n));
 		n /= f;
 		factorizePollardRho(f, false);
-		for(auto & it : fact){
-			while(n % it.first == 0){
-				n /= it.first;
-				++it.second;
+		for(auto&[p, a] : fact){
+			while(n % p == 0){
+				n /= p;
+				++a;
 			}
 		}
 	}
@@ -1000,26 +1000,26 @@ void eulerianNumbers(lli n){
 	}
 }
 
-//finds sum(floor(p*i/q), 1<=i<=n)
-lli floorsSum(lli p, lli q, lli n){
-	lli t = gcd(p, q);
-	p /= t, q /= t;
-	lli s = 0, z = 1;
-	while(q && n){
-		t = p/q;
-		s += z*t*n*(n+1)/2;
-		p -= q*t;
-		t = n/q;
-		s += z*p*t*(n+1) - z*t*(p*q*t + p + q - 1)/2;
-		n -= q*t;
-		t = n*p/q;
-		s += z*t*n;
-		n = t;
-		swap(p, q);
-		z = -z;
-	}
-	return s;
+// sum of floor((a*i+b)/m) , 0<=i<=n
+lli f(lli a, lli b, lli c, lli n){
+	lli m = (a*n + b)/c;
+	if(n==0 || m==0) return b/c;
+	if(n==1) return b/c + (a+b)/c;
+	if(a<c && b<c) return m*n - f(c, c-b-1, a, m-1);
+	else return (a/c)*n*(n+1)/2 + (b/c)*(n+1) + f(a%c, b%c, c, n);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 //Finds (n!/p^m) mod p^s, where m is the largest power of p
 //that divides n!, p must be prime
