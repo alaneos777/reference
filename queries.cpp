@@ -1023,7 +1023,7 @@ struct HeavyLight{
 		}
 		if(level[a] > level[b]) swap(a, b);
 		// if(pos[a] + 1 <= pos[b]) for values in edges
-		mx = max(mx, st->query(pos[a], pos[b]));
+		mx = max(mx, st->query(pos[a] + 1, pos[b]));
 		//LCA at a
 		return mx;
 	}
